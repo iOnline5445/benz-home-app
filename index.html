@@ -1,411 +1,927 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BENZ HOME Agency — ระบบจัดการอสังหาริมทรัพย์</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Noto+Serif+Thai:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-  /* ===== THEME: BENZ HOME DARK GOLD ===== */
-  :root {
-    --gold: #D4AF37; --gold-light: #E5C354; --gold-dark: #AA8B2C;
-    --dark: #121212; --dark2: #1E1E1E; --dark3: #2C2C2C; --dark4: #3A3A3A;
-    --text: #F0EDE6; --text2: #A0A0A0; --text3: #7A7A7A;
-    --accent: #D4AF37; --red: #E05050; --green: #50C878; --blue: #5090E0;
-    --border: #333333; --border2: #2A2A2A; --radius: 12px; --shadow: 0 8px 32px rgba(0,0,0,0.6);
-  }
-  
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { font-family:'Sarabun',sans-serif; background:var(--dark); color:var(--text); min-height:100vh; transition:0.3s; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BENZ HOME Agency — ระบบจัดการอสังหาริมทรัพย์</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Noto+Serif+Thai:wght@400;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ===== THEME: BENZ HOME DARK GOLD ===== */
+    :root {
+      --gold: #D4AF37;
+      --gold-light: #E5C354;
+      --gold-dark: #AA8B2C;
+      --dark: #121212;
+      --dark2: #1E1E1E;
+      --dark3: #2C2C2C;
+      --dark4: #3A3A3A;
+      --text: #F0EDE6;
+      --text2: #A0A0A0;
+      --text3: #7A7A7A;
+      --accent: #D4AF37;
+      --red: #E05050;
+      --green: #50C878;
+      --blue: #5090E0;
+      --border: #333333;
+      --border2: #2A2A2A;
+      --radius: 12px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    }
 
-  /* ===== LOGIN SCREEN ===== */
-  #loginScreen { position:fixed; inset:0; background:var(--dark); display:flex; align-items:center; justify-content:center; z-index:9999; padding:20px; }
-  .login-box { background:var(--dark2); border-radius:15px; padding:40px; width:100%; max-width:400px; box-shadow:var(--shadow); border:1px solid #282828;}
-  .login-logo { text-align:center; margin-bottom:35px; }
-  .login-logo h1 { font-family:'Noto Serif Thai',serif; font-size:32px; color:var(--gold); letter-spacing: 1px; margin-bottom: 5px;}
-  .login-field { margin-bottom:20px; }
-  .login-field label { display:block; font-size:14px; color:var(--text); margin-bottom:8px; }
-  .login-field input { width:100%; background:var(--dark3); border:1px solid var(--border); border-radius:8px; padding:14px; color:var(--text); font-family:inherit; outline:none; transition:0.2s;}
-  .login-field input:focus { border-color:var(--gold); }
-  .login-btn { width:100%; padding:14px; background:var(--gold); border:none; border-radius:8px; color:#121212; font-weight:700; font-size:16px; cursor:pointer; margin-top:10px; transition:0.2s;}
-  .login-btn:hover { background:var(--gold-light); }
-  .login-error { background:rgba(224,80,80,0.1); color:var(--red); border:1px solid rgba(224,80,80,0.3); border-radius:8px; padding:12px; font-size:14px; margin-top:15px; display:none; text-align:center; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  /* ===== APP SHELL ===== */
-  #appShell { display:none; }
-  .header { background: var(--dark2); border-bottom:1px solid var(--border); padding:0 20px; display:flex; align-items:center; justify-content:space-between; height:65px; position:sticky; top:0; z-index:100; box-shadow: 0 2px 10px rgba(0,0,0,0.3);}
-  .logo { font-family:'Noto Serif Thai',serif; font-size:22px; font-weight:700; color:var(--gold); }
-  .header-tabs { display:flex; gap:5px; flex:1; justify-content:center; }
-  .htab { padding:8px 16px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; border:none; background:transparent; color:var(--text2); transition:all .2s; }
-  .htab.active, .htab:hover { background:rgba(212,175,55,0.15); color:var(--gold); }
-  .logout-btn { background:transparent; border:1px solid var(--red); color:var(--red); padding:6px 14px; border-radius:8px; font-size:13px; cursor:pointer; transition:0.2s;}
-  .logout-btn:hover { background:rgba(224,80,80,0.1); }
-  
-  .main { max-width:1400px; margin:0 auto; padding:25px 20px; }
-  .section { display:none; }
-  .section.active { display:block; }
-  .toolbar { display:flex; gap:10px; align-items:center; margin-bottom:20px; }
-  .search-box input, .filter-select { background:var(--dark3); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text); outline:none; font-family:inherit;}
-  .btn { padding:10px 20px; border-radius:8px; border:none; cursor:pointer; font-weight:600; font-family:inherit; transition:0.2s;}
-  .btn-primary { background:var(--gold); color:#121212; }
-  .btn-primary:hover { background:var(--gold-light); }
-  .btn-blue { background:var(--blue); color:#fff; }
-  .btn-outline { background:transparent; border:1px solid var(--gold); color:var(--gold); }
-  .btn-outline:hover { background:rgba(212,175,55,0.1); }
-  .btn-danger { background:rgba(224,80,80,0.15); border:1px solid var(--red); color:var(--red); }
-  .btn-danger:hover { background:var(--red); color:#fff; }
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background: var(--dark);
+      color: var(--text);
+      min-height: 100vh;
+      transition: 0.3s;
+    }
 
-  /* QUICK SAVE PANEL */
-  .quick-save-panel { background:var(--dark2); border:1px solid var(--gold); border-radius:15px; padding:25px; margin-bottom:25px; box-shadow: 0 4px 20px rgba(212,175,55,0.05);}
-  .form-group { display:flex; flex-direction:column; gap:6px; margin-bottom:15px; }
-  .form-group label { font-size:13px; color:var(--text2); font-weight:600; }
-  .form-group input, .form-group textarea, .form-group select { background:var(--dark3); border:1px solid var(--border); border-radius:8px; padding:12px; color:var(--text); outline:none; font-family:inherit;}
-  .form-group input:focus, .form-group textarea:focus { border-color:var(--gold); }
+    /* ===== LOGIN SCREEN ===== */
+    #loginScreen {
+      position: fixed;
+      inset: 0;
+      background: var(--dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+    }
 
-  /* CARDS */
-  .cards-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:15px; }
-  .card { background:var(--dark2); border:1px solid var(--border); border-radius:15px; padding:20px; transition:0.2s;}
-  .card:hover { border-color:var(--gold); transform:translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.4);}
-  .card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
-  .card-title { font-size:16px; font-weight:600; color:var(--gold); flex:1; line-height:1.4;}
-  .badge { padding:4px 10px; border-radius:20px; font-size:12px; font-weight:700; background:rgba(212,175,55,0.15); color:var(--gold); border:1px solid rgba(212,175,55,0.3); }
-  .card-row { font-size:14px; color:var(--text2); margin-bottom:6px; }
-  .card-row span { color:var(--text); font-weight:500; }
-  .card-img { width:100%; height:160px; object-fit:cover; border-radius:10px; margin-bottom:12px; border:1px solid var(--border); }
-  
-  /* TABLES & MODALS */
-  table { width:100%; border-collapse:collapse; font-size:14px; background:var(--dark2); border-radius:10px; overflow:hidden;}
-  th { background:var(--dark3); padding:14px; text-align:left; color:var(--gold); border-bottom:1px solid var(--border); }
-  td { padding:14px; border-bottom:1px solid var(--border); color:var(--text);}
-  
-  .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:500; display:none; align-items:center; justify-content:center; }
-  .modal-bg.open { display:flex; }
-  .modal { background:var(--dark2); border:1px solid var(--border); border-radius:16px; width:100%; max-width:700px; max-height:90vh; overflow-y:auto; padding:25px; box-shadow:var(--shadow);}
-  .modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:15px;}
-  .modal-head h2 { font-size:18px; color:var(--gold); font-weight:700;}
-  .close-btn { background:none; border:none; color:var(--text3); font-size:24px; cursor:pointer; }
-  .close-btn:hover { color:var(--red); }
-  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
-  .form-group.full { grid-column:1/-1; }
-  
-  .cb-card { background:var(--dark2); border:1px solid var(--border); border-radius:15px; padding:30px; max-width:760px; margin:0 auto; }
-  .output-box { background:var(--dark3); border:1px solid var(--border); border-radius:10px; padding:20px; white-space:pre-wrap; font-size:15px; color:var(--text); min-height:180px; margin-top:15px; line-height: 1.6;}
-</style>
+    .login-box {
+      background: var(--dark2);
+      border-radius: 15px;
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--shadow);
+      border: 1px solid #282828;
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .login-logo h1 {
+      font-family: 'Noto Serif Thai', serif;
+      font-size: 32px;
+      color: var(--gold);
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+
+    .login-field {
+      margin-bottom: 20px;
+    }
+
+    .login-field label {
+      display: block;
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .login-field input {
+      width: 100%;
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .login-field input:focus {
+      border-color: var(--gold);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--gold);
+      border: none;
+      border-radius: 8px;
+      color: #121212;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: 0.2s;
+    }
+
+    .login-btn:hover {
+      background: var(--gold-light);
+    }
+
+    .login-error {
+      background: rgba(224, 80, 80, 0.1);
+      color: var(--red);
+      border: 1px solid rgba(224, 80, 80, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 14px;
+      margin-top: 15px;
+      display: none;
+      text-align: center;
+    }
+
+    /* ===== APP SHELL ===== */
+    #appShell {
+      display: none;
+    }
+
+    .header {
+      background: var(--dark2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 65px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .logo {
+      font-family: 'Noto Serif Thai', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .header-tabs {
+      display: flex;
+      gap: 5px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .htab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--text2);
+      transition: all .2s;
+    }
+
+    .htab.active,
+    .htab:hover {
+      background: rgba(212, 175, 55, 0.15);
+      color: var(--gold);
+    }
+
+    .logout-btn {
+      background: transparent;
+      border: 1px solid var(--red);
+      color: var(--red);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: rgba(224, 80, 80, 0.1);
+    }
+
+    .main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 25px 20px;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .search-box input,
+    .filter-select {
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      outline: none;
+      font-family: inherit;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-family: inherit;
+      transition: 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--gold);
+      color: #121212;
+    }
+
+    .btn-primary:hover {
+      background: var(--gold-light);
+    }
+
+    .btn-blue {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+    }
+
+    .btn-outline:hover {
+      background: rgba(212, 175, 55, 0.1);
+    }
+
+    .btn-danger {
+      background: rgba(224, 80, 80, 0.15);
+      border: 1px solid var(--red);
+      color: var(--red);
+    }
+
+    .btn-danger:hover {
+      background: var(--red);
+      color: #fff;
+    }
+
+    /* QUICK SAVE PANEL */
+    .quick-save-panel {
+      background: var(--dark2);
+      border: 1px solid var(--gold);
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 20px rgba(212, 175, 55, 0.05);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      color: var(--text2);
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      color: var(--text);
+      outline: none;
+      font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: var(--gold);
+    }
+
+    /* CARDS */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 15px;
+    }
+
+    .card {
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 20px;
+      transition: 0.2s;
+    }
+
+    .card:hover {
+      border-color: var(--gold);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--gold);
+      flex: 1;
+      line-height: 1.4;
+    }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(212, 175, 55, 0.15);
+      color: var(--gold);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .card-row {
+      font-size: 14px;
+      color: var(--text2);
+      margin-bottom: 6px;
+    }
+
+    .card-row span {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .card-img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+    }
+
+    /* TABLES & MODALS */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: var(--dark2);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th {
+      background: var(--dark3);
+      padding: 14px;
+      text-align: left;
+      color: var(--gold);
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-bg.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 25px;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 15px;
+    }
+
+    .modal-head h2 {
+      font-size: 18px;
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text3);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .close-btn:hover {
+      color: var(--red);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .form-group.full {
+      grid-column: 1/-1;
+    }
+
+    .cb-card {
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .output-box {
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      white-space: pre-wrap;
+      font-size: 15px;
+      color: var(--text);
+      min-height: 180px;
+      margin-top: 15px;
+      line-height: 1.6;
+    }
+  </style>
 </head>
+
 <body>
 
-<script async defer crossorigin="anonymous" src="https://connect.facebook.net/th_TH/sdk.js"></script>
+  <script async defer crossorigin="anonymous" src="https://connect.facebook.net/th_TH/sdk.js"></script>
 
-<div id="loginScreen">
-  <div class="login-box">
-    <div class="login-logo">
-      <div class="icon" style="font-size:45px; margin-bottom:5px;">🏢</div>
-      <h1 style="font-size:30px;">BENZ HOME</h1>
-      <p style="color:#888; font-size:14px;">Agency Management System</p>
+  <div id="loginScreen">
+    <div class="login-box">
+      <div class="login-logo">
+        <div class="icon" style="font-size:45px; margin-bottom:5px;">🏢</div>
+        <h1 style="font-size:30px;">BENZ HOME</h1>
+        <p style="color:#888; font-size:14px;">Agency Management System</p>
+      </div>
+      <div class="login-field">
+        <label>Username</label>
+        <input type="text" id="loginUsername" placeholder="admin" onkeypress="if(event.key==='Enter') doLogin()">
+      </div>
+      <div class="login-field">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" onkeypress="if(event.key==='Enter') doLogin()">
+      </div>
+      <button class="login-btn" onclick="doLogin()">🔐 เข้าสู่ระบบ</button>
+      <div class="login-error" id="loginError">❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
     </div>
-    <div class="login-field">
-      <label>Username</label>
-      <input type="text" id="loginUsername" placeholder="admin">
+  </div>
+
+  <div id="appShell">
+    <div class="header">
+      <div class="logo">BENZ HOME <span style="font-size:12px; color:#888; font-weight:normal;">Agency</span></div>
+      <div class="header-tabs">
+        <button class="htab active" onclick="switchTab('assets',this)">🏠 ทรัพย์สิน</button>
+        <button class="htab" onclick="switchTab('agents',this)">👤 Agent</button>
+        <button class="htab" onclick="switchTab('customers',this)">🤝 ลูกค้า</button>
+        <button class="htab" onclick="switchTab('clipboard',this)">📋 เตรียมโพสต์</button>
+        <button class="htab" onclick="switchTab('iedata',this)">⚙️ จัดการข้อมูล</button>
+        <button class="htab" id="tabUsers" onclick="switchTab('users',this)" style="display:none">👥 Users</button>
+      </div>
+      <div class="header-user">
+        <span id="headerUserName" style="color:var(--gold); font-size:14px; font-weight:bold;">-</span>
+        <button class="logout-btn" onclick="doLogout()">ออกระบบ</button>
+      </div>
     </div>
-    <div class="login-field">
-      <label>Password</label>
-      <input type="password" id="loginPassword" placeholder="••••••••">
-    </div>
-    <button class="login-btn" onclick="doLogin()">🔐 เข้าสู่ระบบ</button>
-    <div class="login-error" id="loginError">❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
-  </div>
-</div>
 
-<div id="appShell">
-<div class="header">
-  <div class="logo">BENZ HOME <span style="font-size:12px; color:#888; font-weight:normal;">Agency</span></div>
-  <div class="header-tabs">
-    <button class="htab active" onclick="switchTab('assets',this)">🏠 ทรัพย์สิน</button>
-    <button class="htab" onclick="switchTab('agents',this)">👤 Agent</button>
-    <button class="htab" onclick="switchTab('customers',this)">🤝 ลูกค้า</button>
-    <button class="htab" onclick="switchTab('clipboard',this)">📋 เตรียมโพสต์</button>
-    <button class="htab" onclick="switchTab('iedata',this)">⚙️ จัดการข้อมูล</button>
-    <button class="htab" id="tabUsers" onclick="switchTab('users',this)" style="display:none">👥 Users</button>
-  </div>
-  <div class="header-user">
-    <span id="headerUserName" style="color:var(--gold); font-size:14px; font-weight:bold;">-</span>
-    <button class="logout-btn" onclick="doLogout()">ออกระบบ</button>
-  </div>
-</div>
+    <div class="main">
 
-<div class="main">
+      <div id="sec-assets" class="section active">
+        <div class="quick-save-panel">
+          <h3 style="color:var(--gold); margin-bottom:15px; font-size:18px;">⚡ ดึงข้อมูลผ่านลิงก์ Facebook (API)</h3>
+          <div class="form-grid" style="gap:12px;">
+            <div class="form-group full">
+              <label>1. วางลิงก์โพสต์ Facebook</label>
+              <div style="display:flex; gap:10px;">
+                <input type="text" id="qs_link" placeholder="https://www.facebook.com/share/p/..." style="flex:1;">
+                <button class="btn btn-blue" onclick="fetchFromFacebookAPI()">🔄 ดึงข้อมูล</button>
+              </div>
+            </div>
+            <div class="form-group full" id="img_preview_container" style="display:none;">
+              <label>รูปภาพจากโพสต์:</label>
+              <div id="qs_image_preview" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;"></div>
+              <input type="hidden" id="qs_image_url">
+            </div>
+            <div class="form-group full">
+              <label>2. ข้อความที่ระบบดึงมา (หรือวางก๊อปปี้เองหากดึงไม่ได้)</label>
+              <textarea id="qs_raw" rows="3" placeholder="เนื้อหาโพสต์..."></textarea>
+            </div>
+            <div class="form-group full">
+              <button class="btn btn-primary" style="width:100%; font-size:16px;" onclick="quickSaveAsset()">⚡
+                สกัดข้อมูล (แยกคอลัมน์) และบันทึกทันที</button>
+            </div>
+          </div>
+        </div>
 
-<div id="sec-assets" class="section active">
-  <div class="quick-save-panel">
-    <h3 style="color:var(--gold); margin-bottom:15px; font-size:18px;">⚡ ดึงข้อมูลผ่านลิงก์ Facebook (API)</h3>
-    <div class="form-grid" style="gap:12px;">
-      <div class="form-group full">
-        <label>1. วางลิงก์โพสต์ Facebook</label>
-        <div style="display:flex; gap:10px;">
-          <input type="text" id="qs_link" placeholder="https://www.facebook.com/share/p/..." style="flex:1;">
-          <button class="btn btn-blue" onclick="fetchFromFacebookAPI()">🔄 ดึงข้อมูล</button>
+        <div class="toolbar">
+          <div class="search-box"><input type="text" id="assetSearch" placeholder="ค้นหาโครงการ..."
+              oninput="renderAssets()"></div>
+          <select class="filter-select" id="filterStatus" onchange="renderAssets()">
+            <option value="">ทุกสถานะ</option>
+            <option value="ขาย">ขาย</option>
+            <option value="เช่า">เช่า</option>
+          </select>
+          <button class="btn btn-outline" onclick="openModal('asset')">+ เพิ่มแบบละเอียด</button>
+        </div>
+        <div class="cards-grid" id="assetCards"></div>
+      </div>
+
+      <div id="sec-agents" class="section">
+        <div class="toolbar"><button class="btn btn-primary" onclick="openModal('agent')">+ เพิ่ม Agent</button></div>
+        <table>
+          <thead>
+            <tr>
+              <th>ชื่อ Agent</th>
+              <th>สังกัด</th>
+              <th>เบอร์ติดต่อ</th>
+              <th>Line ID</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="agentTable"></tbody>
+        </table>
+      </div>
+
+      <div id="sec-customers" class="section">
+        <div class="toolbar"><button class="btn btn-primary" onclick="openModal('customer')">+ เพิ่มลูกค้า</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ชื่อลูกค้า/โครงการ</th>
+              <th>สถานะ</th>
+              <th>งบประมาณ</th>
+              <th>เบอร์ติดต่อ</th>
+              <th>Note</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="customerTable"></tbody>
+        </table>
+      </div>
+
+      <div id="sec-clipboard" class="section">
+        <div class="cb-card">
+          <h3 style="color:var(--gold); margin-bottom:20px; font-size: 20px;">📋 สร้างข้อความโพสต์</h3>
+          <div class="form-group"><label>1. เลือกทรัพย์สิน</label>
+            <select id="cbAssetSelect" class="filter-select" onchange="generateClipboard()"></select>
+          </div>
+          <div class="form-group"><label>2. เลือก Agent (เพื่อแทนที่เบอร์เดิม)</label>
+            <select id="cbAgentSelect" class="filter-select" onchange="generateClipboard()"></select>
+          </div>
+          <div class="form-group"><label>3. รูปแบบโพสต์</label>
+            <select id="cbTemplate" class="filter-select" onchange="generateClipboard()">
+              <option value="fb">สไตล์ Facebook (รายละเอียดครบ)</option>
+              <option value="short">แบบย่อ (สั้น)</option>
+            </select>
+          </div>
+          <div class="output-box" id="cbOutput">เลือกทรัพย์สินด้านบนเพื่อดูข้อความ...</div>
+          <button class="btn btn-primary" style="margin-top:20px; width:100%; font-size:16px;"
+            onclick="copyClipboard()">📋 คัดลอกข้อความไปโพสต์</button>
         </div>
       </div>
-      <div class="form-group full" id="img_preview_container" style="display:none;">
-        <label>รูปภาพจากโพสต์:</label>
-        <div id="qs_image_preview" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;"></div>
-        <input type="hidden" id="qs_image_url">
+
+      <div id="sec-iedata" class="section">
+        <div style="background:var(--dark2); padding:25px; border-radius:15px; border:1px solid var(--border);">
+          <h3 style="color:var(--gold); margin-bottom:15px;">⚙️ จัดการข้อมูล (CSV)</h3>
+          <button class="btn btn-primary" onclick="exportCSV('assets')">📤 โหลดข้อมูลทรัพย์สิน (Excel)</button>
+        </div>
       </div>
-      <div class="form-group full">
-        <label>2. ข้อความที่ระบบดึงมา (หรือวางก๊อปปี้เองหากดึงไม่ได้)</label>
-        <textarea id="qs_raw" rows="3" placeholder="เนื้อหาโพสต์..."></textarea>
+
+      <div id="sec-users" class="section">
+        <div class="toolbar"><button class="btn btn-primary" onclick="openModal('user')">+ เพิ่ม User</button></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>ชื่อ-นามสกุล</th>
+              <th>Role</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="userTable"></tbody>
+        </table>
       </div>
-      <div class="form-group full">
-        <button class="btn btn-primary" style="width:100%; font-size:16px;" onclick="quickSaveAsset()">⚡ สกัดข้อมูล (แยกคอลัมน์) และบันทึกทันที</button>
+
+    </div>
+  </div>
+  <div class="modal-bg" id="modalAsset">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>🏠 เพิ่ม/แก้ไขทรัพย์สิน</h2><button class="close-btn" onclick="closeModal('asset')">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full"><label>ชื่อโครงการ *</label><input id="a_name"></div>
+        <div class="form-group"><label>สถานะ</label><select id="a_status">
+            <option>ขาย</option>
+            <option>เช่า</option>
+            <option>เช่า/ขาย</option>
+          </select></div>
+        <div class="form-group"><label>ประเภท</label><select id="a_type">
+            <option>คอนโด</option>
+            <option>บ้าน</option>
+            <option>ที่ดิน</option>
+          </select></div>
+        <div class="form-group"><label>ราคา/ค่าเช่า</label><input id="a_price"></div>
+        <div class="form-group"><label>รายละเอียดห้อง</label><input id="a_roomtype"></div>
+        <div class="form-group"><label>ทำเล/ที่ตั้ง</label><input id="a_location"></div>
+        <div class="form-group full"><label>Link รูปภาพ (ถ้ามี)</label><input id="a_image" placeholder="https://...">
+        </div>
+        <div class="form-group full"><label>Link อ้างอิง</label><input id="a_link"></div>
+        <div class="form-group full"><label>ข้อมูลติดต่อเดิม (ซ่อนตอนโพสต์)</label><input id="a_contact"></div>
+        <div class="form-group full"><label>หมายเหตุ</label><textarea id="a_note" rows="3"></textarea></div>
+      </div>
+      <div style="margin-top:25px; display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn btn-outline" onclick="closeModal('asset')">ยกเลิก</button>
+        <button class="btn btn-primary" onclick="saveAsset()">💾 บันทึก</button>
       </div>
     </div>
   </div>
 
-  <div class="toolbar">
-    <div class="search-box"><input type="text" id="assetSearch" placeholder="ค้นหาโครงการ..." oninput="renderAssets()"></div>
-    <select class="filter-select" id="filterStatus" onchange="renderAssets()">
-      <option value="">ทุกสถานะ</option><option value="ขาย">ขาย</option><option value="เช่า">เช่า</option>
-    </select>
-    <button class="btn btn-outline" onclick="openModal('asset')">+ เพิ่มแบบละเอียด</button>
-  </div>
-  <div class="cards-grid" id="assetCards"></div>
-</div>
-
-<div id="sec-agents" class="section">
-  <div class="toolbar"><button class="btn btn-primary" onclick="openModal('agent')">+ เพิ่ม Agent</button></div>
-  <table>
-    <thead><tr><th>ชื่อ Agent</th><th>สังกัด</th><th>เบอร์ติดต่อ</th><th>Line ID</th><th>จัดการ</th></tr></thead>
-    <tbody id="agentTable"></tbody>
-  </table>
-</div>
-
-<div id="sec-customers" class="section">
-  <div class="toolbar"><button class="btn btn-primary" onclick="openModal('customer')">+ เพิ่มลูกค้า</button></div>
-  <table>
-    <thead><tr><th>ชื่อลูกค้า/โครงการ</th><th>สถานะ</th><th>งบประมาณ</th><th>เบอร์ติดต่อ</th><th>Note</th><th>จัดการ</th></tr></thead>
-    <tbody id="customerTable"></tbody>
-  </table>
-</div>
-
-<div id="sec-clipboard" class="section">
-  <div class="cb-card">
-    <h3 style="color:var(--gold); margin-bottom:20px; font-size: 20px;">📋 สร้างข้อความโพสต์</h3>
-    <div class="form-group"><label>1. เลือกทรัพย์สิน</label>
-      <select id="cbAssetSelect" class="filter-select" onchange="generateClipboard()"></select>
+  <div class="modal-bg" id="modalAgent">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>👤 Agent</h2><button class="close-btn" onclick="closeModal('agent')">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full"><label>ชื่อ Agent *</label><input id="ag_name"></div>
+        <div class="form-group"><label>บริษัท</label><input id="ag_company"></div>
+        <div class="form-group"><label>รับ Co-Agent</label><select id="ag_coagent">
+            <option>รับ</option>
+            <option>ไม่รับ</option>
+          </select></div>
+        <div class="form-group"><label>เบอร์ติดต่อ</label><input id="ag_tel"></div>
+        <div class="form-group"><label>Line ID</label><input id="ag_line"></div>
+      </div>
+      <div style="margin-top:20px; text-align:right;"><button class="btn btn-primary"
+          onclick="saveAgent()">บันทึก</button></div>
     </div>
-    <div class="form-group"><label>2. เลือก Agent (เพื่อแทนที่เบอร์เดิม)</label>
-      <select id="cbAgentSelect" class="filter-select" onchange="generateClipboard()"></select>
+  </div>
+  <div class="modal-bg" id="modalCustomer">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>🤝 ลูกค้า</h2><button class="close-btn" onclick="closeModal('customer')">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full"><label>ชื่อ</label><input id="cu_name"></div>
+        <div class="form-group"><label>งบ</label><input id="cu_budget"></div>
+        <div class="form-group"><label>สถานะ</label><select id="cu_status">
+            <option>ขาย</option>
+            <option>เช่า</option>
+          </select></div>
+        <div class="form-group full"><label>ติดต่อ</label><input id="cu_contact"></div>
+        <div class="form-group full"><label>Note</label><textarea id="cu_note"></textarea></div>
+      </div>
+      <div style="margin-top:20px; text-align:right;"><button class="btn btn-primary"
+          onclick="saveCustomer()">บันทึก</button></div>
     </div>
-    <div class="form-group"><label>3. รูปแบบโพสต์</label>
-      <select id="cbTemplate" class="filter-select" onchange="generateClipboard()">
-        <option value="fb">สไตล์ Facebook (รายละเอียดครบ)</option>
-        <option value="short">แบบย่อ (สั้น)</option>
-      </select>
+  </div>
+  <div class="modal-bg" id="modalUser">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>👤 ผู้ใช้</h2><button class="close-btn" onclick="closeModal('user')">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full"><label>Username</label><input id="u_username"></div>
+        <div class="form-group full"><label>Password</label><input type="password" id="u_password"></div>
+        <div class="form-group full"><label>ชื่อ</label><input id="u_displayname"></div>
+        <div class="form-group full"><label>Role</label><select id="u_role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select></div>
+      </div>
+      <div style="margin-top:20px; text-align:right;"><button class="btn btn-primary"
+          onclick="saveUser()">บันทึก</button></div>
     </div>
-    <div class="output-box" id="cbOutput">เลือกทรัพย์สินด้านบนเพื่อดูข้อความ...</div>
-    <button class="btn btn-primary" style="margin-top:20px; width:100%; font-size:16px;" onclick="copyClipboard()">📋 คัดลอกข้อความไปโพสต์</button>
   </div>
-</div>
 
-<div id="sec-iedata" class="section">
-  <div style="background:var(--dark2); padding:25px; border-radius:15px; border:1px solid var(--border);">
-    <h3 style="color:var(--gold); margin-bottom:15px;">⚙️ จัดการข้อมูล (CSV)</h3>
-    <button class="btn btn-primary" onclick="exportCSV('assets')">📤 โหลดข้อมูลทรัพย์สิน (Excel)</button>
-  </div>
-</div>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
-<div id="sec-users" class="section">
-  <div class="toolbar"><button class="btn btn-primary" onclick="openModal('user')">+ เพิ่ม User</button></div>
-  <table>
-    <thead><tr><th>Username</th><th>ชื่อ-นามสกุล</th><th>Role</th><th>จัดการ</th></tr></thead>
-    <tbody id="userTable"></tbody>
-  </table>
-</div>
+  <script>
+    // ==================== 1. HYBRID DATABASE & FIREBASE ====================
+    let DB = { assets: [], agents: [], customers: [] };
+    let AUTH = { users: [], current: null };
+    let editMode = { type: '', idx: -1 };
 
-</div></div><div class="modal-bg" id="modalAsset"><div class="modal">
-  <div class="modal-head"><h2>🏠 เพิ่ม/แก้ไขทรัพย์สิน</h2><button class="close-btn" onclick="closeModal('asset')">✕</button></div>
-  <div class="form-grid">
-    <div class="form-group full"><label>ชื่อโครงการ *</label><input id="a_name"></div>
-    <div class="form-group"><label>สถานะ</label><select id="a_status"><option>ขาย</option><option>เช่า</option><option>เช่า/ขาย</option></select></div>
-    <div class="form-group"><label>ประเภท</label><select id="a_type"><option>คอนโด</option><option>บ้าน</option><option>ที่ดิน</option></select></div>
-    <div class="form-group"><label>ราคา/ค่าเช่า</label><input id="a_price"></div>
-    <div class="form-group"><label>รายละเอียดห้อง</label><input id="a_roomtype"></div>
-    <div class="form-group"><label>ทำเล/ที่ตั้ง</label><input id="a_location"></div>
-    <div class="form-group full"><label>Link รูปภาพ (ถ้ามี)</label><input id="a_image" placeholder="https://..."></div>
-    <div class="form-group full"><label>Link อ้างอิง</label><input id="a_link"></div>
-    <div class="form-group full"><label>ข้อมูลติดต่อเดิม (ซ่อนตอนโพสต์)</label><input id="a_contact"></div>
-    <div class="form-group full"><label>หมายเหตุ</label><textarea id="a_note" rows="3"></textarea></div>
-  </div>
-  <div style="margin-top:25px; display:flex; justify-content:flex-end; gap:10px;">
-    <button class="btn btn-outline" onclick="closeModal('asset')">ยกเลิก</button>
-    <button class="btn btn-primary" onclick="saveAsset()">💾 บันทึก</button>
-  </div>
-</div></div>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCB1D8D6jBq3Xq_NSfXJ9AXHWMgetefjZlwM",
+      authDomain: "asset-home-509ce.firebaseapp.com",
+      projectId: "asset-home-509ce",
+      storageBucket: "asset-home-509ce.firebasestorage.app",
+      messagingSenderId: "148753235688",
+      appId: "1:148753235688:web:7801a61c4bbbd3b3ba9688"
+    };
 
-<div class="modal-bg" id="modalAgent"><div class="modal"><div class="modal-head"><h2>👤 Agent</h2><button class="close-btn" onclick="closeModal('agent')">✕</button></div><div class="form-grid"><div class="form-group full"><label>ชื่อ Agent *</label><input id="ag_name"></div><div class="form-group"><label>บริษัท</label><input id="ag_company"></div><div class="form-group"><label>รับ Co-Agent</label><select id="ag_coagent"><option>รับ</option><option>ไม่รับ</option></select></div><div class="form-group"><label>เบอร์ติดต่อ</label><input id="ag_tel"></div><div class="form-group"><label>Line ID</label><input id="ag_line"></div></div><div style="margin-top:20px; text-align:right;"><button class="btn btn-primary" onclick="saveAgent()">บันทึก</button></div></div></div>
-<div class="modal-bg" id="modalCustomer"><div class="modal"><div class="modal-head"><h2>🤝 ลูกค้า</h2><button class="close-btn" onclick="closeModal('customer')">✕</button></div><div class="form-grid"><div class="form-group full"><label>ชื่อ</label><input id="cu_name"></div><div class="form-group"><label>งบ</label><input id="cu_budget"></div><div class="form-group"><label>สถานะ</label><select id="cu_status"><option>ขาย</option><option>เช่า</option></select></div><div class="form-group full"><label>ติดต่อ</label><input id="cu_contact"></div><div class="form-group full"><label>Note</label><textarea id="cu_note"></textarea></div></div><div style="margin-top:20px; text-align:right;"><button class="btn btn-primary" onclick="saveCustomer()">บันทึก</button></div></div></div>
-<div class="modal-bg" id="modalUser"><div class="modal"><div class="modal-head"><h2>👤 ผู้ใช้</h2><button class="close-btn" onclick="closeModal('user')">✕</button></div><div class="form-grid"><div class="form-group full"><label>Username</label><input id="u_username"></div><div class="form-group full"><label>Password</label><input type="password" id="u_password"></div><div class="form-group full"><label>ชื่อ</label><input id="u_displayname"></div><div class="form-group full"><label>Role</label><select id="u_role"><option value="user">User</option><option value="admin">Admin</option></select></div></div><div style="margin-top:20px; text-align:right;"><button class="btn btn-primary" onclick="saveUser()">บันทึก</button></div></div></div>
+    try {
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
 
-<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
-
-<script>
-// ==================== 1. HYBRID DATABASE & FIREBASE ====================
-let DB = { assets: [], agents: [], customers: [] };
-let AUTH = { users: [], current: null };
-let editMode = { type:'', idx:-1 };
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCB1D8D6jBq3Xq_NSfXJ9AXHWMgetefjZlwM",
-  authDomain: "asset-home-509ce.firebaseapp.com",
-  projectId: "asset-home-509ce",
-  storageBucket: "asset-home-509ce.firebasestorage.app",
-  messagingSenderId: "148753235688",
-  appId: "1:148753235688:web:7801a61c4bbbd3b3ba9688"
-};
-
-try {
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  db.collection("benz_home").doc("database").onSnapshot((doc) => {
-    if (doc.exists) {
-      const data = doc.data();
-      if(data.DB) DB = data.DB;
-      
-      // แปลงข้อมูล AUTH ให้เป็น Array เสมอ เพื่อป้องกันบั๊ก
-      if(data.AUTH && Array.isArray(data.AUTH)) {
-        AUTH.users = data.AUTH;
-      } else if (data.AUTH && Array.isArray(data.AUTH.users)) {
-        AUTH.users = data.AUTH.users;
-      }
-      
-      if(AUTH.current) updateUI();
-    }
-  });
-
-  window.saveToCloud = function() {
-    // เซฟเป็น Array เสมอ
-    const usersArray = Array.isArray(AUTH.users) ? AUTH.users : [];
-    db.collection("benz_home").doc("database").set({ DB: DB, AUTH: usersArray }, { merge: true }).catch(e=>{});
-  }
-} catch(e) { console.log(e); }
-
-// ==================== 2. FACEBOOK GRAPH API ====================
-window.fbAsyncInit = function() {
-  FB.init({ appId: '26534886769453064', cookie: true, xfbml: true, version: 'v19.0' });
-};
-
-function fetchFromFacebookAPI() {
-  const url = document.getElementById('qs_link').value;
-  if(!url) return alert('เบนซ์อย่าลืมใส่ลิงก์ Facebook ก่อนนะคะ!');
-  const postIdMatch = url.match(/(?:posts\/|fbid=|permalink\/)([0-9]+)/);
-  if(!postIdMatch) return alert('หา ID โพสต์ไม่เจอค่ะ ลองวางเนื้อหาโดยตรงในกล่องด้านล่างแทนนะคะ');
-  
-  const postId = postIdMatch[1];
-  const pageAccessToken = 'EAF5FVsQMaAgBRXD519TZCZCZAuNG6tZBVGzM7vBBSivMSovmf7QgysCbVHooodcxM8XwitDKF4340QnuJcFDItrtCGNIE6EDYZBsRQ3GZB3egQ9HNzK55j3snLyjFw5QjFWbFuGEN3LuEuQoz60r9tE3CJcFC39sGGgI9aQkZBdVga8TLrcNjbXujZClNSSpmWQTIJyZAH65McDKmdmP3tcvX6iKQYO6Hq9WfekUoI5lMpZB8ugtNEAshOVJJerfRtIn7hrwVpQgbvnfNo2OeCDGwZCOqpIn9TbEAa49JsZD'; 
-
-  document.getElementById('qs_raw').value = 'กำลังดึงข้อมูล...';
-
-  FB.api(`/${postId}?fields=message,full_picture&access_token=${pageAccessToken}`, function (response) {
-      if (response && !response.error) {
-        document.getElementById('qs_raw').value = response.message || 'ไม่มีข้อความ';
-        if(response.full_picture) {
-          document.getElementById('img_preview_container').style.display = 'block';
-          document.getElementById('qs_image_preview').innerHTML = `<img src="${response.full_picture}" style="height:120px; border-radius:8px; border:1px solid #D4AF37;">`;
-          document.getElementById('qs_image_url').value = response.full_picture;
+      db.collection("benz_home").doc("database").onSnapshot((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          if (data.DB) DB = data.DB;
+          if (data.AUTH && Array.isArray(data.AUTH)) AUTH.users = data.AUTH;
+          if (AUTH.current) updateUI();
         }
-        alert('ดึงข้อมูลสำเร็จแล้วค่ะ!');
-      } else {
-        alert('Facebook API ปฏิเสธ (Error: ' + response.error.message + ')');
-        document.getElementById('qs_raw').value = '';
+      });
+
+      window.saveToCloud = function () {
+        if (!DB) DB = { assets: [], agents: [], customers: [] };
+        const usersArray = Array.isArray(AUTH.users) ? AUTH.users : [];
+        db.collection("benz_home").doc("database").set({ DB: DB, AUTH: usersArray }, { merge: true }).catch(e => { });
+      }
+    } catch (e) { console.log(e); }
+
+    // ==================== 2. FACEBOOK GRAPH API ====================
+    window.fbAsyncInit = function () {
+      FB.init({ appId: '26534886769453064', cookie: true, xfbml: true, version: 'v19.0' });
+    };
+
+    function fetchFromFacebookAPI() {
+      const url = document.getElementById('qs_link').value;
+      if (!url) return alert('เบนซ์อย่าลืมใส่ลิงก์ Facebook ก่อนนะคะ!');
+      const postIdMatch = url.match(/(?:posts\/|fbid=|permalink\/)([0-9]+)/);
+      if (!postIdMatch) return alert('หา ID โพสต์ไม่เจอค่ะ ลองวางเนื้อหาโดยตรงในกล่องด้านล่างแทนนะคะ');
+
+      const postId = postIdMatch[1];
+      const pageAccessToken = 'EAF5FVsQMaAgBRXD519TZCZCZAuNG6tZBVGzM7vBBSivMSovmf7QgysCbVHooodcxM8XwitDKF4340QnuJcFDItrtCGNIE6EDYZBsRQ3GZB3egQ9HNzK55j3snLyjFw5QjFWbFuGEN3LuEuQoz60r9tE3CJcFC39sGGgI9aQkZBdVga8TLrcNjbXujZClNSSpmWQTIJyZAH65McDKmdmP3tcvX6iKQYO6Hq9WfekUoI5lMpZB8ugtNEAshOVJJerfRtIn7hrwVpQgbvnfNo2OeCDGwZCOqpIn9TbEAa49JsZD';
+
+      document.getElementById('qs_raw').value = 'กำลังดึงข้อมูล...';
+
+      FB.api(`/${postId}?fields=message,full_picture&access_token=${pageAccessToken}`, function (response) {
+        if (response && !response.error) {
+          document.getElementById('qs_raw').value = response.message || 'ไม่มีข้อความ';
+          if (response.full_picture) {
+            document.getElementById('img_preview_container').style.display = 'block';
+            document.getElementById('qs_image_preview').innerHTML = `<img src="${response.full_picture}" style="height:120px; border-radius:8px; border:1px solid #D4AF37;">`;
+            document.getElementById('qs_image_url').value = response.full_picture;
+          }
+          alert('ดึงข้อมูลสำเร็จแล้วค่ะ!');
+        } else {
+          alert('Facebook API ปฏิเสธ (Error: ' + response.error.message + ')');
+          document.getElementById('qs_raw').value = '';
+        }
+      }
+      );
+    }
+
+    // ==================== 3. QUICK SAVE ====================
+    function quickSaveAsset() {
+      const raw = document.getElementById('qs_raw').value;
+      const link = document.getElementById('qs_link').value;
+      const imageUrl = document.getElementById('qs_image_url').value;
+
+      if (!raw || raw === 'กำลังดึงข้อมูล...') return alert('กรุณาวางเนื้อหาโพสต์ก่อนค่ะ');
+
+      const project = (raw.match(/(โครงการ|หมู่บ้าน|คอนโด)\s*([^\n,]+)/) || ["", "", "ไม่ระบุชื่อ"])[2].trim();
+      const price = (raw.match(/([0-9,.]+)\s*(บาท|ล้าน|/เดือน) /) || ["ไม่ระบุ"])[0].trim();
+      const area = (raw.match(/([0-9,.]+)\s*(ตร\.ม\.|ตร\.ว\.)/) || [""]).join(' ').trim();
+      const floor = (raw.match(/(ชั้นที่|ชั้น)\s*([0-9]+)/) || [""]).join(' ').trim();
+      const status = raw.includes("เช่า") ? "เช่า" : (raw.includes("ขาย") ? "ขาย" : "เช่า/ขาย");
+      const contactInfo = (raw.match(/(0[0-9]{1,2}-?[0-9]{3}-?[0-9]{4}|[Ll]ine\s*[:@]?\s*[a-zA-Z0-9._-]+)/g) || []).join(', ');
+
+      const newAsset = {
+        name: project, location: '', status: status, type: 'คอนโด', price: price,
+        roomtype: `${area} ${floor}`.trim(), area: '', floor: '', contact: contactInfo,
+        note: raw, link: link, image: imageUrl
+      };
+
+      if (!DB.assets || !Array.isArray(DB.assets)) DB.assets = [];
+      DB.assets.push(newAsset); saveToCloud(); updateUI();
+
+      document.getElementById('qs_raw').value = ''; document.getElementById('qs_link').value = ''; document.getElementById('qs_image_url').value = '';
+      document.getElementById('img_preview_container').style.display = 'none'; document.getElementById('qs_image_preview').innerHTML = '';
+      alert('⚡ บันทึกข้อมูลเรียบร้อยแล้วค่ะ!');
+    }
+
+    // ==================== 4. UI & LOGIN (BULLETPROOF) ====================
+    function updateUI() {
+      renderAssets(); renderAgents(); renderCustomers(); populateCbSelect();
+      if (AUTH.current && AUTH.current.role === 'admin') renderUsers();
+    }
+
+    function doLogin() {
+      try {
+        // กำจัดช่องว่างและปรับตัวเล็กป้องกันปัญหาจากมือถือ
+        const u = document.getElementById('loginUsername').value.trim().toLowerCase();
+        const p = document.getElementById('loginPassword').value.trim();
+
+        // 💡 ประตูฉุกเฉิน (Hard-Bypass): เข้าได้ 100% แน่นอน
+        if (u === 'admin' && p === 'admin1234') {
+          AUTH.current = { username: 'admin', password: 'admin1234', role: 'admin', displayname: 'เบนซ์ (Admin)' };
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('appShell').style.display = 'block';
+          document.getElementById('headerUserName').innerText = AUTH.current.displayname;
+          document.getElementById('tabUsers').style.display = 'inline-block';
+
+          // บังคับรีเซ็ตโครงสร้างกันแอปพัง
+          if (!DB) DB = { assets: [], agents: [], customers: [] };
+          if (!DB.assets) DB.assets = [];
+          if (!DB.agents) DB.agents = [];
+          if (!DB.customers) DB.customers = [];
+
+          updateUI();
+
+          // ซ่อมแอดมินถ้าหายไป
+          if (!Array.isArray(AUTH.users)) AUTH.users = [];
+          if (!AUTH.users.find(x => x.username.toLowerCase() === 'admin')) {
+            AUTH.users.push(AUTH.current);
+            if (typeof saveToCloud === 'function') saveToCloud();
+          }
+          return;
+        }
+
+        // กรณี User ทั่วไป
+        let usersArray = Array.isArray(AUTH.users) ? AUTH.users : [];
+        let user = usersArray.find(x => x.username.toLowerCase() === u && x.password === p);
+
+        if (user) {
+          AUTH.current = user;
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('appShell').style.display = 'block';
+          document.getElementById('headerUserName').innerText = user.displayname;
+          document.getElementById('tabUsers').style.display = user.role === 'admin' ? 'inline-block' : 'none';
+
+          if (!DB) DB = { assets: [], agents: [], customers: [] };
+          updateUI();
+        } else {
+          document.getElementById('loginError').style.display = 'block';
+        }
+      } catch (err) {
+        // ถ้าระบบพังจริงๆ ให้เคลียร์แคชและรีโหลดทิ้งไปเลย
+        alert("ระบบตรวจพบข้อมูลขัดข้อง กำลังรีเซ็ตตัวเองค่ะ...");
+        localStorage.clear();
+        location.reload();
       }
     }
-  );
-}
 
-// ==================== 3. QUICK SAVE ====================
-function quickSaveAsset() {
-  const raw = document.getElementById('qs_raw').value;
-  const link = document.getElementById('qs_link').value;
-  const imageUrl = document.getElementById('qs_image_url').value;
-  
-  if(!raw || raw === 'กำลังดึงข้อมูล...') return alert('กรุณาวางเนื้อหาโพสต์ก่อนค่ะ');
+    function doLogout() { AUTH.current = null; document.getElementById('appShell').style.display = 'none'; document.getElementById('loginScreen').style.display = 'flex'; }
+    function switchTab(t, btn) { document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); document.querySelectorAll('.htab').forEach(b => b.classList.remove('active')); document.getElementById('sec-' + t).classList.add('active'); btn.classList.add('active'); if (t === 'clipboard') populateCbSelect(); }
 
-  const project = (raw.match(/(โครงการ|หมู่บ้าน|คอนโด)\s*([^\n,]+)/) || ["", "", "ไม่ระบุชื่อ"])[2].trim();
-  const price = (raw.match(/([0-9,.]+)\s*(บาท|ล้าน|/เดือน)/) || ["ไม่ระบุ"])[0].trim();
-  const area = (raw.match(/([0-9,.]+)\s*(ตร\.ม\.|ตร\.ว\.)/) || [""]).join(' ').trim();
-  const floor = (raw.match(/(ชั้นที่|ชั้น)\s*([0-9]+)/) || [""]).join(' ').trim();
-  const status = raw.includes("เช่า") ? "เช่า" : (raw.includes("ขาย") ? "ขาย" : "เช่า/ขาย");
-  const contactInfo = (raw.match(/(0[0-9]{1,2}-?[0-9]{3}-?[0-9]{4}|[Ll]ine\s*[:@]?\s*[a-zA-Z0-9._-]+)/g) || []).join(', ');
-
-  const newAsset = {
-    name: project, location: '', status: status, type: 'คอนโด', price: price, 
-    roomtype: `${area} ${floor}`.trim(), area: '', floor: '', contact: contactInfo, 
-    note: raw, link: link, image: imageUrl
-  };
-
-  if(!Array.isArray(DB.assets)) DB.assets = [];
-  DB.assets.push(newAsset); saveToCloud(); updateUI();
-  
-  document.getElementById('qs_raw').value = ''; document.getElementById('qs_link').value = ''; document.getElementById('qs_image_url').value = '';
-  document.getElementById('img_preview_container').style.display = 'none'; document.getElementById('qs_image_preview').innerHTML = '';
-  alert('⚡ บันทึกข้อมูลเรียบร้อยแล้วค่ะ!');
-}
-
-// ==================== 4. UI & LOGIN (ประตูฉุกเฉิน) ====================
-function updateUI() { renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); if(AUTH.current && AUTH.current.role === 'admin') renderUsers(); }
-
-function doLogin() {
-  const u = document.getElementById('loginUsername').value.trim();
-  const p = document.getElementById('loginPassword').value.trim();
-  
-  // 💡 ประตูฉุกเฉิน (Hard-Bypass): เข้าได้ 100% ทันทีไม่ต้องรอโหลดฐานข้อมูล
-  if(u === 'admin' && p === 'admin1234') {
-    AUTH.current = { username:'admin', password:'admin1234', role:'admin', displayname:'เบนซ์ (Admin)' };
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appShell').style.display = 'block';
-    document.getElementById('headerUserName').innerText = AUTH.current.displayname;
-    document.getElementById('tabUsers').style.display = 'inline-block';
-    updateUI();
-    
-    // แอบซ่อมฐานข้อมูลให้ถ้าของเดิมพัง
-    if(!Array.isArray(AUTH.users)) AUTH.users = [];
-    if(!AUTH.users.find(x => x.username === 'admin')) {
-      AUTH.users.push(AUTH.current);
-      if(typeof saveToCloud === 'function') saveToCloud();
-    }
-    return;
-  }
-
-  // สำหรับ User ทั่วไป
-  let usersArray = Array.isArray(AUTH.users) ? AUTH.users : [];
-  let user = usersArray.find(x => x.username === u && x.password === p);
-
-  if(user) {
-    AUTH.current = user;
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appShell').style.display = 'block';
-    document.getElementById('headerUserName').innerText = user.displayname;
-    document.getElementById('tabUsers').style.display = user.role === 'admin' ? 'inline-block' : 'none';
-    updateUI();
-  } else {
-    document.getElementById('loginError').style.display = 'block';
-  }
-}
-
-function doLogout() { AUTH.current = null; document.getElementById('appShell').style.display = 'none'; document.getElementById('loginScreen').style.display = 'flex'; }
-function switchTab(t, btn) { document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); document.querySelectorAll('.htab').forEach(b => b.classList.remove('active')); document.getElementById('sec-' + t).classList.add('active'); btn.classList.add('active'); if(t === 'clipboard') populateCbSelect(); }
-
-function renderAssets() {
-  const el = document.getElementById('assetCards'); const q = document.getElementById('assetSearch').value.toLowerCase(); const st = document.getElementById('filterStatus').value;
-  if(!Array.isArray(DB.assets)) DB.assets = [];
-  let list = DB.assets.filter(a => (!q || (a.name||'').toLowerCase().includes(q)) && (!st || a.status===st));
-  if(!list.length) { el.innerHTML = '<p style="color:var(--text3)">ยังไม่มีข้อมูลทรัพย์สิน</p>'; return; }
-  el.innerHTML = list.map(a => {
-    const ri = DB.assets.indexOf(a);
-    const imgHtml = a.image ? `<img src="${a.image}" class="card-img">` : '';
-    return `<div class="card">
+    function renderAssets() {
+      const el = document.getElementById('assetCards'); const q = document.getElementById('assetSearch').value.toLowerCase(); const st = document.getElementById('filterStatus').value;
+      if (!DB || !Array.isArray(DB.assets)) return el.innerHTML = '<p style="color:var(--text3)">ยังไม่มีข้อมูลทรัพย์สิน</p>';
+      let list = DB.assets.filter(a => (!q || (a.name || '').toLowerCase().includes(q)) && (!st || a.status === st));
+      if (!list.length) { el.innerHTML = '<p style="color:var(--text3)">ยังไม่มีข้อมูลทรัพย์สิน</p>'; return; }
+      el.innerHTML = list.map(a => {
+        const ri = DB.assets.indexOf(a);
+        const imgHtml = a.image ? `<img src="${a.image}" class="card-img">` : '';
+        return `<div class="card">
       <div class="card-header"><div class="card-title">${a.name}</div><span class="badge">${a.status}</span></div>
       ${imgHtml}
       <div class="card-row"><span class="label">ราคา:</span> <span style="color:var(--gold); font-weight:700;">${a.price}</span></div>
@@ -417,55 +933,60 @@ function renderAssets() {
         <button class="btn btn-danger btn-sm" onclick="deleteItem('assets', ${ri})">🗑️ ลบ</button>
       </div>
     </div>`;
-  }).join('');
-}
+      }).join('');
+    }
 
-function renderAgents() { const tb = document.getElementById('agentTable'); if(!DB.agents || !DB.agents.length) { tb.innerHTML = '<tr><td colspan="6">ยังไม่มีข้อมูล</td></tr>'; return; } tb.innerHTML = DB.agents.map((a, i) => `<tr><td>${a.name}</td><td>${a.company}</td><td>${a.tel}</td><td>${a.line}</td><td><button class="btn btn-outline btn-sm" onclick="editAgent(${i})">แก้</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('agents',${i})">ลบ</button></td></tr>`).join(''); }
-function renderCustomers() { const tb = document.getElementById('customerTable'); if(!DB.customers || !DB.customers.length) { tb.innerHTML = '<tr><td colspan="6">ยังไม่มีข้อมูล</td></tr>'; return; } tb.innerHTML = DB.customers.map((a, i) => `<tr><td>${a.name}</td><td>${a.status}</td><td>${a.budget}</td><td>${a.contact}</td><td>${a.note}</td><td><button class="btn btn-outline btn-sm" onclick="editCustomer(${i})">แก้</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${i})">ลบ</button></td></tr>`).join(''); }
-function renderUsers() { const tb = document.getElementById('userTable'); let uArr = Array.isArray(AUTH.users) ? AUTH.users : []; tb.innerHTML = uArr.map((u, i) => `<tr><td>${u.username}</td><td>${u.displayname}</td><td>${u.role}</td><td><button class="btn btn-outline btn-sm" onclick="editUser(${i})">แก้</button> <button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">ลบ</button></td></tr>`).join(''); }
+    function renderAgents() { const tb = document.getElementById('agentTable'); if (!DB || !Array.isArray(DB.agents) || !DB.agents.length) { tb.innerHTML = '<tr><td colspan="6">ยังไม่มีข้อมูล</td></tr>'; return; } tb.innerHTML = DB.agents.map((a, i) => `<tr><td>${a.name}</td><td>${a.company}</td><td>${a.tel}</td><td>${a.line}</td><td><button class="btn btn-outline btn-sm" onclick="editAgent(${i})">แก้</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('agents',${i})">ลบ</button></td></tr>`).join(''); }
+    function renderCustomers() { const tb = document.getElementById('customerTable'); if (!DB || !Array.isArray(DB.customers) || !DB.customers.length) { tb.innerHTML = '<tr><td colspan="6">ยังไม่มีข้อมูล</td></tr>'; return; } tb.innerHTML = DB.customers.map((a, i) => `<tr><td>${a.name}</td><td>${a.status}</td><td>${a.budget}</td><td>${a.contact}</td><td>${a.note}</td><td><button class="btn btn-outline btn-sm" onclick="editCustomer(${i})">แก้</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${i})">ลบ</button></td></tr>`).join(''); }
+    function renderUsers() { const tb = document.getElementById('userTable'); let uArr = Array.isArray(AUTH.users) ? AUTH.users : []; tb.innerHTML = uArr.map((u, i) => `<tr><td>${u.username}</td><td>${u.displayname}</td><td>${u.role}</td><td><button class="btn btn-outline btn-sm" onclick="editUser(${i})">แก้</button> <button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">ลบ</button></td></tr>`).join(''); }
 
-// ==================== 5. MODAL & SAVE ====================
-function v(id){ return document.getElementById(id).value.trim(); } function setV(id, val){ document.getElementById(id).value = val || ''; }
-function openModal(t){ document.getElementById('modal'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('open'); editMode={type:t, idx:-1}; if(t==='asset') { setV('a_name',''); setV('a_status','ขาย'); setV('a_type','คอนโด'); setV('a_price',''); setV('a_roomtype',''); setV('a_contact',''); setV('a_note',''); setV('a_link',''); setV('a_image',''); } if(t==='agent') { setV('ag_name',''); setV('ag_company',''); setV('ag_coagent','รับ'); setV('ag_tel',''); setV('ag_line',''); } if(t==='user') { setV('u_username',''); setV('u_password',''); setV('u_displayname',''); setV('u_role','user'); } }
-function closeModal(t){ document.getElementById('modal'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('open'); }
-function saveAsset() { const a = { name:v('a_name'), location:v('a_location'), status:v('a_status'), type:v('a_type'), price:v('a_price'), roomtype:v('a_roomtype'), contact:v('a_contact'), note:v('a_note'), link:v('a_link'), image:v('a_image') }; if(!a.name) return; if(editMode.idx >= 0) DB.assets[editMode.idx] = a; else DB.assets.push(a); saveToCloud(); closeModal('asset'); updateUI(); }
-function editAsset(i) { const a = DB.assets[i]; setV('a_name',a.name); setV('a_location',a.location); setV('a_status',a.status); setV('a_type',a.type); setV('a_price',a.price); setV('a_roomtype',a.roomtype); setV('a_contact',a.contact); setV('a_note',a.note); setV('a_link',a.link); setV('a_image',a.image); editMode={type:'asset', idx:i}; document.getElementById('modalAsset').classList.add('open'); }
-function saveAgent() { const ag = { name:v('ag_name'), company:v('ag_company'), coagent:v('ag_coagent'), tel:v('ag_tel'), line:v('ag_line') }; if(!ag.name) return; if(editMode.idx >= 0) DB.agents[editMode.idx] = ag; else DB.agents.push(ag); saveToCloud(); closeModal('agent'); updateUI(); }
-function editAgent(i) { const a = DB.agents[i]; setV('ag_name',a.name); setV('ag_company',a.company); setV('ag_coagent',a.coagent); setV('ag_tel',a.tel); setV('ag_line',a.line); editMode={type:'agent', idx:i}; document.getElementById('modalAgent').classList.add('open'); }
-function saveCustomer() { const cu = { name:v('cu_name'), status:v('cu_status'), budget:v('cu_budget'), contact:v('cu_contact'), note:v('cu_note') }; if(!cu.name) return; if(editMode.idx >= 0) DB.customers[editMode.idx] = cu; else DB.customers.push(cu); saveToCloud(); closeModal('customer'); updateUI(); }
-function editCustomer(i) { const a = DB.customers[i]; setV('cu_name',a.name); setV('cu_status',a.status); setV('cu_budget',a.budget); setV('cu_contact',a.contact); setV('cu_note',a.note); editMode={type:'customer', idx:i}; document.getElementById('modalCustomer').classList.add('open'); }
-function saveUser() { const u = { username:v('u_username'), password:v('u_password'), displayname:v('u_displayname'), role:v('u_role') }; if(!u.username) return; if(editMode.idx >= 0) AUTH.users[editMode.idx] = u; else AUTH.users.push(u); saveToCloud(); closeModal('user'); updateUI(); }
-function editUser(i) { const a = AUTH.users[i]; setV('u_username',a.username); setV('u_password',a.password); setV('u_displayname',a.displayname); setV('u_role',a.role); editMode={type:'user', idx:i}; document.getElementById('modalUser').classList.add('open'); }
-function deleteItem(type, i) { if(confirm('ลบรายการนี้?')) { DB[type].splice(i, 1); saveToCloud(); updateUI(); } }
-function deleteUser(i) { if(confirm('ลบ User นี้?')) { AUTH.users.splice(i, 1); saveToCloud(); updateUI(); } }
+    // ==================== 5. MODAL & SAVE ====================
+    function v(id) { return document.getElementById(id).value.trim(); } function setV(id, val) { document.getElementById(id).value = val || ''; }
+    function openModal(t) { document.getElementById('modal' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('open'); editMode = { type: t, idx: -1 }; if (t === 'asset') { setV('a_name', ''); setV('a_status', 'ขาย'); setV('a_type', 'คอนโด'); setV('a_price', ''); setV('a_roomtype', ''); setV('a_contact', ''); setV('a_note', ''); setV('a_link', ''); setV('a_image', ''); } if (t === 'agent') { setV('ag_name', ''); setV('ag_company', ''); setV('ag_coagent', 'รับ'); setV('ag_tel', ''); setV('ag_line', ''); } if (t === 'user') { setV('u_username', ''); setV('u_password', ''); setV('u_displayname', ''); setV('u_role', 'user'); } }
+    function closeModal(t) { document.getElementById('modal' + t.charAt(0).toUpperCase() + t.slice(1)).classList.remove('open'); }
+    function saveAsset() { const a = { name: v('a_name'), location: v('a_location'), status: v('a_status'), type: v('a_type'), price: v('a_price'), roomtype: v('a_roomtype'), contact: v('a_contact'), note: v('a_note'), link: v('a_link'), image: v('a_image') }; if (!a.name) return; if (editMode.idx >= 0) DB.assets[editMode.idx] = a; else DB.assets.push(a); saveToCloud(); closeModal('asset'); updateUI(); }
+    function editAsset(i) { const a = DB.assets[i]; setV('a_name', a.name); setV('a_location', a.location); setV('a_status', a.status); setV('a_type', a.type); setV('a_price', a.price); setV('a_roomtype', a.roomtype); setV('a_contact', a.contact); setV('a_note', a.note); setV('a_link', a.link); setV('a_image', a.image); editMode = { type: 'asset', idx: i }; document.getElementById('modalAsset').classList.add('open'); }
+    function saveAgent() { const ag = { name: v('ag_name'), company: v('ag_company'), coagent: v('ag_coagent'), tel: v('ag_tel'), line: v('ag_line') }; if (!ag.name) return; if (editMode.idx >= 0) DB.agents[editMode.idx] = ag; else DB.agents.push(ag); saveToCloud(); closeModal('agent'); updateUI(); }
+    function editAgent(i) { const a = DB.agents[i]; setV('ag_name', a.name); setV('ag_company', a.company); setV('ag_coagent', a.coagent); setV('ag_tel', a.tel); setV('ag_line', a.line); editMode = { type: 'agent', idx: i }; document.getElementById('modalAgent').classList.add('open'); }
+    function saveCustomer() { const cu = { name: v('cu_name'), status: v('cu_status'), budget: v('cu_budget'), contact: v('cu_contact'), note: v('cu_note') }; if (!cu.name) return; if (editMode.idx >= 0) DB.customers[editMode.idx] = cu; else DB.customers.push(cu); saveToCloud(); closeModal('customer'); updateUI(); }
+    function editCustomer(i) { const a = DB.customers[i]; setV('cu_name', a.name); setV('cu_status', a.status); setV('cu_budget', a.budget); setV('cu_contact', a.contact); setV('cu_note', a.note); editMode = { type: 'customer', idx: i }; document.getElementById('modalCustomer').classList.add('open'); }
+    function saveUser() { const u = { username: v('u_username'), password: v('u_password'), displayname: v('u_displayname'), role: v('u_role') }; if (!u.username) return; if (editMode.idx >= 0) AUTH.users[editMode.idx] = u; else AUTH.users.push(u); saveToCloud(); closeModal('user'); updateUI(); }
+    function editUser(i) { const a = AUTH.users[i]; setV('u_username', a.username); setV('u_password', a.password); setV('u_displayname', a.displayname); setV('u_role', a.role); editMode = { type: 'user', idx: i }; document.getElementById('modalUser').classList.add('open'); }
+    function deleteItem(type, i) { if (confirm('ลบรายการนี้?')) { DB[type].splice(i, 1); saveToCloud(); updateUI(); } }
+    function deleteUser(i) { if (confirm('ลบ User นี้?')) { AUTH.users.splice(i, 1); saveToCloud(); updateUI(); } }
 
-// ==================== 6. CLIPBOARD ====================
-function populateCbSelect() {
-  const selAs = document.getElementById('cbAssetSelect'); const selAg = document.getElementById('cbAgentSelect');
-  selAs.innerHTML = '<option value="">-- กรุณาเลือกทรัพย์สิน --</option>' + (DB.assets||[]).map((a,i) => `<option value="${i}">${a.name} (${a.status})</option>`).join('');
-  selAg.innerHTML = '<option value="">-- ใช้ข้อมูลติดต่อเดิม (ไม่แนะนำ) --</option>' + (DB.agents||[]).map((ag,i) => `<option value="${i}">${ag.name} ${ag.company ? '('+ag.company+')' : ''}</option>`).join('');
-  generateClipboard();
-}
-function generateClipboard() {
-  const asIdx = document.getElementById('cbAssetSelect').value; const agIdx = document.getElementById('cbAgentSelect').value; const tmpl = document.getElementById('cbTemplate').value; const out = document.getElementById('cbOutput');
-  if(asIdx === '') { out.innerText = 'เลือกทรัพย์สินด้านบนเพื่อดูตัวอย่างข้อความโพสต์ค่ะ...'; return; }
-  const a = DB.assets[asIdx];
-  let finalContact = a.contact || 'ไม่ได้ระบุ';
-  if(agIdx !== '') { const ag = DB.agents[agIdx]; finalContact = `${ag.name} ${ag.company ? '('+ag.company+')' : ''}\n📞 โทร: ${ag.tel}\n📱 Line: ${ag.line}`; }
-  let txt = '';
-  if(tmpl === 'fb') { txt = `✨ ปล่อย${a.status}ด่วน! ${a.name}\n━━━━━━━━━━━━━━━━━━━━\n${a.location ? `📍 ทำเล: ${a.location}\n` : ''}💰 ราคา: ${a.price}\n${a.roomtype ? `🛏️ รายละเอียด: ${a.roomtype}\n` : ''}${a.note ? `\n📝 หมายเหตุ:\n${a.note}\n` : ''}━━━━━━━━━━━━━━━━━━━━\n📌 สนใจติดต่อ / นัดชม:\n${finalContact}\n${a.link ? `\n🔗 ลิงก์อ้างอิง: ${a.link}\n` : ''}\n#BENZHOME #อสังหา #รับฝากขายเช่าคอนโด`;
-  } else { txt = `ประกาศ${a.status}: ${a.name}\n💰 ราคา: ${a.price}\n👉 รายละเอียด: ${a.roomtype}\n📞 สนใจติดต่อ: ${finalContact.replace(/\n/g, ' ')}`; }
-  out.innerText = txt;
-}
-function copyClipboard() { const txt = document.getElementById('cbOutput').innerText; if(txt.includes('เลือกทรัพย์สิน')) return alert('กรุณาเลือกทรัพย์สินก่อนก๊อปปี้ค่ะ!'); navigator.clipboard.writeText(txt).then(() => alert('📋 ก๊อปปี้เรียบร้อย!')); }
+    // ==================== 6. CLIPBOARD ====================
+    function populateCbSelect() {
+      const selAs = document.getElementById('cbAssetSelect'); const selAg = document.getElementById('cbAgentSelect');
+      if (!DB || !Array.isArray(DB.assets)) DB.assets = [];
+      if (!DB || !Array.isArray(DB.agents)) DB.agents = [];
+      selAs.innerHTML = '<option value="">-- กรุณาเลือกทรัพย์สิน --</option>' + DB.assets.map((a, i) => `<option value="${i}">${a.name} (${a.status})</option>`).join('');
+      selAg.innerHTML = '<option value="">-- ใช้ข้อมูลติดต่อเดิม (ไม่แนะนำ) --</option>' + DB.agents.map((ag, i) => `<option value="${i}">${ag.name} ${ag.company ? '(' + ag.company + ')' : ''}</option>`).join('');
+      generateClipboard();
+    }
+    function generateClipboard() {
+      const asIdx = document.getElementById('cbAssetSelect').value; const agIdx = document.getElementById('cbAgentSelect').value; const tmpl = document.getElementById('cbTemplate').value; const out = document.getElementById('cbOutput');
+      if (asIdx === '') { out.innerText = 'เลือกทรัพย์สินด้านบนเพื่อดูตัวอย่างข้อความโพสต์ค่ะ...'; return; }
+      const a = DB.assets[asIdx];
+      let finalContact = a.contact || 'ไม่ได้ระบุ';
+      if (agIdx !== '') { const ag = DB.agents[agIdx]; finalContact = `${ag.name} ${ag.company ? '(' + ag.company + ')' : ''}\n📞 โทร: ${ag.tel}\n📱 Line: ${ag.line}`; }
+      let txt = '';
+      if (tmpl === 'fb') {
+        txt = `✨ ปล่อย${a.status}ด่วน! ${a.name}\n━━━━━━━━━━━━━━━━━━━━\n${a.location ? `📍 ทำเล: ${a.location}\n` : ''}💰 ราคา: ${a.price}\n${a.roomtype ? `🛏️ รายละเอียด: ${a.roomtype}\n` : ''}${a.note ? `\n📝 หมายเหตุ:\n${a.note}\n` : ''}━━━━━━━━━━━━━━━━━━━━\n📌 สนใจติดต่อ / นัดชม:\n${finalContact}\n${a.link ? `\n🔗 ลิงก์อ้างอิง: ${a.link}\n` : ''}\n#BENZHOME #อสังหา #รับฝากขายเช่าคอนโด`;
+      } else { txt = `ประกาศ${a.status}: ${a.name}\n💰 ราคา: ${a.price}\n👉 รายละเอียด: ${a.roomtype}\n📞 สนใจติดต่อ: ${finalContact.replace(/\n/g, ' ')}`; }
+      out.innerText = txt;
+    }
+    function copyClipboard() { const txt = document.getElementById('cbOutput').innerText; if (txt.includes('เลือกทรัพย์สิน')) return alert('กรุณาเลือกทรัพย์สินก่อนก๊อปปี้ค่ะ!'); navigator.clipboard.writeText(txt).then(() => alert('📋 ก๊อปปี้เรียบร้อย!')); }
 
-// ==================== 7. EXPORT CSV ====================
-function csvEscape(v){ return '"'+(String(v||'').replace(/"/g,'""'))+'"'; }
-function exportCSV(type) {
-  let rows=[], fname='';
-  if(type==='assets') { rows = [['ชื่อโครงการ','สถานะ','ราคา','รายละเอียด','ทำเล','ติดต่อเดิม','Note','Link','Image URL']]; (DB.assets||[]).forEach((a,i) => rows.push([a.name, a.status, a.price, a.roomtype, a.location, a.contact, a.note, a.link, a.image].map(csvEscape))); fname='assets.csv'; }
-  const content = rows.map(r=>r.join(',')).join('\n'); const blob = new Blob(['\uFEFF'+content],{type:'text/csv;charset=utf-8'}); const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname; a.click();
-}
-</script>
+    // ==================== 7. EXPORT CSV ====================
+    function csvEscape(v) { return '"' + (String(v || '').replace(/"/g, '""')) + '"'; }
+    function exportCSV(type) {
+      let rows = [], fname = '';
+      if (!DB || !Array.isArray(DB.assets)) DB.assets = [];
+      if (type === 'assets') { rows = [['ชื่อโครงการ', 'สถานะ', 'ราคา', 'รายละเอียด', 'ทำเล', 'ติดต่อเดิม', 'Note', 'Link', 'Image URL']]; DB.assets.forEach((a, i) => rows.push([a.name, a.status, a.price, a.roomtype, a.location, a.contact, a.note, a.link, a.image].map(csvEscape))); fname = 'assets.csv'; }
+      const content = rows.map(r => r.join(',')).join('\n'); const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fname; a.click();
+    }
+  </script>
 </body>
+
 </html>
