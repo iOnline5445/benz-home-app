@@ -693,7 +693,7 @@
   <script>
     // ==================== 1. HYBRID DATABASE & FIREBASE ====================
     let DB = { assets: [], agents: [], customers: [] };
-    let AUTH = { users: [{ username: 'admin', password: 'admin1234', role: 'admin', displayname: 'พี่เบนซ์ (Admin)' }], current: null };
+    let AUTH = { users: [{ username: 'admin', password: 'admin1234', role: 'admin', displayname: 'เบนซ์ (Admin)' }], current: null };
     let editMode = { type: '', idx: -1 };
 
     const localDB = localStorage.getItem('benzDB2');
@@ -733,10 +733,9 @@
     } catch (e) { window.saveToCloud = function () { localStorage.setItem('benzDB2', JSON.stringify(DB)); localStorage.setItem('benzAuth2', JSON.stringify(AUTH.users)); } }
 
     // ==================== 2. FACEBOOK GRAPH API (ดึงข้อมูล) ====================
-    // การตั้งค่า Facebook SDK
     window.fbAsyncInit = function () {
       FB.init({
-        appId: 'ใส่_APP_ID_ของพี่เบนซ์ตรงนี้', // <-- พี่เบนซ์ต้องเอา App ID จากเว็บ FB Dev มาใส่นะคะ
+        appId: '26534886769453064',
         cookie: true,
         xfbml: true,
         version: 'v19.0'
@@ -745,36 +744,30 @@
 
     function fetchFromFacebookAPI() {
       const url = document.getElementById('qs_link').value;
-      if (!url) return alert('พี่เบนซ์อย่าลืมใส่ลิงก์ Facebook ก่อนนะคะ!');
+      if (!url) return alert('เบนซ์อย่าลืมใส่ลิงก์ Facebook ก่อนนะคะ!');
 
-      // การพยายามดึง Post ID จากลิงก์ (ตัวเลขยาวๆ)
       const postIdMatch = url.match(/(?:posts\/|fbid=|permalink\/)([0-9]+)/);
       if (!postIdMatch) return alert('เก๋หา ID โพสต์จากลิงก์นี้ไม่เจอค่ะ ลองวางเนื้อหาโดยตรงในกล่องด้านล่างแทนนะคะ');
 
       const postId = postIdMatch[1];
-
-      // ⚠️ ข้อควรระวัง: ต้องใช้ Page Access Token ของเพจพี่เบนซ์เองนะคะ ถึงจะดึงได้
-      const pageAccessToken = 'ใส่_ACCESS_TOKEN_ตรงนี้';
+      const pageAccessToken = 'EAF5FVsQMaAgBRXD519TZCZCZAuNG6tZBVGzM7vBBSivMSovmf7QgysCbVHooodcxM8XwitDKF4340QnuJcFDItrtCGNIE6EDYZBsRQ3GZB3egQ9HNzK55j3snLyjFw5QjFWbFuGEN3LuEuQoz60r9tE3CJcFC39sGGgI9aQkZBdVga8TLrcNjbXujZClNSSpmWQTIJyZAH65McDKmdmP3tcvX6iKQYO6Hq9WfekUoI5lMpZB8ugtNEAshOVJJerfRtIn7hrwVpQgbvnfNo2OeCDGwZCOqpIn9TbEAa49JsZD';
 
       document.getElementById('qs_raw').value = 'กำลังดึงข้อมูลจาก Facebook...';
 
-      // เรียกใช้ Graph API
       FB.api(
         `/${postId}?fields=message,full_picture&access_token=${pageAccessToken}`,
         function (response) {
           if (response && !response.error) {
-            // นำข้อความที่ดึงได้มาใส่ในกล่อง
             document.getElementById('qs_raw').value = response.message || 'ไม่มีข้อความในโพสต์นี้ค่ะ';
 
-            // จัดการรูปภาพ
             if (response.full_picture) {
               document.getElementById('img_preview_container').style.display = 'block';
               document.getElementById('qs_image_preview').innerHTML = `<img src="${response.full_picture}" style="height:120px; border-radius:8px; border:1px solid #C9A84C;">`;
-              document.getElementById('qs_image_url').value = response.full_picture; // เก็บ URL รูปซ่อนไว้
+              document.getElementById('qs_image_url').value = response.full_picture;
             }
-            alert('เก๋ดึงข้อมูลสำเร็จแล้วค่ะ พี่เบนซ์กดปุ่ม "สกัดข้อมูล" ต่อได้เลย!');
+            alert('เก๋ดึงข้อมูลสำเร็จแล้วค่ะ เบนซ์กดปุ่ม "สกัดข้อมูล" ต่อได้เลย!');
           } else {
-            alert('Facebook API ปฏิเสธการดึงข้อมูลค่ะ (Error: ' + response.error.message + ')\n\nเก๋แนะนำให้พี่เบนซ์ใช้วิธีก๊อปปี้ Text มาวางตรงๆ จะไวกว่าและไม่ติดบล็อกค่ะ');
+            alert('Facebook API ปฏิเสธการดึงข้อมูลค่ะ (Error: ' + response.error.message + ')\n\nเก๋แนะนำให้เบนซ์ใช้วิธีก๊อปปี้ Text มาวางตรงๆ จะไวกว่าและไม่ติดบล็อกค่ะ');
             document.getElementById('qs_raw').value = '';
           }
         }
@@ -785,31 +778,28 @@
     function quickSaveAsset() {
       const raw = document.getElementById('qs_raw').value;
       const link = document.getElementById('qs_link').value;
-      const imageUrl = document.getElementById('qs_image_url').value; // ดึง URL รูปที่ซ่อนไว้
+      const imageUrl = document.getElementById('qs_image_url').value;
 
       if (!raw || raw === 'กำลังดึงข้อมูลจาก Facebook...') { alert('กรุณาวางเนื้อหาโพสต์ก่อนค่ะ'); return; }
 
-      // AI Regex Parsing แยกข้อมูลแบบฉลาด
       const project = (raw.match(/(โครงการ|หมู่บ้าน|คอนโด)\s*([^\n,]+)/) || ["", "", "ไม่ระบุชื่อ"])[2].trim();
       const price = (raw.match(/([0-9,.]+)\s*(บาท|ล้าน|/เดือน) /) || ["ไม่ระบุ"])[0].trim();
       const area = (raw.match(/([0-9,.]+)\s*(ตร\.ม\.|ตร\.ว\.)/) || [""]).join(' ').trim();
       const floor = (raw.match(/(ชั้นที่|ชั้น)\s*([0-9]+)/) || [""]).join(' ').trim();
       const status = raw.includes("เช่า") ? "เช่า" : (raw.includes("ขาย") ? "ขาย" : "เช่า/ขาย");
 
-      // ตัดเบอร์ติดต่อเจ้าของเดิม
       const contactInfo = (raw.match(/(0[0-9]{1,2}-?[0-9]{3}-?[0-9]{4}|[Ll]ine\s*[:@]?\s*[a-zA-Z0-9._-]+)/g) || []).join(', ');
 
       const newAsset = {
         name: project, location: '', status: status, type: 'คอนโด', price: price,
         roomtype: `${area} ${floor}`.trim(), area: '', floor: '', contact: contactInfo,
-        note: raw, link: link, image: imageUrl // เก็บลิงก์รูปลงฐานข้อมูลด้วย
+        note: raw, link: link, image: imageUrl
       };
 
       DB.assets.push(newAsset);
       saveToCloud();
       updateUI();
 
-      // ล้างฟอร์ม
       document.getElementById('qs_raw').value = '';
       document.getElementById('qs_link').value = '';
       document.getElementById('qs_image_url').value = '';
@@ -838,7 +828,6 @@
       if (!list.length) { el.innerHTML = '<p style="color:var(--text3)">ยังไม่มีข้อมูลทรัพย์สิน</p>'; return; }
       el.innerHTML = list.map(a => {
         const ri = DB.assets.indexOf(a);
-        // แสดงรูปภาพในหน้าการ์ดถ้ามี
         const imgHtml = a.image ? `<img src="${a.image}" class="card-img">` : '';
 
         return `<div class="card">
