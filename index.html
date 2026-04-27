@@ -1,0 +1,2288 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YB Property — ระบบจัดการอสังหาริมทรัพย์</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Noto+Serif+Thai:wght@400;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ===== THEME: DARK (default) ===== */
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #E8C97A;
+      --gold-dark: #9A7530;
+      --dark: #0D0D0D;
+      --dark2: #1A1A1A;
+      --dark3: #252525;
+      --dark4: #303030;
+      --text: #F0EDE6;
+      --text2: #B8B0A0;
+      --text3: #7A7060;
+      --accent: #C9A84C;
+      --red: #E05050;
+      --green: #50C878;
+      --blue: #5090E0;
+      --purple: #9B6DFF;
+      --border: rgba(201, 168, 76, 0.2);
+      --border2: rgba(201, 168, 76, 0.08);
+      --radius: 10px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+      --login-bg1: #0D0D0D;
+      --login-bg2: #1A1408;
+      --header-bg1: #1A1A1A;
+      --header-bg2: #1E1A10;
+      --card-hover-shadow: rgba(201, 168, 76, 0.08);
+      --stat-num: var(--gold);
+    }
+
+    /* ===== THEME: LIGHT ===== */
+    [data-theme="light"] {
+      --gold: #B8860B;
+      --gold-light: #D4A017;
+      --gold-dark: #8B6508;
+      --dark: #F5F4F0;
+      --dark2: #FFFFFF;
+      --dark3: #F0EEE8;
+      --dark4: #E8E5DC;
+      --text: #1A1A1A;
+      --text2: #555555;
+      --text3: #999999;
+      --accent: #B8860B;
+      --red: #D93025;
+      --green: #1E8E3E;
+      --blue: #1967D2;
+      --purple: #7B2FBE;
+      --border: rgba(184, 134, 11, 0.25);
+      --border2: rgba(184, 134, 11, 0.1);
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+      --login-bg1: #F5F4F0;
+      --login-bg2: #EDE8D8;
+      --header-bg1: #FFFFFF;
+      --header-bg2: #FDF8EE;
+      --card-hover-shadow: rgba(184, 134, 11, 0.1);
+      --stat-num: var(--gold);
+    }
+
+    /* ===== THEME: VIBRANT ===== */
+    [data-theme="vibrant"] {
+      --gold: #FF6B35;
+      --gold-light: #FF8C5A;
+      --gold-dark: #E5501A;
+      --dark: #0A0E1A;
+      --dark2: #111827;
+      --dark3: #1C2535;
+      --dark4: #243044;
+      --text: #F0F4FF;
+      --text2: #A0AABF;
+      --text3: #5A6480;
+      --accent: #FF6B35;
+      --red: #FF4466;
+      --green: #00E676;
+      --blue: #29B6F6;
+      --purple: #CE93D8;
+      --border: rgba(255, 107, 53, 0.25);
+      --border2: rgba(255, 107, 53, 0.1);
+      --shadow: 0 4px 24px rgba(255, 107, 53, 0.15);
+      --login-bg1: #0A0E1A;
+      --login-bg2: #0D1220;
+      --header-bg1: #111827;
+      --header-bg2: #131B2E;
+      --card-hover-shadow: rgba(255, 107, 53, 0.12);
+      --stat-num: #FF6B35;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background: var(--dark);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background .3s, color .3s;
+    }
+
+    /* ===== LOGIN SCREEN ===== */
+    #loginScreen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, var(--login-bg1) 0%, var(--login-bg2) 50%, var(--login-bg1) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+    }
+
+    .login-box {
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-logo .icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .login-logo h1 {
+      font-family: 'Noto Serif Thai', serif;
+      font-size: 26px;
+      color: var(--gold);
+      letter-spacing: 1px;
+    }
+
+    .login-logo p {
+      color: var(--text3);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .login-field {
+      margin-bottom: 16px;
+    }
+
+    .login-field label {
+      display: block;
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .login-field input {
+      width: 100%;
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 15px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .login-field input:focus {
+      border-color: var(--gold);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      border: none;
+      border-radius: 10px;
+      color: var(--dark);
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity .2s;
+    }
+
+    .login-btn:hover {
+      opacity: .9;
+    }
+
+    .login-error {
+      background: rgba(224, 80, 80, 0.12);
+      border: 1px solid rgba(224, 80, 80, 0.3);
+      color: var(--red);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .login-hint {
+      text-align: center;
+      color: var(--text3);
+      font-size: 12px;
+      margin-top: 16px;
+    }
+
+    /* ===== APP SHELL ===== */
+    #appShell {
+      display: none;
+    }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, var(--header-bg1) 0%, var(--header-bg2) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 12px;
+    }
+
+    .logo {
+      font-family: 'Noto Serif Thai', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .logo span {
+      color: var(--text2);
+      font-weight: 300;
+      font-size: 13px;
+      margin-left: 6px;
+    }
+
+    .header-tabs {
+      display: flex;
+      gap: 2px;
+      flex: 1;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .htab {
+      padding: 7px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      background: transparent;
+      color: var(--text2);
+      transition: all .2s;
+      white-space: nowrap;
+    }
+
+    .htab.active,
+    .htab:hover {
+      background: rgba(201, 168, 76, 0.12);
+      color: var(--gold);
+    }
+
+    .htab.active {
+      border: 1px solid var(--border);
+    }
+
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .user-badge {
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .user-badge .role {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .role-admin {
+      background: rgba(201, 168, 76, 0.2);
+      color: var(--gold);
+    }
+
+    .role-user {
+      background: rgba(80, 144, 224, 0.2);
+      color: var(--blue);
+    }
+
+    .logout-btn {
+      background: rgba(224, 80, 80, 0.1);
+      border: 1px solid rgba(224, 80, 80, 0.2);
+      color: var(--red);
+      padding: 5px 12px;
+      border-radius: 7px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .2s;
+    }
+
+    .logout-btn:hover {
+      background: rgba(224, 80, 80, 0.2);
+    }
+
+    /* MAIN */
+    .main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    /* TOOLBAR */
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 180px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 9px 14px 9px 38px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--gold);
+    }
+
+    .search-box::before {
+      content: '🔍';
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 13px;
+    }
+
+    .filter-select {
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 9px 12px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .btn {
+      padding: 9px 18px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all .2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--gold);
+      color: var(--dark);
+    }
+
+    .btn-primary:hover {
+      background: var(--gold-light);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text2);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .btn-danger {
+      background: rgba(224, 80, 80, 0.12);
+      border: 1px solid rgba(224, 80, 80, 0.3);
+      color: var(--red);
+    }
+
+    .btn-danger:hover {
+      background: rgba(224, 80, 80, 0.25);
+    }
+
+    .btn-sm {
+      padding: 5px 12px;
+      font-size: 13px;
+    }
+
+    .btn-green {
+      background: rgba(80, 200, 120, 0.12);
+      border: 1px solid rgba(80, 200, 120, 0.3);
+      color: var(--green);
+    }
+
+    .btn-green:hover {
+      background: rgba(80, 200, 120, 0.25);
+    }
+
+    .btn-blue {
+      background: rgba(80, 144, 224, 0.12);
+      border: 1px solid rgba(80, 144, 224, 0.3);
+      color: var(--blue);
+    }
+
+    .btn-blue:hover {
+      background: rgba(80, 144, 224, 0.25);
+    }
+
+    .btn-purple {
+      background: rgba(155, 109, 255, 0.12);
+      border: 1px solid rgba(155, 109, 255, 0.3);
+      color: var(--purple);
+    }
+
+    .btn-purple:hover {
+      background: rgba(155, 109, 255, 0.25);
+    }
+
+    /* CARDS */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--dark2);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: all .2s;
+    }
+
+    .card:hover {
+      border-color: var(--border);
+      box-shadow: 0 8px 32px var(--card-hover-shadow);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, var(--dark3), var(--dark4));
+      padding: 13px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .badge {
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge-sale {
+      background: rgba(224, 80, 80, 0.18);
+      color: #FF8080;
+      border: 1px solid rgba(224, 80, 80, 0.3);
+    }
+
+    .badge-rent {
+      background: rgba(80, 144, 224, 0.18);
+      color: #80B0FF;
+      border: 1px solid rgba(80, 144, 224, 0.3);
+    }
+
+    .badge-both {
+      background: rgba(201, 168, 76, 0.18);
+      color: var(--gold);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+    }
+
+    .badge-admin {
+      background: rgba(201, 168, 76, 0.2);
+      color: var(--gold);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+    }
+
+    .badge-user2 {
+      background: rgba(80, 144, 224, 0.18);
+      color: #80B0FF;
+      border: 1px solid rgba(80, 144, 224, 0.3);
+    }
+
+    .card-body {
+      padding: 12px 15px;
+    }
+
+    .card-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 7px;
+      font-size: 13px;
+    }
+
+    .card-row .label {
+      color: var(--text3);
+      min-width: 76px;
+      flex-shrink: 0;
+    }
+
+    .card-row .value {
+      color: var(--text);
+      font-weight: 500;
+      word-break: break-word;
+    }
+
+    .price-tag {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .card-footer {
+      padding: 9px 15px;
+      border-top: 1px solid var(--border2);
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* CLIPBOARD */
+    .clipboard-preview {
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      white-space: pre-wrap;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .copy-success {
+      color: var(--green);
+      font-size: 13px;
+      animation: fadeOut 2s forwards;
+    }
+
+    @keyframes fadeOut {
+      0% {
+        opacity: 1;
+      }
+
+      70% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    /* MODAL */
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-bg.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 700px;
+      max-height: 92vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-sm {
+      max-width: 480px;
+    }
+
+    .modal-head {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: var(--dark2);
+      z-index: 1;
+    }
+
+    .modal-head h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text3);
+      font-size: 22px;
+      cursor: pointer;
+      padding: 2px;
+      line-height: 1;
+    }
+
+    .close-btn:hover {
+      color: var(--text);
+    }
+
+    .modal-body {
+      padding: 22px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group.full {
+      grid-column: 1/-1;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      color: var(--text2);
+      font-weight: 600;
+      letter-spacing: .3px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--gold);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .modal-footer {
+      padding: 14px 22px;
+      border-top: 1px solid var(--border2);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* TABLE */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      background: var(--dark3);
+      padding: 11px 14px;
+      text-align: left;
+      color: var(--text2);
+      font-weight: 600;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border2);
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover td {
+      background: rgba(201, 168, 76, 0.04);
+    }
+
+    /* CLIPBOARD SECTION */
+    .cb-container {
+      max-width: 760px;
+    }
+
+    .cb-card {
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    .cb-card h3 {
+      color: var(--gold);
+      font-size: 15px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cb-select {
+      width: 100%;
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 14px;
+    }
+
+    .cb-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .cb-opt {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text2);
+      cursor: pointer;
+    }
+
+    .cb-opt input {
+      accent-color: var(--gold);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .output-box {
+      background: var(--dark);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.9;
+      color: var(--text);
+      min-height: 150px;
+      max-height: 480px;
+      overflow-y: auto;
+      font-family: 'Sarabun', sans-serif;
+    }
+
+    /* STATS */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: var(--dark2);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 15px 16px;
+    }
+
+    .stat-box .num {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--stat-num);
+      font-family: 'Noto Serif Thai', serif;
+    }
+
+    .stat-box .lbl {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 3px;
+    }
+
+    /* IE PANEL */
+    .ie-panel {
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .ie-panel h3 {
+      color: var(--gold);
+      font-size: 15px;
+      margin-bottom: 10px;
+    }
+
+    .ie-panel p {
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 12px;
+    }
+
+    /* USER MANAGEMENT */
+    .user-table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    /* EMPTY */
+    .empty {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--text3);
+    }
+
+    .empty .ico {
+      font-size: 44px;
+      margin-bottom: 14px;
+    }
+
+    /* ALERT */
+    .alert {
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .alert-info {
+      background: rgba(80, 144, 224, 0.1);
+      border: 1px solid rgba(80, 144, 224, 0.25);
+      color: #80B0FF;
+    }
+
+    .alert-warn {
+      background: rgba(201, 168, 76, 0.1);
+      border: 1px solid rgba(201, 168, 76, 0.25);
+      color: var(--gold-light);
+    }
+
+    /* DIVIDER */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border2);
+      margin: 18px 0;
+    }
+
+    @media(max-width:640px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header-tabs {
+        gap: 1px;
+      }
+
+      .htab {
+        padding: 5px 9px;
+        font-size: 12px;
+      }
+
+      .cb-options {
+        grid-template-columns: 1fr;
+      }
+
+      .header {
+        height: auto;
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .logo span {
+        display: none;
+      }
+
+      .header-tabs {
+        order: 3;
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .header-user {
+        order: 2;
+      }
+    }
+
+    .theme-switcher {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .theme-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all .2s;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .theme-btn:hover {
+      transform: scale(1.12);
+    }
+
+    .theme-btn.active {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.3);
+    }
+
+    .theme-btn-dark {
+      background: radial-gradient(circle at 40% 40%, #2A2420, #0D0D0D);
+    }
+
+    .theme-btn-light {
+      background: radial-gradient(circle at 40% 40%, #FDF8EE, #E8E0CC);
+    }
+
+    .theme-btn-vibrant {
+      background: radial-gradient(circle at 40% 40%, #1C2535, #0A0E1A);
+      border-image: linear-gradient(135deg, #FF6B35, #29B6F6) 1;
+    }
+
+    .theme-btn-vibrant.active {
+      border-color: #FF6B35;
+      box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.35);
+    }
+
+    .theme-label {
+      font-size: 10px;
+      color: var(--text3);
+      white-space: nowrap;
+      display: none;
+    }
+
+    /* Light theme overrides for readability */
+    [data-theme="light"] .login-box {
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+    }
+
+    [data-theme="light"] .logout-btn {
+      background: rgba(217, 48, 37, 0.08);
+      border-color: rgba(217, 48, 37, 0.2);
+    }
+
+    [data-theme="light"] tbody tr:hover td {
+      background: rgba(184, 134, 11, 0.05);
+    }
+
+    [data-theme="light"] .modal-head {
+      background: var(--dark2);
+    }
+
+    [data-theme="light"] .output-box {
+      background: var(--dark3);
+    }
+
+    [data-theme="light"] .clipboard-preview {
+      background: var(--dark3);
+    }
+
+    /* Vibrant theme overrides */
+    [data-theme="vibrant"] .htab.active,
+    [data-theme="vibrant"] .htab:hover {
+      background: rgba(255, 107, 53, 0.12);
+      color: var(--gold);
+    }
+
+    [data-theme="vibrant"] .htab.active {
+      border-color: var(--border);
+    }
+
+    [data-theme="vibrant"] .login-box {
+      box-shadow: 0 20px 60px rgba(255, 107, 53, 0.15);
+    }
+
+    [data-theme="vibrant"] .card:hover {
+      box-shadow: 0 8px 32px rgba(255, 107, 53, 0.15);
+    }
+
+    [data-theme="vibrant"] .stat-box {
+      background: linear-gradient(135deg, #111827, #1C2535);
+    }
+
+    [data-theme="vibrant"] .badge-sale {
+      background: rgba(255, 68, 102, 0.18);
+      color: #FF8080;
+      border-color: rgba(255, 68, 102, 0.3);
+    }
+
+    [data-theme="vibrant"] .badge-rent {
+      background: rgba(41, 182, 246, 0.18);
+      color: #80D4FF;
+      border-color: rgba(41, 182, 246, 0.3);
+    }
+
+    [data-theme="vibrant"] .badge-both {
+      background: rgba(255, 107, 53, 0.18);
+      color: #FF8C5A;
+      border-color: rgba(255, 107, 53, 0.3);
+    }
+
+    [data-theme="vibrant"] .price-tag {
+      color: #FF8C5A;
+    }
+
+    @media(max-width:640px) {
+      .theme-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =================== LOGIN SCREEN =================== -->
+  <div id="loginScreen">
+    <div class="login-box">
+      <div class="login-logo">
+        <div class="icon">🏢</div>
+        <h1>YB Property</h1>
+        <p>ระบบจัดการอสังหาริมทรัพย์</p>
+      </div>
+      <div class="login-field">
+        <label>ชื่อผู้ใช้ (Username)</label>
+        <input type="text" id="loginUsername" placeholder="กรอก username" onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+      <div class="login-field">
+        <label>รหัสผ่าน (Password)</label>
+        <input type="password" id="loginPassword" placeholder="กรอก password"
+          onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+      <button class="login-btn" onclick="doLogin()">🔐 เข้าสู่ระบบ</button>
+      <div class="login-error" id="loginError">❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
+      <div class="login-hint">ทดลองใช้: admin / admin1234 &nbsp;|&nbsp; user / user1234</div>
+      <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">เลือกธีม</div>
+        <div style="display:flex;gap:10px;justify-content:center;align-items:center;">
+          <button class="theme-btn theme-btn-dark" id="loginThemeDark" onclick="setTheme('dark')"
+            title="ธีมมืด">🌙</button>
+          <button class="theme-btn theme-btn-light" id="loginThemeLight" onclick="setTheme('light')"
+            title="ธีมสว่าง">☀️</button>
+          <button class="theme-btn theme-btn-vibrant" id="loginThemeVibrant" onclick="setTheme('vibrant')"
+            title="ธีมสดใส">✨</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== APP SHELL =================== -->
+  <div id="appShell">
+
+    <div class="header">
+      <div class="logo">YB Property <span>ระบบจัดการอสังหาริมทรัพย์</span></div>
+      <div class="header-tabs" id="headerTabs">
+        <button class="htab active" onclick="switchTab('assets',this)">🏠 ทรัพย์สิน</button>
+        <button class="htab" onclick="switchTab('agents',this)">👤 Agent</button>
+        <button class="htab" onclick="switchTab('customers',this)">🤝 ลูกค้า</button>
+        <button class="htab" onclick="switchTab('clipboard',this)">📋 Clipboard</button>
+        <button class="htab" onclick="switchTab('iedata',this)">⚙️ Import/Export</button>
+        <button class="htab" id="tabUsers" onclick="switchTab('users',this)" style="display:none">👥 จัดการ
+          User</button>
+      </div>
+      <div class="header-user">
+        <!-- Theme Switcher -->
+        <div class="theme-switcher" title="เลือกธีม">
+          <button class="theme-btn theme-btn-dark active" id="themeBtnDark" onclick="setTheme('dark')"
+            title="ธีมมืด 🌙">🌙</button>
+          <button class="theme-btn theme-btn-light" id="themeBtnLight" onclick="setTheme('light')"
+            title="ธีมสว่าง ☀️">☀️</button>
+          <button class="theme-btn theme-btn-vibrant" id="themeBtnVibrant" onclick="setTheme('vibrant')"
+            title="ธีมสดใส ✨">✨</button>
+        </div>
+        <div class="user-badge">
+          <span id="headerUserName">-</span>
+          <span class="role" id="headerUserRole">-</span>
+        </div>
+        <button class="logout-btn" onclick="doLogout()">ออกระบบ</button>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <!-- =================== ASSETS =================== -->
+      <div id="sec-assets" class="section active">
+        <div class="stats-row" id="assetStats"></div>
+        <div class="toolbar">
+          <div class="search-box"><input type="text" id="assetSearch" placeholder="ค้นหาโครงการ, ทำเล..."
+              oninput="renderAssets()"></div>
+          <select class="filter-select" id="filterStatus" onchange="renderAssets()">
+            <option value="">ทุกสถานะ</option>
+            <option value="ขาย">ขาย</option>
+            <option value="เช่า">เช่า</option>
+            <option value="เช่า/ขาย">เช่า/ขาย</option>
+          </select>
+          <select class="filter-select" id="filterType" onchange="renderAssets()">
+            <option value="">ทุกประเภท</option>
+            <option value="คอนโด">คอนโด</option>
+            <option value="บ้านเดี่ยว">บ้านเดี่ยว</option>
+            <option value="ทาวน์โฮม">ทาวน์โฮม</option>
+            <option value="ที่ดิน">ที่ดิน</option>
+          </select>
+          <button class="btn btn-primary" onclick="openModal('asset')">+ เพิ่มทรัพย์สิน</button>
+        </div>
+        <div class="cards-grid" id="assetCards"></div>
+      </div>
+
+      <!-- =================== AGENTS =================== -->
+      <div id="sec-agents" class="section">
+        <div class="toolbar">
+          <div class="search-box"><input type="text" id="agentSearch" placeholder="ค้นหา Agent..."
+              oninput="renderAgents()"></div>
+          <button class="btn btn-primary" onclick="openModal('agent')">+ เพิ่ม Agent</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ชื่อ Agent</th>
+                <th>บริษัท/สังกัด</th>
+                <th>Co-Agent</th>
+                <th>เบอร์ติดต่อ</th>
+                <th>Line ID</th>
+                <th>เลขบัญชี</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="agentTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- =================== CUSTOMERS =================== -->
+      <div id="sec-customers" class="section">
+        <div class="toolbar">
+          <div class="search-box"><input type="text" id="customerSearch" placeholder="ค้นหาลูกค้า..."
+              oninput="renderCustomers()"></div>
+          <button class="btn btn-primary" onclick="openModal('customer')">+ เพิ่มลูกค้า</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ชื่อ</th>
+                <th>สถานะ</th>
+                <th>ประเภท</th>
+                <th>งบประมาณ</th>
+                <th>Contact</th>
+                <th>Note</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="customerTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- =================== CLIPBOARD =================== -->
+      <div id="sec-clipboard" class="section">
+        <div class="cb-container">
+          <div class="cb-card">
+            <h3>📋 สร้าง Clipboard โพสต์</h3>
+            <label style="font-size:13px;color:var(--text2);margin-bottom:6px;display:block;">เลือกทรัพย์สิน</label>
+            <select class="cb-select" id="cbAssetSelect" onchange="generateClipboard()">
+              <option value="">-- เลือกทรัพย์สิน --</option>
+            </select>
+
+            <label style="font-size:13px;color:var(--text2);margin-bottom:6px;display:block;">เลือก Agent <span
+                style="color:var(--text3);font-weight:400">(ไม่บังคับ — ถ้าเลือก จะใช้ข้อมูลติดต่อของ Agent
+                แทน)</span></label>
+            <select class="cb-select" id="cbAgentSelect" onchange="onCbAgentChange()">
+              <option value="">-- ใช้ข้อมูลติดต่อจากทรัพย์สิน --</option>
+            </select>
+            <!-- Agent info preview -->
+            <div id="cbAgentPreview"
+              style="display:none;background:var(--dark);border:1px solid var(--border);border-radius:8px;padding:11px 14px;margin-bottom:14px;font-size:13px;line-height:1.8;">
+            </div>
+
+            <label style="font-size:13px;color:var(--text2);margin-bottom:8px;display:block;">ตัวเลือกเพิ่มเติม</label>
+            <div class="cb-options">
+              <label class="cb-opt"><input type="checkbox" id="cbContact" checked onchange="generateClipboard()">
+                แสดงข้อมูลติดต่อ</label>
+              <label class="cb-opt"><input type="checkbox" id="cbLink" checked onchange="generateClipboard()"> แสดง Link
+                โครงการ</label>
+              <label class="cb-opt"><input type="checkbox" id="cbMap" onchange="generateClipboard()"> แสดง Location
+                Map</label>
+              <label class="cb-opt"><input type="checkbox" id="cbNote" checked onchange="generateClipboard()">
+                แสดงหมายเหตุ</label>
+            </div>
+            <label style="font-size:13px;color:var(--text2);margin-bottom:6px;display:block;">รูปแบบโพสต์</label>
+            <select class="cb-select" id="cbTemplate" onchange="generateClipboard()">
+              <option value="full">แบบเต็ม (ละเอียด)</option>
+              <option value="short">แบบย่อ (สั้น)</option>
+              <option value="fb">สไตล์ Facebook</option>
+              <option value="line">สไตล์ Line OA</option>
+            </select>
+            <div class="output-box" id="cbOutput">เลือกทรัพย์สินเพื่อสร้าง Clipboard...</div>
+            <div style="display:flex;gap:10px;margin-top:12px;align-items:center;">
+              <button class="btn btn-primary" onclick="copyClipboard()">📋 คัดลอก</button>
+              <span id="copyMsg" class="copy-success" style="display:none">✅ คัดลอกแล้ว!</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================== IMPORT / EXPORT (CSV) =================== -->
+      <div id="sec-iedata" class="section">
+
+        <!-- IMPORT -->
+        <div class="ie-panel">
+          <h3>📥 Import ข้อมูล (CSV)</h3>
+          <p>อัพโหลดไฟล์ CSV เพื่อนำเข้าข้อมูลทรัพย์สิน, Agent หรือลูกค้า</p>
+          <div class="alert alert-info" style="margin-bottom:14px;">
+            💡 ไฟล์ CSV ต้องมี header row ตรงกับรูปแบบที่ Export ออกมา
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+            <div class="ie-panel" style="margin-bottom:0;padding:14px;">
+              <div style="font-size:13px;color:var(--text2);margin-bottom:8px;font-weight:600;">🏠 ทรัพย์สิน</div>
+              <input type="file" id="importAssetsCSV" accept=".csv" style="display:none"
+                onchange="importCSV(event,'assets')">
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('importAssetsCSV').click()">📁
+                เลือกไฟล์ CSV</button>
+            </div>
+            <div class="ie-panel" style="margin-bottom:0;padding:14px;">
+              <div style="font-size:13px;color:var(--text2);margin-bottom:8px;font-weight:600;">👤 Agent</div>
+              <input type="file" id="importAgentsCSV" accept=".csv" style="display:none"
+                onchange="importCSV(event,'agents')">
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('importAgentsCSV').click()">📁
+                เลือกไฟล์ CSV</button>
+            </div>
+            <div class="ie-panel" style="margin-bottom:0;padding:14px;">
+              <div style="font-size:13px;color:var(--text2);margin-bottom:8px;font-weight:600;">🤝 ลูกค้า</div>
+              <input type="file" id="importCustomersCSV" accept=".csv" style="display:none"
+                onchange="importCSV(event,'customers')">
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('importCustomersCSV').click()">📁
+                เลือกไฟล์ CSV</button>
+            </div>
+          </div>
+          <hr class="divider">
+          <div style="font-size:13px;color:var(--text2);margin-bottom:10px;">หรือโหลดข้อมูลตัวอย่าง:</div>
+          <button class="btn btn-outline" onclick="importSampleData()">⚡ โหลดข้อมูลตัวอย่าง</button>
+        </div>
+
+        <!-- EXPORT -->
+        <div class="ie-panel">
+          <h3>📤 Export ข้อมูล (CSV)</h3>
+          <p>ดาวน์โหลดข้อมูลเป็นไฟล์ CSV สำหรับเปิดใน Excel หรือ Google Sheets</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-green" onclick="exportCSV('assets')">📊 Export ทรัพย์สิน</button>
+            <button class="btn btn-blue" onclick="exportCSV('agents')">📊 Export Agent</button>
+            <button class="btn btn-purple" onclick="exportCSV('customers')">📊 Export ลูกค้า</button>
+            <button class="btn btn-outline" onclick="exportCSV('all')">📦 Export ทั้งหมด (ZIP 3 ไฟล์)</button>
+          </div>
+        </div>
+
+        <!-- CLEAR DATA (Admin only) -->
+        <div class="ie-panel" id="clearDataPanel">
+          <h3>🗑️ จัดการข้อมูล</h3>
+          <p style="color:rgba(224,80,80,0.8);">⚠️ เฉพาะ Admin เท่านั้น</p>
+          <button class="btn btn-danger" onclick="clearAllData()">ลบข้อมูลทั้งหมด</button>
+        </div>
+      </div>
+
+      <!-- =================== USER MANAGEMENT (Admin only) =================== -->
+      <div id="sec-users" class="section">
+        <div class="toolbar">
+          <div style="font-size:18px;font-weight:700;color:var(--gold);">👥 จัดการผู้ใช้งาน</div>
+          <button class="btn btn-primary" onclick="openModal('user')" style="margin-left:auto;">+ เพิ่ม User</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Username</th>
+                <th>ชื่อ-นามสกุล</th>
+                <th>Role</th>
+                <th>หมายเหตุ</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="userTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+
+    <!-- =================== MODALS =================== -->
+
+    <!-- Asset Modal -->
+    <div class="modal-bg" id="modalAsset">
+      <div class="modal">
+        <div class="modal-head">
+          <h2 id="modalAssetTitle">🏠 เพิ่ม/แก้ไขทรัพย์สิน</h2>
+          <button class="close-btn" onclick="closeModal('asset')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group full"><label>ชื่อโครงการ *</label><input id="a_name"
+                placeholder="เช่น IDEO พระราม 9"></div>
+            <div class="form-group"><label>ทำเลที่ตั้ง</label><input id="a_location"
+                placeholder="เช่น พระราม 9, สุขุมวิท"></div>
+            <div class="form-group"><label>สถานะ</label>
+              <select id="a_status">
+                <option>ขาย</option>
+                <option>เช่า</option>
+                <option>เช่า/ขาย</option>
+              </select>
+            </div>
+            <div class="form-group"><label>ประเภททรัพย์</label>
+              <select id="a_type">
+                <option>คอนโด</option>
+                <option>บ้านเดี่ยว</option>
+                <option>ทาวน์โฮม</option>
+                <option>อาคารพาณิชย์</option>
+                <option>ที่ดิน</option>
+                <option>วิลล่า</option>
+              </select>
+            </div>
+            <div class="form-group"><label>ราคา/เช่าต่อเดือน</label><input id="a_price"
+                placeholder="เช่น 2,500,000 / 20,000/เดือน"></div>
+            <div class="form-group"><label>ประเภทห้อง</label><input id="a_roomtype"
+                placeholder="เช่น 1 ห้องนอน 1 ห้องน้ำ"></div>
+            <div class="form-group"><label>ขนาดพื้นที่</label><input id="a_area" placeholder="เช่น 34 ตร.ม."></div>
+            <div class="form-group"><label>ชั้น/ตึก</label><input id="a_floor" placeholder="เช่น ชั้น 22 อาคาร A"></div>
+            <div class="form-group"><label>Link โครงการ/Facebook</label><input id="a_link" placeholder="https://...">
+            </div>
+            <div class="form-group"><label>Location Map</label><input id="a_map"
+                placeholder="https://maps.app.goo.gl/..."></div>
+            <div class="form-group"><label>วันที่โพสต์</label><input id="a_postdate" type="date"></div>
+            <div class="form-group"><label>วันที่ Update</label><input id="a_updatedate" type="date"></div>
+            <div class="form-group full"><label>Contact</label><input id="a_contact" placeholder="ชื่อ-เบอร์โทร-Line">
+            </div>
+            <div class="form-group full"><label>หมายเหตุ/รายละเอียดเพิ่มเติม</label><textarea id="a_note"
+                placeholder="เฟอร์นิเจอร์, สิ่งอำนวยความสะดวก, เงื่อนไขการขาย..."></textarea></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeModal('asset')">ยกเลิก</button>
+          <button class="btn btn-primary" onclick="saveAsset()">💾 บันทึก</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agent Modal -->
+    <div class="modal-bg" id="modalAgent">
+      <div class="modal">
+        <div class="modal-head">
+          <h2>👤 เพิ่ม/แก้ไข Agent</h2>
+          <button class="close-btn" onclick="closeModal('agent')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group full"><label>ชื่อ Agent *</label><input id="ag_name"
+                placeholder="ชื่อ-นามสกุล (ชื่อเล่น)"></div>
+            <div class="form-group"><label>บริษัท/สังกัด</label><input id="ag_company"
+                placeholder="ชื่อบริษัท หรือ Freelance"></div>
+            <div class="form-group"><label>รับ Co-Agent</label><select id="ag_coagent">
+                <option>รับ</option>
+                <option>ไม่รับ</option>
+              </select></div>
+            <div class="form-group"><label>เบอร์ติดต่อ</label><input id="ag_tel" placeholder="08x-xxx-xxxx"></div>
+            <div class="form-group"><label>Facebook</label><input id="ag_fb" placeholder="URL หรือชื่อ"></div>
+            <div class="form-group"><label>Line ID</label><input id="ag_line" placeholder="Line ID"></div>
+            <div class="form-group"><label>Link Line@</label><input id="ag_linelink"
+                placeholder="https://line.me/ti/..."></div>
+            <div class="form-group full"><label>เลขบัญชี</label><input id="ag_bank" placeholder="ธนาคาร# เลขบัญชี">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeModal('agent')">ยกเลิก</button>
+          <button class="btn btn-primary" onclick="saveAgent()">💾 บันทึก</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Modal -->
+    <div class="modal-bg" id="modalCustomer">
+      <div class="modal">
+        <div class="modal-head">
+          <h2>🤝 เพิ่ม/แก้ไขลูกค้า</h2>
+          <button class="close-btn" onclick="closeModal('customer')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group full"><label>ชื่อโครงการที่สนใจ / ชื่อลูกค้า *</label><input id="cu_name"
+                placeholder="ชื่อโครงการ หรือ ชื่อลูกค้า"></div>
+            <div class="form-group"><label>สถานะ</label>
+              <select id="cu_status">
+                <option>ขาย</option>
+                <option>เช่า</option>
+                <option>เช่า/ขาย</option>
+              </select>
+            </div>
+            <div class="form-group"><label>ประเภท</label>
+              <select id="cu_type">
+                <option>คอนโด</option>
+                <option>บ้านเดี่ยว</option>
+                <option>ทาวน์โฮม</option>
+                <option>อาคารพาณิชย์</option>
+                <option>ที่ดิน</option>
+              </select>
+            </div>
+            <div class="form-group"><label>งบประมาณ</label><input id="cu_budget"
+                placeholder="เช่น 3 ล้าน หรือ 20,000/เดือน"></div>
+            <div class="form-group"><label>ขนาดห้อง</label><input id="cu_area" placeholder="เช่น 30-50 ตร.ม."></div>
+            <div class="form-group"><label>ชั้น</label><input id="cu_floor" placeholder="ชั้นที่ต้องการ"></div>
+            <div class="form-group full"><label>Contact</label><input id="cu_contact" placeholder="ชื่อ / เบอร์ / Line">
+            </div>
+            <div class="form-group full"><label>Note / ความต้องการพิเศษ</label><textarea id="cu_note"
+                placeholder="ต้องการวิว, ไม่ติดถนนใหญ่..."></textarea></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeModal('customer')">ยกเลิก</button>
+          <button class="btn btn-primary" onclick="saveCustomer()">💾 บันทึก</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clipboard Preview Modal -->
+    <div class="modal-bg" id="modalClipPreview">
+      <div class="modal" style="max-width:600px">
+        <div class="modal-head">
+          <h2>📋 Preview Clipboard</h2>
+          <button class="close-btn" onclick="closeModal('clipPreview')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="clipboard-preview" id="clipPreviewText"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeModal('clipPreview')">ปิด</button>
+          <button class="btn btn-primary" onclick="copyFromPreview()">📋 คัดลอก</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Modal (Admin) -->
+    <div class="modal-bg" id="modalUser">
+      <div class="modal modal-sm">
+        <div class="modal-head">
+          <h2 id="modalUserTitle">👤 เพิ่ม/แก้ไขผู้ใช้</h2>
+          <button class="close-btn" onclick="closeModal('user')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group full"><label>Username *</label><input id="u_username"
+                placeholder="ชื่อผู้ใช้สำหรับ Login"></div>
+            <div class="form-group full"><label>Password <span id="u_pw_hint"
+                  style="color:var(--text3);font-weight:400">(เว้นว่างไว้ถ้าไม่ต้องการเปลี่ยน)</span></label><input
+                type="password" id="u_password" placeholder="รหัสผ่าน"></div>
+            <div class="form-group full"><label>ชื่อ-นามสกุล</label><input id="u_displayname"
+                placeholder="ชื่อที่แสดงในระบบ"></div>
+            <div class="form-group"><label>Role</label>
+              <select id="u_role">
+                <option value="user">user — ผู้ใช้ทั่วไป</option>
+                <option value="admin">admin — ผู้ดูแลระบบ</option>
+              </select>
+            </div>
+            <div class="form-group"><label>หมายเหตุ</label><input id="u_note" placeholder="เช่น Agent, ฝ่ายขาย...">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeModal('user')">ยกเลิก</button>
+          <button class="btn btn-primary" onclick="saveUser()">💾 บันทึก</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal-bg" id="modalChangePw">
+      <div class="modal modal-sm">
+        <div class="modal-head">
+          <h2>🔑 เปลี่ยนรหัสผ่าน</h2>
+          <button class="close-btn" onclick="closeModal('changePw')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>รหัสผ่านปัจจุบัน</label>
+            <input type="password" id="cp_old" placeholder="รหัสผ่านเดิม">
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>รหัสผ่านใหม่</label>
+            <input type="password" id="cp_new" placeholder="รหัสผ่านใหม่">
+          </div>
+          <div class="form-group">
+            <label>ยืนยันรหัสผ่านใหม่</label>
+            <input type="password" id="cp_confirm" placeholder="ยืนยันรหัสผ่านใหม่">
+          </div>
+          <div id="cp_error" style="color:var(--red);font-size:13px;margin-top:10px;display:none;"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeModal('changePw')">ยกเลิก</button>
+          <button class="btn btn-primary" onclick="doChangePw()">💾 บันทึก</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /appShell -->
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    // ============================
+    // FIREBASE SETUP
+    // ============================
+    const firebaseConfig = {
+      // พี่เบนซ์ก๊อปปี้บรรทัด apiKey จากในจอของพี่มาวางแทนที่คำว่า "ใส่_API_KEY_ตรงนี้นะคะ" ได้เลยค่ะ
+      apiKey: "AIzaSyCB1D8D6jBq3Xq_NSfXJ9AXHWMgetefjZlwM",
+      authDomain: "asset-home-509ce.firebaseapp.com",
+      projectId: "asset-home-509ce",
+      storageBucket: "asset-home-509ce.firebasestorage.app",
+      messagingSenderId: "148753235688",
+      appId: "1:148753235688:web:7801a61c4bbbd3b3ba9688"
+    };
+
+    // เริ่มต้นเชื่อมต่อ Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // ============================
+    // DATA STORE (ออนไลน์บน Cloud)
+    // ============================
+    let DB = { assets: [], agents: [], customers: [] };
+    let AUTH = { users: [], current: null };
+    let editMode = { type: '', idx: -1 };
+
+    // ระบบ Real-time Sync ดึงข้อมูลจาก Cloud อัตโนมัติ
+    db.collection("benz_home").doc("database").onSnapshot((doc) => {
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.DB) DB = data.DB;
+        if (data.AUTH) AUTH.users = data.AUTH.users;
+
+        // อัปเดตหน้าจอทันทีถ้ามีคนกำลัง Login อยู่
+        if (AUTH.current) {
+          renderAssets(); renderAgents(); renderCustomers();
+          if (AUTH.current.role === 'admin') renderUsers();
+          renderStats(); populateCbSelect();
+        }
+      } else {
+        // ถ้าเพิ่งสร้างฐานข้อมูลครั้งแรก ให้สร้าง User เริ่มต้น
+        AUTH.users = [
+          { username: 'admin', password: 'admin1234', displayname: 'ผู้ดูแลระบบ (พี่เบนซ์)', role: 'admin', note: 'Super Admin' },
+          { username: 'user', password: 'user1234', displayname: 'ผู้ใช้ทั่วไป', role: 'user', note: '' }
+        ];
+        saveDB(); // บันทึกค่าเริ่มต้นขึ้น Firebase
+      }
+    });
+
+    // เปลี่ยนระบบ Save ให้วิ่งไปเก็บที่ Firebase
+    function saveDB() {
+      db.collection("benz_home").doc("database").set({ DB: DB, AUTH: { users: AUTH.users } }, { merge: true });
+    }
+    function saveAuth() {
+      db.collection("benz_home").doc("database").set({ AUTH: { users: AUTH.users } }, { merge: true });
+    }
+
+    // ============================
+    // LOGIN / LOGOUT
+    // ============================
+    function doLogin() {
+      const uname = document.getElementById('loginUsername').value.trim();
+      const pw = document.getElementById('loginPassword').value;
+      const errEl = document.getElementById('loginError');
+
+      if (AUTH.users.length === 0) {
+        alert("กำลังเชื่อมต่อฐานข้อมูล กรุณารอสักครู่แล้วกดใหม่ค่ะ"); return;
+      }
+
+      const found = AUTH.users.find(u => u.username === uname && u.password === pw);
+      if (!found) { errEl.style.display = 'flex'; return; }
+
+      errEl.style.display = 'none';
+      AUTH.current = found;
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('appShell').style.display = 'block';
+      document.getElementById('headerUserName').textContent = found.displayname || found.username;
+      const roleEl = document.getElementById('headerUserRole');
+      roleEl.textContent = found.role === 'admin' ? '⭐ Admin' : '👤 User';
+      roleEl.className = 'role ' + (found.role === 'admin' ? 'role-admin' : 'role-user');
+      document.getElementById('tabUsers').style.display = found.role === 'admin' ? '' : 'none';
+      document.getElementById('clearDataPanel').style.display = found.role === 'admin' ? '' : 'none';
+      renderAssets(); renderStats(); populateCbSelect();
+    }
+
+    function doLogout() {
+      if (!confirm('ยืนยันออกจากระบบ?')) return;
+      AUTH.current = null;
+      document.getElementById('appShell').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('loginUsername').value = '';
+      document.getElementById('loginPassword').value = '';
+    }
+
+    // ============================
+    // TABS & STATS
+    // ============================
+    function switchTab(t, btn) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.htab').forEach(b => b.classList.remove('active'));
+      document.getElementById('sec-' + t).classList.add('active');
+      if (btn) btn.classList.add('active');
+      if (t === 'assets') { renderAssets(); renderStats(); }
+      if (t === 'agents') renderAgents();
+      if (t === 'customers') renderCustomers();
+      if (t === 'clipboard') populateCbSelect();
+      if (t === 'users') renderUsers();
+    }
+
+    function renderStats() {
+      const s = DB.assets;
+      document.getElementById('assetStats').innerHTML = `
+    <div class="stat-box"><div class="num">${s.length}</div><div class="lbl">ทรัพย์สินทั้งหมด</div></div>
+    <div class="stat-box"><div class="num">${s.filter(a => a.status && a.status.includes('ขาย')).length}</div><div class="lbl">ขาย</div></div>
+    <div class="stat-box"><div class="num">${s.filter(a => a.status && a.status.includes('เช่า')).length}</div><div class="lbl">เช่า</div></div>
+    <div class="stat-box"><div class="num">${s.filter(a => a.type === 'คอนโด').length}</div><div class="lbl">คอนโด</div></div>
+    <div class="stat-box"><div class="num">${DB.agents.length}</div><div class="lbl">Agent</div></div>
+    <div class="stat-box"><div class="num">${DB.customers.length}</div><div class="lbl">ลูกค้า</div></div>
+  `;
+    }
+
+    // ============================
+    // ASSETS
+    // ============================
+    function renderAssets() {
+      const q = document.getElementById('assetSearch').value.toLowerCase();
+      const st = document.getElementById('filterStatus').value;
+      const ty = document.getElementById('filterType').value;
+      let list = DB.assets.filter(a => {
+        const mQ = !q || (a.name || '').toLowerCase().includes(q) || (a.location || '').toLowerCase().includes(q);
+        const mS = !st || a.status === st;
+        const mT = !ty || (a.type || '').includes(ty);
+        return mQ && mS && mT;
+      });
+      const el = document.getElementById('assetCards');
+      if (!list.length) {
+        el.innerHTML = '<div class="empty"><div class="ico">🏚️</div><div>ยังไม่มีข้อมูลทรัพย์สิน</div><div style="font-size:13px;margin-top:6px;color:var(--text3)">กด "+ เพิ่มทรัพย์สิน" เพื่อเริ่มต้น</div></div>';
+        renderStats(); return;
+      }
+      el.innerHTML = list.map(a => {
+        const ri = DB.assets.indexOf(a);
+        const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
+        return `<div class="card">
+      <div class="card-header">
+        <div class="card-title">${a.name || '(ไม่มีชื่อ)'}</div>
+        <span class="badge ${badge}">${a.status || ''}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-row"><span class="label">💰 ราคา</span><span class="price-tag">${a.price || '-'}</span></div>
+        ${a.type ? `<div class="card-row"><span class="label">🏢 ประเภท</span><span class="value">${a.type}</span></div>` : ''}
+        ${a.roomtype ? `<div class="card-row"><span class="label">🛏️ ห้อง</span><span class="value">${a.roomtype}</span></div>` : ''}
+        ${a.area ? `<div class="card-row"><span class="label">📐 ขนาด</span><span class="value">${a.area}</span></div>` : ''}
+        ${a.floor ? `<div class="card-row"><span class="label">🏗️ ชั้น</span><span class="value">${a.floor}</span></div>` : ''}
+        ${a.location ? `<div class="card-row"><span class="label">📍 ทำเล</span><span class="value">${a.location}</span></div>` : ''}
+        ${a.contact ? `<div class="card-row"><span class="label">📞 ติดต่อ</span><span class="value">${a.contact}</span></div>` : ''}
+      </div>
+      <div class="card-footer">
+        ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm">🔗 Link</a>` : ''}
+        ${a.map ? `<a href="${a.map}" target="_blank" class="btn btn-outline btn-sm">📍 Map</a>` : ''}
+        <button class="btn btn-blue btn-sm" onclick="quickClip(${ri})">📋 Clipboard</button>
+        <button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>
+      </div>
+    </div>`;
+      }).join('');
+      renderStats();
+    }
+
+    // ============================
+    // AGENTS & CUSTOMERS
+    // ============================
+    function renderAgents() {
+      const q = document.getElementById('agentSearch').value.toLowerCase();
+      let list = DB.agents.filter(a => !q || (a.name || '').toLowerCase().includes(q));
+      const tb = document.getElementById('agentTable');
+      if (!list.length) { tb.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีข้อมูล Agent</td></tr>`; return; }
+      tb.innerHTML = list.map(a => {
+        const ri = DB.agents.indexOf(a);
+        return `<tr>
+      <td style="color:var(--text3)">${ri + 1}</td>
+      <td style="font-weight:600">${a.name || '-'}</td>
+      <td>${a.company || '-'}</td>
+      <td><span class="badge ${a.coagent === 'รับ' ? 'badge-both' : 'badge-sale'}">${a.coagent || '-'}</span></td>
+      <td>${a.tel || '-'}</td>
+      <td>${a.line || '-'}</td>
+      <td style="font-size:12px">${a.bank || '-'}</td>
+      <td><div style="display:flex;gap:5px">
+        <button class="btn btn-outline btn-sm" onclick="editAgent(${ri})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('agents',${ri})">🗑️</button>
+      </div></td>
+    </tr>`;
+      }).join('');
+    }
+
+    function renderCustomers() {
+      const q = document.getElementById('customerSearch').value.toLowerCase();
+      let list = DB.customers.filter(a => !q || (a.name || '').toLowerCase().includes(q));
+      const tb = document.getElementById('customerTable');
+      if (!list.length) { tb.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีข้อมูลลูกค้า</td></tr>`; return; }
+      tb.innerHTML = list.map(a => {
+        const ri = DB.customers.indexOf(a);
+        const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
+        return `<tr>
+      <td style="color:var(--text3)">${ri + 1}</td>
+      <td style="font-weight:600">${a.name || '-'}</td>
+      <td><span class="badge ${badge}">${a.status || '-'}</span></td>
+      <td>${a.type || '-'}</td>
+      <td style="color:var(--gold)">${a.budget || '-'}</td>
+      <td>${a.contact || '-'}</td>
+      <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.note || '-'}</td>
+      <td><div style="display:flex;gap:5px">
+        <button class="btn btn-outline btn-sm" onclick="editCustomer(${ri})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${ri})">🗑️</button>
+      </div></td>
+    </tr>`;
+      }).join('');
+    }
+
+    // ============================
+    // USER MANAGEMENT
+    // ============================
+    function renderUsers() {
+      const tb = document.getElementById('userTable');
+      if (!AUTH.users.length) { tb.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีผู้ใช้</td></tr>`; return; }
+      tb.innerHTML = AUTH.users.map((u, i) => {
+        const isCurrentUser = AUTH.current && AUTH.current.username === u.username;
+        return `<tr>
+      <td style="color:var(--text3)">${i + 1}</td>
+      <td style="font-weight:600">${u.username}${isCurrentUser ? ` <span style="font-size:11px;color:var(--gold)">(คุณ)</span>` : ''}</td>
+      <td>${u.displayname || '-'}</td>
+      <td><span class="badge ${u.role === 'admin' ? 'badge-admin' : 'badge-user2'}">${u.role === 'admin' ? '⭐ Admin' : '👤 User'}</span></td>
+      <td style="font-size:12px;color:var(--text3)">${u.note || '-'}</td>
+      <td><div style="display:flex;gap:5px;flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" onclick="editUser(${i})">✏️ แก้ไข</button>
+        ${!isCurrentUser ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">🗑️</button>` : ''}
+        ${isCurrentUser ? `<button class="btn btn-blue btn-sm" onclick="openModal('changePw')">🔑 เปลี่ยน PW</button>` : ''}
+      </div></td>
+    </tr>`;
+      }).join('');
+    }
+
+    function saveUser() {
+      const uname = document.getElementById('u_username').value.trim();
+      const pw = document.getElementById('u_password').value;
+      const dname = document.getElementById('u_displayname').value.trim();
+      const role = document.getElementById('u_role').value;
+      const note = document.getElementById('u_note').value.trim();
+      if (!uname) { alert('กรุณาใส่ Username'); return; }
+      if (editMode.idx >= 0) {
+        const u = AUTH.users[editMode.idx];
+        u.username = uname; u.displayname = dname; u.role = role; u.note = note;
+        if (pw) u.password = pw;
+      } else {
+        if (!pw) { alert('กรุณาใส่ Password'); return; }
+        if (AUTH.users.find(x => x.username === uname)) { alert('Username นี้มีในระบบแล้ว'); return; }
+        AUTH.users.push({ username: uname, password: pw, displayname: dname, role: role, note: note });
+      }
+      saveAuth(); closeModal('user'); renderUsers();
+    }
+
+    function editUser(i) {
+      const u = AUTH.users[i];
+      document.getElementById('modalUserTitle').textContent = '✏️ แก้ไขผู้ใช้';
+      document.getElementById('u_username').value = u.username;
+      document.getElementById('u_password').value = '';
+      document.getElementById('u_displayname').value = u.displayname || '';
+      document.getElementById('u_role').value = u.role;
+      document.getElementById('u_note').value = u.note || '';
+      document.getElementById('u_pw_hint').style.display = 'inline';
+      editMode = { type: 'user', idx: i };
+      document.getElementById('modalUser').classList.add('open');
+    }
+
+    function deleteUser(i) {
+      if (!confirm(`ยืนยันลบ user "${AUTH.users[i].username}"?`)) return;
+      AUTH.users.splice(i, 1); saveAuth(); renderUsers();
+    }
+
+    function doChangePw() {
+      const oldPw = document.getElementById('cp_old').value;
+      const newPw = document.getElementById('cp_new').value;
+      const con = document.getElementById('cp_confirm').value;
+      const errEl = document.getElementById('cp_error');
+      const cur = AUTH.current;
+      if (cur.password !== oldPw) { errEl.textContent = 'รหัสผ่านปัจจุบันไม่ถูกต้อง'; errEl.style.display = 'block'; return; }
+      if (!newPw || newPw.length < 6) { errEl.textContent = 'รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร'; errEl.style.display = 'block'; return; }
+      if (newPw !== con) { errEl.textContent = 'รหัสผ่านใหม่ไม่ตรงกัน'; errEl.style.display = 'block'; return; }
+      errEl.style.display = 'none';
+      const idx = AUTH.users.findIndex(u => u.username === cur.username);
+      if (idx >= 0) { AUTH.users[idx].password = newPw; AUTH.current.password = newPw; }
+      saveAuth(); closeModal('changePw'); alert('✅ เปลี่ยนรหัสผ่านสำเร็จ');
+    }
+
+    // ============================
+    // MODALS
+    // ============================
+    function openModal(t) {
+      const modalId = 'modal' + t.charAt(0).toUpperCase() + t.slice(1);
+      document.getElementById(modalId).classList.add('open');
+      if (t !== 'user') editMode = { type: t, idx: -1 };
+      if (t === 'user') {
+        document.getElementById('modalUserTitle').textContent = '👤 เพิ่มผู้ใช้งาน';
+        document.getElementById('u_username').value = ''; document.getElementById('u_password').value = '';
+        document.getElementById('u_displayname').value = ''; document.getElementById('u_role').value = 'user';
+        document.getElementById('u_note').value = ''; document.getElementById('u_pw_hint').style.display = 'none';
+        editMode = { type: 'user', idx: -1 };
+      }
+    }
+    function closeModal(t) { document.getElementById('modal' + t.charAt(0).toUpperCase() + t.slice(1)).classList.remove('open'); }
+
+    // ============================
+    // SAVE FUNCTIONS
+    // ============================
+    function v(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+    function setV(id, val) { const el = document.getElementById(id); if (el) el.value = val || ''; }
+
+    function saveAsset() {
+      const a = {
+        name: v('a_name'), location: v('a_location'), status: v('a_status'), type: v('a_type'),
+        price: v('a_price'), roomtype: v('a_roomtype'), area: v('a_area'), floor: v('a_floor'),
+        link: v('a_link'), map: v('a_map'), postdate: v('a_postdate'), updatedate: v('a_updatedate'),
+        contact: v('a_contact'), note: v('a_note')
+      };
+      if (!a.name) { alert('กรุณาใส่ชื่อโครงการ'); return; }
+      if (editMode.idx >= 0) DB.assets[editMode.idx] = a; else DB.assets.push(a);
+      saveDB(); closeModal('asset'); renderAssets(); populateCbSelect();
+    }
+    function editAsset(i) {
+      const a = DB.assets[i];
+      setV('a_name', a.name); setV('a_location', a.location); setV('a_status', a.status); setV('a_type', a.type);
+      setV('a_price', a.price); setV('a_roomtype', a.roomtype); setV('a_area', a.area); setV('a_floor', a.floor);
+      setV('a_link', a.link); setV('a_map', a.map); setV('a_postdate', a.postdate); setV('a_updatedate', a.updatedate);
+      setV('a_contact', a.contact); setV('a_note', a.note);
+      editMode = { type: 'asset', idx: i }; document.getElementById('modalAsset').classList.add('open');
+    }
+
+    function saveAgent() {
+      const a = { name: v('ag_name'), company: v('ag_company'), coagent: v('ag_coagent'), tel: v('ag_tel'), fb: v('ag_fb'), line: v('ag_line'), linelink: v('ag_linelink'), bank: v('ag_bank') };
+      if (!a.name) { alert('กรุณาใส่ชื่อ Agent'); return; }
+      if (editMode.idx >= 0) DB.agents[editMode.idx] = a; else DB.agents.push(a);
+      saveDB(); closeModal('agent'); renderAgents(); populateCbAgentSelect();
+    }
+    function editAgent(i) {
+      const a = DB.agents[i];
+      setV('ag_name', a.name); setV('ag_company', a.company); setV('ag_coagent', a.coagent);
+      setV('ag_tel', a.tel); setV('ag_fb', a.fb); setV('ag_line', a.line);
+      setV('ag_linelink', a.linelink); setV('ag_bank', a.bank);
+      editMode = { type: 'agent', idx: i }; document.getElementById('modalAgent').classList.add('open');
+    }
+
+    function saveCustomer() {
+      const a = { name: v('cu_name'), status: v('cu_status'), type: v('cu_type'), budget: v('cu_budget'), area: v('cu_area'), floor: v('cu_floor'), contact: v('cu_contact'), note: v('cu_note') };
+      if (!a.name) { alert('กรุณาใส่ข้อมูล'); return; }
+      if (editMode.idx >= 0) DB.customers[editMode.idx] = a; else DB.customers.push(a);
+      saveDB(); closeModal('customer'); renderCustomers();
+    }
+    function editCustomer(i) {
+      const a = DB.customers[i];
+      setV('cu_name', a.name); setV('cu_status', a.status); setV('cu_type', a.type);
+      setV('cu_budget', a.budget); setV('cu_area', a.area); setV('cu_floor', a.floor);
+      setV('cu_contact', a.contact); setV('cu_note', a.note);
+      editMode = { type: 'customer', idx: i }; document.getElementById('modalCustomer').classList.add('open');
+    }
+
+    function deleteItem(type, i) {
+      if (!confirm('ยืนยันการลบ?')) return;
+      DB[type].splice(i, 1); saveDB();
+      if (type === 'assets') { renderAssets(); populateCbSelect(); }
+      if (type === 'agents') { renderAgents(); populateCbAgentSelect(); }
+      if (type === 'customers') renderCustomers();
+    }
+
+    // ============================
+    // CLIPBOARD
+    // ============================
+    function populateCbSelect() {
+      const sel = document.getElementById('cbAssetSelect'); if (!sel) return;
+      sel.innerHTML = '<option value="">-- เลือกทรัพย์สิน --</option>' +
+        DB.assets.map((a, i) => `<option value="${i}">${a.name || 'ไม่มีชื่อ'} (${a.status || ''})</option>`).join('');
+      populateCbAgentSelect();
+    }
+    function populateCbAgentSelect() {
+      const sel = document.getElementById('cbAgentSelect'); if (!sel) return;
+      sel.innerHTML = '<option value="">-- ใช้ข้อมูลติดต่อจากทรัพย์สิน --</option>' +
+        DB.agents.map((ag, i) => `<option value="${i}">${ag.name || 'ไม่มีชื่อ'}${ag.company ? ' (' + ag.company + ')' : ''}</option>`).join('');
+    }
+    function onCbAgentChange() {
+      const agIdx = document.getElementById('cbAgentSelect').value;
+      const preview = document.getElementById('cbAgentPreview');
+      if (agIdx === '') { preview.style.display = 'none'; } else {
+        const ag = DB.agents[parseInt(agIdx)];
+        let html = `<span style="color:var(--gold);font-weight:600;">👤 ${ag.name || ''}</span>`;
+        if (ag.company) html += `  <span style="color:var(--text3)">${ag.company}</span>`;
+        html += '<br>';
+        if (ag.tel) html += `📞 ${ag.tel}  `;
+        if (ag.line) html += `💬 Line: ${ag.line}  `;
+        if (ag.linelink) html += `🔗 <a href="${ag.linelink}" style="color:var(--blue)">${ag.linelink}</a>`;
+        preview.innerHTML = html; preview.style.display = 'block';
+      }
+      generateClipboard();
+    }
+    function getContactForClip(asset) {
+      const agIdx = document.getElementById('cbAgentSelect').value;
+      if (agIdx !== '') {
+        const ag = DB.agents[parseInt(agIdx)]; let c = '';
+        if (ag.name) c += ag.name;
+        if (ag.tel) c += (c ? ' ' : '') + ag.tel;
+        if (ag.line) c += (c ? ' | ' : '') + `Line: ${ag.line}`;
+        return c || asset.contact || '';
+      }
+      return asset.contact || '';
+    }
+    function generateClipboard() {
+      const idx = document.getElementById('cbAssetSelect').value;
+      const out = document.getElementById('cbOutput');
+      if (idx === '') { out.textContent = 'เลือกทรัพย์สินเพื่อสร้าง Clipboard...'; return; }
+      const a = DB.assets[parseInt(idx)];
+      const contactOverride = getContactForClip(a);
+      out.textContent = buildClipText(a, document.getElementById('cbTemplate').value,
+        document.getElementById('cbContact').checked, document.getElementById('cbLink').checked,
+        document.getElementById('cbMap').checked, document.getElementById('cbNote').checked, contactOverride);
+    }
+    function buildClipText(a, tmpl, showContact, showLink, showMap, showNote, contactOverride) {
+      const contact = (contactOverride !== undefined) ? contactOverride : (a.contact || '');
+      const st = a.status === 'ขาย' ? 'For Sale!! 🏷️' : a.status === 'เช่า' ? 'For Rent!! 🏠' : 'For Sale / Rent!! 🏷️🏠';
+      if (tmpl === 'short') {
+        let t = `${st}\n📌 ${a.name || ''}`;
+        if (a.price) t += `\n💰 ${a.price}`;
+        if (a.roomtype) t += `\n🛏️ ${a.roomtype}`;
+        if (a.area) t += ` | 📐 ${a.area}`;
+        if (a.floor) t += ` | 🏗️ ${a.floor}`;
+        if (showContact && contact) t += `\n📞 ${contact}`;
+        if (showLink && a.link) t += `\n🔗 ${a.link}`;
+        return t;
+      }
+      if (tmpl === 'fb') {
+        let t = `✨ ${st}\n━━━━━━━━━━━━━━━━━━━━\n🏢 ${a.name || ''}\n`;
+        if (a.location) t += `📍 ทำเล: ${a.location}\n`;
+        t += `━━━━━━━━━━━━━━━━━━━━\n`;
+        if (a.price) t += `💰 ราคา: ${a.price}\n`;
+        if (a.type) t += `🏗️ ประเภท: ${a.type}\n`;
+        if (a.roomtype) t += `🛏️ ห้อง: ${a.roomtype}\n`;
+        if (a.area) t += `📐 ขนาด: ${a.area}\n`;
+        if (a.floor) t += `🏢 ชั้น: ${a.floor}\n`;
+        if (showNote && a.note) t += `\n📝 รายละเอียด:\n${a.note}\n`;
+        t += `━━━━━━━━━━━━━━━━━━━━\n`;
+        if (showContact && contact) t += `📞 สนใจติดต่อ: ${contact}\n`;
+        if (showLink && a.link) t += `🔗 ${a.link}\n`;
+        if (showMap && a.map) t += `📍 Map: ${a.map}\n`;
+        t += `\n#อสังหา #คอนโด #${a.status || ''} #YBProperty`;
+        return t;
+      }
+      if (tmpl === 'line') {
+        let t = `🔔 ${st}\n\n🏡 ${a.name || ''}\n`;
+        if (a.price) t += `💰 ราคา: ${a.price}\n`;
+        if (a.roomtype || a.area) t += `📋 ${[a.roomtype, a.area].filter(Boolean).join(' | ')}\n`;
+        if (a.floor) t += `🔢 ${a.floor}\n`;
+        if (a.location) t += `📌 ${a.location}\n`;
+        if (showNote && a.note) t += `\n${a.note}\n`;
+        if (showContact && contact) t += `\n📞 ${contact}`;
+        if (showLink && a.link) t += `\n${a.link}`;
+        if (showMap && a.map) t += `\n${a.map}`;
+        return t;
+      }
+      let t = `🏆 ${st}\nประกาศ${a.status === 'ขาย' ? 'ขาย' : a.status === 'เช่า' ? 'เช่า' : 'ขาย/เช่า'}${a.type || ''} ${a.name || ''}\n\n`;
+      if (a.price) t += `💰 ราคา ${a.price}\n`;
+      if (a.roomtype) t += `🛏️ ${a.roomtype}\n`;
+      if (a.area) t += `📐 ขนาด ${a.area}\n`;
+      if (a.floor) t += `🏢 ${a.floor}\n`;
+      if (a.location) t += `📍 ทำเล: ${a.location}\n`;
+      if (showNote && a.note) t += `\n📝 รายละเอียด:\n${a.note}\n`;
+      if (showContact && contact) t += `\n📞 สนใจโทร/ไลน์: ${contact}\n`;
+      if (showLink && a.link) t += `🔗 ${a.link}\n`;
+      if (showMap && a.map) t += `📍 Map: ${a.map}\n`;
+      return t;
+    }
+    function quickClip(idx) {
+      const a = DB.assets[idx];
+      document.getElementById('clipPreviewText').textContent = buildClipText(a, 'full', true, true, true, true, a.contact || '');
+      document.getElementById('modalClipPreview').classList.add('open');
+    }
+    function copyClipboard() {
+      const txt = document.getElementById('cbOutput').textContent;
+      if (txt && txt !== 'เลือกทรัพย์สินเพื่อสร้าง Clipboard...') {
+        navigator.clipboard.writeText(txt).then(() => {
+          const msg = document.getElementById('copyMsg');
+          msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2000);
+        });
+      }
+    }
+    function copyFromPreview() {
+      const txt = document.getElementById('clipPreviewText').textContent;
+      navigator.clipboard.writeText(txt).then(() => { closeModal('clipPreview'); alert('คัดลอกแล้ว!'); });
+    }
+
+    // ============================
+    // CSV HELPERS & IMPORT/EXPORT
+    // ============================
+    function csvEscape(v) { return '"' + (String(v || '').replace(/"/g, '""')) + '"'; }
+    function parseCSVLine(line) {
+      const result = []; let cur = ''; let inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (inQ && line[i + 1] === '"') { cur += '"'; i++; } else inQ = !inQ;
+        } else if (ch === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+        else cur += ch;
+      }
+      result.push(cur.trim()); return result;
+    }
+    function parseCSV(text) {
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+      const lines = text.split(/\r?\n/).filter(l => l.trim());
+      if (!lines.length) return { headers: [], rows: [] };
+      const headers = parseCSVLine(lines[0]);
+      const rows = lines.slice(1).map(l => parseCSVLine(l));
+      return { headers, rows };
+    }
+    function downloadCSV(content, filename) {
+      const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
+    }
+
+    const CSV_HEADERS = {
+      assets: ['No', 'ชื่อโครงการ', 'ทำเล', 'สถานะ', 'ประเภท', 'ราคา', 'ประเภทห้อง', 'ขนาด', 'ชั้นตึก', 'Contact', 'Link', 'Map', 'วันที่โพสต์', 'วันที่อัปเดต', 'หมายเหตุ'],
+      agents: ['No', 'ชื่อAgent', 'บริษัท', 'Co-Agent', 'เบอร์', 'Facebook', 'LineID', 'LinkLine', 'เลขบัญชี'],
+      customers: ['No', 'ชื่อลูกค้า/โครงการ', 'สถานะ', 'ประเภท', 'งบประมาณ', 'ขนาดห้อง', 'ชั้น', 'Contact', 'Note']
+    };
+
+    function exportCSV(type) {
+      if (type === 'all') { exportCSV('assets'); exportCSV('agents'); exportCSV('customers'); return; }
+      let rows = [], fname = '';
+      if (type === 'assets') {
+        rows = DB.assets.map((a, i) => [i + 1, a.name, a.location, a.status, a.type, a.price, a.roomtype, a.area, a.floor, a.contact, a.link, a.map, a.postdate, a.updatedate, a.note].map(csvEscape).join(','));
+        fname = 'yb_assets.csv';
+      } else if (type === 'agents') {
+        rows = DB.agents.map((a, i) => [i + 1, a.name, a.company, a.coagent, a.tel, a.fb, a.line, a.linelink, a.bank].map(csvEscape).join(','));
+        fname = 'yb_agents.csv';
+      } else if (type === 'customers') {
+        rows = DB.customers.map((a, i) => [i + 1, a.name, a.status, a.type, a.budget, a.area, a.floor, a.contact, a.note].map(csvEscape).join(','));
+        fname = 'yb_customers.csv';
+      }
+      const content = [CSV_HEADERS[type].map(csvEscape).join(','), ...rows].join('\n'); downloadCSV(content, fname);
+    }
+
+    function importCSV(event, type) {
+      const file = event.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const { headers, rows } = parseCSV(e.target.result);
+          if (!headers.length) { alert('ไฟล์ว่างหรือรูปแบบไม่ถูกต้อง'); return; }
+          let imported = 0;
+          if (type === 'assets') {
+            const hi = n => headers.findIndex(h => h === n);
+            const iName = hi('ชื่อโครงการ'), iLoc = hi('ทำเล'), iSt = hi('สถานะ'), iTy = hi('ประเภท'),
+              iPr = hi('ราคา'), iRm = hi('ประเภทห้อง'), iAr = hi('ขนาด'), iFl = hi('ชั้นตึก'),
+              iCt = hi('Contact'), iLk = hi('Link'), iMp = hi('Map'), iPd = hi('วันที่โพสต์'), iUd = hi('วันที่อัปเดต'), iNt = hi('หมายเหตุ');
+            rows.forEach(r => {
+              if (r.length < 2) return;
+              const a = {
+                name: iName >= 0 ? r[iName] : '', location: iLoc >= 0 ? r[iLoc] : '', status: iSt >= 0 ? r[iSt] : 'ขาย',
+                type: iTy >= 0 ? r[iTy] : 'คอนโด', price: iPr >= 0 ? r[iPr] : '', roomtype: iRm >= 0 ? r[iRm] : '',
+                area: iAr >= 0 ? r[iAr] : '', floor: iFl >= 0 ? r[iFl] : '', contact: iCt >= 0 ? r[iCt] : '',
+                link: iLk >= 0 ? r[iLk] : '', map: iMp >= 0 ? r[iMp] : '', postdate: iPd >= 0 ? r[iPd] : '',
+                updatedate: iUd >= 0 ? r[iUd] : '', note: iNt >= 0 ? r[iNt] : ''
+              };
+              if (a.name) { DB.assets.push(a); imported++; }
+            });
+          } else if (type === 'agents') {
+            const hi = n => headers.findIndex(h => h === n);
+            const iNm = hi('ชื่อAgent'), iCo = hi('บริษัท'), iCa = hi('Co-Agent'), iTl = hi('เบอร์'),
+              iFb = hi('Facebook'), iLn = hi('LineID'), iLl = hi('LinkLine'), iBk = hi('เลขบัญชี');
+            rows.forEach(r => {
+              if (r.length < 2) return;
+              const a = {
+                name: iNm >= 0 ? r[iNm] : '', company: iCo >= 0 ? r[iCo] : '', coagent: iCa >= 0 ? r[iCa] : 'ไม่รับ',
+                tel: iTl >= 0 ? r[iTl] : '', fb: iFb >= 0 ? r[iFb] : '', line: iLn >= 0 ? r[iLn] : '',
+                linelink: iLl >= 0 ? r[iLl] : '', bank: iBk >= 0 ? r[iBk] : ''
+              };
+              if (a.name) { DB.agents.push(a); imported++; }
+            });
+          } else if (type === 'customers') {
+            const hi = n => headers.findIndex(h => h === n);
+            const iNm = hi('ชื่อลูกค้า/โครงการ'), iSt = hi('สถานะ'), iTy = hi('ประเภท'), iBd = hi('งบประมาณ'),
+              iAr = hi('ขนาดห้อง'), iFl = hi('ชั้น'), iCt = hi('Contact'), iNt = hi('Note');
+            rows.forEach(r => {
+              if (r.length < 2) return;
+              const a = {
+                name: iNm >= 0 ? r[iNm] : '', status: iSt >= 0 ? r[iSt] : '', type: iTy >= 0 ? r[iTy] : '',
+                budget: iBd >= 0 ? r[iBd] : '', area: iAr >= 0 ? r[iAr] : '', floor: iFl >= 0 ? r[iFl] : '',
+                contact: iCt >= 0 ? r[iCt] : '', note: iNt >= 0 ? r[iNt] : ''
+              };
+              if (a.name) { DB.customers.push(a); imported++; }
+            });
+          }
+          saveDB(); alert(`✅ Import สำเร็จ! นำเข้า ${imported} รายการ`);
+          renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); renderStats();
+        } catch (err) { alert('เกิดข้อผิดพลาด: ' + err.message); }
+      };
+      reader.readAsText(file, 'UTF-8'); event.target.value = '';
+    }
+
+    function clearAllData() {
+      if (AUTH.current?.role !== 'admin') { alert('เฉพาะ Admin เท่านั้น'); return; }
+      if (!confirm('⚠️ ยืนยันลบข้อมูลทั้งหมด?\nการกระทำนี้ไม่สามารถย้อนกลับได้')) return;
+      DB = { assets: [], agents: [], customers: [] }; saveDB();
+      renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); renderStats();
+      alert('ลบข้อมูลทั้งหมดแล้ว');
+    }
+
+    // ============================
+    // THEME SWITCHER
+    // ============================
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('yb_theme', theme);
+      ['dark', 'light', 'vibrant'].forEach(t => {
+        const btn1 = document.getElementById('themeBtn' + (t.charAt(0).toUpperCase() + t.slice(1)));
+        const btn2 = document.getElementById('loginTheme' + (t.charAt(0).toUpperCase() + t.slice(1)));
+        if (btn1) btn1.classList.toggle('active', t === theme);
+        if (btn2) btn2.classList.toggle('active', t === theme);
+      });
+    }
+    (function () {
+      const saved = localStorage.getItem('yb_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+      setTimeout(() => setTheme(saved), 0);
+    })();
+
+    function importSampleData() {
+      if (!confirm('โหลดข้อมูลตัวอย่าง? (ข้อมูลจะถูกเพิ่มเข้ามา)')) return;
+      const sample = {
+        assets: [{ name: 'บ้านกลางเมือง พระราม 9', location: 'พระราม 9', status: 'เช่า', type: 'ทาวน์โฮม', price: '45,000 บาท/เดือน', roomtype: '3 ห้องนอน, 2 ห้องน้ำ', area: '152 ตร.ม.', floor: '3 ชั้น' }],
+        agents: [{ name: 'กรองเกียรติ (เบนซ์)', company: 'Freelance', coagent: 'รับ', tel: '08-4152-9289', line: '54445' }]
+      };
+      DB.assets = [...DB.assets, ...sample.assets]; DB.agents = [...DB.agents, ...sample.agents];
+      saveDB(); renderAssets(); renderAgents(); populateCbSelect(); renderStats();
+      alert(`✅ โหลดข้อมูลตัวอย่างแล้ว!`);
+    }
+  </script>
+</body>
+
+</html>
