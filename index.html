@@ -21,6 +21,7 @@
       --text: #F0EDE6;
       --text2: #A0A0A0;
       --text3: #7A7A7A;
+      --accent: #D4AF37;
       --red: #E05050;
       --green: #50C878;
       --blue: #5090E0;
@@ -41,6 +42,7 @@
       background: var(--dark);
       color: var(--text);
       min-height: 100vh;
+      transition: 0.3s;
     }
 
     /* ===== LOGIN SCREEN ===== */
@@ -752,45 +754,17 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
   <script>
-    // ==================== 1. ระบบฐานข้อมูลเริ่มต้น ====================
+    // ==================== 1. CORE DATA SETUP ====================
     let DB = { assets: [], agents: [], customers: [] };
     let AUTH = { users: [], current: null };
     let editMode = { type: '', idx: -1 };
 
-    // ฟังก์ชันซ่อมแซมและจัดเตรียมโครงสร้างฐานข้อมูลให้สมบูรณ์เสมอ
-    function fixDatabaseStructure() {
-      if (typeof DB !== 'object' || DB === null) {
-        DB = { assets: [], agents: [], customers: [] };
-      }
-      if (!Array.isArray(DB.assets)) DB.assets = [];
-      if (!Array.isArray(DB.agents)) DB.agents = [];
-      if (!Array.isArray(DB.customers)) DB.customers = [];
+    // โหลดข้อมูลในเครื่องสำรองไว้ก่อน
+    const localDB = localStorage.getItem('benzDB2');
+    const localAuth = localStorage.getItem('benzAuth2');
+    if (localDB) { try { DB = JSON.parse(localDB); } catch (e) { } }
+    if (localAuth) { try { AUTH.users = JSON.parse(localAuth); } catch (e) { } }
 
-      if (typeof AUTH !== 'object' || AUTH === null) {
-        AUTH = { users: [], current: null };
-      }
-      if (!Array.isArray(AUTH.users)) AUTH.users = [];
-    }
-
-    // เรียกใช้ซ่อมแซมทันทีเมื่อเปิดเว็บ
-    fixDatabaseStructure();
-
-    // ดึงข้อมูลสำรองจากในเครื่อง (ถ้ามี)
-    try {
-      const localDB = localStorage.getItem('benzDB2');
-      const localAuth = localStorage.getItem('benzAuth2');
-      if (localDB) {
-        DB = JSON.parse(localDB);
-      }
-      if (localAuth) {
-        AUTH.users = JSON.parse(localAuth);
-      }
-      fixDatabaseStructure();
-    } catch (e) {
-      console.log("เกิดข้อผิดพลาดในการอ่านข้อมูลจากเครื่อง", e);
-    }
-
-    // ตั้งค่า Firebase ของพี่เบนซ์
     const firebaseConfig = {
       apiKey: "AIzaSyCB1D8D6jBq3Xq_NSfXJ9AXHWMgetefjZlwM",
       authDomain: "asset-home-509ce.firebaseapp.com",
@@ -800,55 +774,34 @@
       appId: "1:148753235688:web:7801a61c4bbbd3b3ba9688"
     };
 
-    // เชื่อมต่อ Firebase และดึงข้อมูล Real-time
     try {
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
 
+      // โหลดจาก Cloud แบบ Real-time
       db.collection("benz_home").doc("database").onSnapshot((doc) => {
         if (doc.exists) {
           const data = doc.data();
+          if (data.DB) DB = data.DB;
 
-          // ดึงข้อมูลทรัพย์สินมาใส่ DB
-          if (data.DB) {
-            DB = data.DB;
-          }
-
-          // ดึงข้อมูล User มาใส่ AUTH (รองรับโครงสร้างเก่าและใหม่)
+          // การป้องกันข้อมูลโครงสร้างเก่าพัง
           if (data.AUTH) {
-            if (Array.isArray(data.AUTH)) {
-              AUTH.users = data.AUTH;
-            } else if (data.AUTH.users && Array.isArray(data.AUTH.users)) {
-              AUTH.users = data.AUTH.users;
-            }
+            if (Array.isArray(data.AUTH)) AUTH.users = data.AUTH;
+            else if (data.AUTH.users && Array.isArray(data.AUTH.users)) AUTH.users = data.AUTH.users;
           }
 
-          // ซ่อมแซมโครงสร้างอีกครั้งหลังจากดึงข้อมูลออนไลน์
-          fixDatabaseStructure();
-
-          // อัปเดตหน้าจอถ้าระบบกำลังล็อกอินอยู่
-          if (AUTH.current) {
-            updateUI();
-          }
+          fixDatabaseStructure(); // ซ่อมข้อมูลให้สมบูรณ์
+          if (AUTH.current) updateUI();
         }
       });
 
-      // ฟังก์ชันส่งข้อมูลขึ้น Cloud
       window.saveToCloud = function () {
         fixDatabaseStructure();
         localStorage.setItem('benzDB2', JSON.stringify(DB));
         localStorage.setItem('benzAuth2', JSON.stringify(AUTH.users));
-
-        db.collection("benz_home").doc("database").set({
-          DB: DB,
-          AUTH: AUTH.users
-        }, { merge: true }).catch(err => {
-          console.log("เซฟขึ้น Cloud ไม่สำเร็จ", err);
-        });
+        db.collection("benz_home").doc("database").set({ DB: DB, AUTH: AUTH.users }, { merge: true }).catch(e => { });
       }
     } catch (e) {
-      console.log("ระบบ Firebase มีปัญหา", e);
-      // ถ้าระบบออนไลน์พัง ให้ใช้ระบบบันทึกในเครื่องแทน
       window.saveToCloud = function () {
         fixDatabaseStructure();
         localStorage.setItem('benzDB2', JSON.stringify(DB));
@@ -856,214 +809,64 @@
       }
     }
 
+    // ฟังก์ชันซ่อมแซมโครงสร้าง ป้องกันสคริปต์พัง
+    function fixDatabaseStructure() {
+      if (!DB) DB = { assets: [], agents: [], customers: [] };
+      if (!Array.isArray(DB.assets)) DB.assets = [];
+      if (!Array.isArray(DB.agents)) DB.agents = [];
+      if (!Array.isArray(DB.customers)) DB.customers = [];
+      if (!Array.isArray(AUTH.users)) AUTH.users = [];
+    }
 
-    // ==================== 2. ระบบเข้าสู่ระบบ (LOGIN แบบไม่มีพัง) ====================
+    // ==================== 2. MASTER KEY LOGIN (แก้ปัญหาเข้าไม่ได้) ====================
     function doLogin() {
-      try {
-        const uInput = document.getElementById('loginUsername').value.trim().toLowerCase();
-        const pInput = document.getElementById('loginPassword').value.trim();
+      const uInput = document.getElementById('loginUsername').value.trim();
+      const pInput = document.getElementById('loginPassword').value.trim();
 
-        // 💡 1. ประตูฉุกเฉิน (Master Key) ไม่สนฐานข้อมูลใดๆ เข้าได้แน่นอน
-        if (uInput === 'admin' && pInput === 'admin1234') {
-          const adminUser = { username: 'admin', password: 'admin1234', role: 'admin', displayname: 'เบนซ์ (Admin)' };
-          AUTH.current = adminUser;
+      // 💡 1. MASTER KEY: กุญแจผีสำหรับแอดมิน เข้าได้ 100% ไม่สนฐานข้อมูล
+      if (uInput.toLowerCase() === 'admin' && pInput === 'admin1234') {
+        proceedToApp({ username: 'admin', role: 'admin', displayname: 'เบนซ์ (Admin)' });
 
-          // บังคับซ่อมโครงสร้างทันที
-          fixDatabaseStructure();
-
-          // เอาแอดมินยัดกลับเข้าไปในฐานข้อมูลเผื่อหาย
-          const exists = AUTH.users.find(x => x && x.username && x.username.toLowerCase() === 'admin');
-          if (!exists) {
-            AUTH.users.push(adminUser);
-            if (typeof saveToCloud === 'function') saveToCloud();
-          }
-
-          // เปิดหน้าแอปพลิเคชัน
-          openAppShell(adminUser);
-          return;
-        }
-
-        // 💡 2. สำหรับ User ทั่วไป ให้เช็คจากฐานข้อมูล
+        // ถ้าฐานข้อมูลไม่มีบัญชีแอดมิน ให้สร้างยัดกลับเข้าไปใหม่
         fixDatabaseStructure();
-        let foundUser = null;
-
-        for (let i = 0; i < AUTH.users.length; i++) {
-          let u = AUTH.users[i];
-          if (u && u.username && u.username.toLowerCase() === uInput && u.password === pInput) {
-            foundUser = u;
-            break;
-          }
+        if (!AUTH.users.find(x => x && x.username && x.username.toLowerCase() === 'admin')) {
+          AUTH.users.push({ username: 'admin', password: 'admin1234', role: 'admin', displayname: 'เบนซ์ (Admin)' });
+          if (typeof saveToCloud === 'function') saveToCloud();
         }
+        return;
+      }
 
-        if (foundUser) {
-          AUTH.current = foundUser;
-          openAppShell(foundUser);
-        } else {
-          document.getElementById('loginError').style.display = 'block';
-        }
-      } catch (err) {
-        // ถ้าเกิดข้อผิดพลาดใดๆ ให้โชว์กล่องแจ้งเตือน
-        alert("ระบบเกิดข้อขัดข้อง: " + err.message + "\n\nกำลังล้างข้อมูลเพื่อซ่อมแซม...");
-        localStorage.clear();
-        location.reload();
+      // 💡 2. ตรวจสอบ User ทั่วไปแบบปลอดภัย ไม่ทำให้สคริปต์ค้าง
+      fixDatabaseStructure();
+      let foundUser = AUTH.users.find(x => x && x.username && x.username.toLowerCase() === uInput.toLowerCase() && x.password === pInput);
+
+      if (foundUser) {
+        proceedToApp(foundUser);
+      } else {
+        document.getElementById('loginError').style.display = 'block';
       }
     }
 
-    // ฟังก์ชันสำหรับสลับหน้าจอหลังล็อกอินสำเร็จ
-    function openAppShell(user) {
+    function proceedToApp(user) {
+      AUTH.current = user;
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('appShell').style.display = 'block';
       document.getElementById('headerUserName').innerText = user.displayname || user.username;
-
-      if (user.role === 'admin') {
-        document.getElementById('tabUsers').style.display = 'inline-block';
-      } else {
-        document.getElementById('tabUsers').style.display = 'none';
-      }
-
+      document.getElementById('tabUsers').style.display = user.role === 'admin' ? 'inline-block' : 'none';
       updateUI();
     }
 
-    function doLogout() {
-      AUTH.current = null;
-      document.getElementById('appShell').style.display = 'none';
-      document.getElementById('loginScreen').style.display = 'flex';
-    }
+    function doLogout() { AUTH.current = null; document.getElementById('appShell').style.display = 'none'; document.getElementById('loginScreen').style.display = 'flex'; }
+    function switchTab(t, btn) { document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); document.querySelectorAll('.htab').forEach(b => b.classList.remove('active')); document.getElementById('sec-' + t).classList.add('active'); btn.classList.add('active'); if (t === 'clipboard') populateCbSelect(); }
 
-
-    // ==================== 3. การควบคุมเมนูและการแสดงผล ====================
-    function switchTab(tabName, btn) {
-      const sections = document.querySelectorAll('.section');
-      for (let i = 0; i < sections.length; i++) { sections[i].classList.remove('active'); }
-
-      const tabs = document.querySelectorAll('.htab');
-      for (let i = 0; i < tabs.length; i++) { tabs[i].classList.remove('active'); }
-
-      document.getElementById('sec-' + tabName).classList.add('active');
-      btn.classList.add('active');
-
-      if (tabName === 'clipboard') {
-        populateCbSelect();
-      }
-    }
-
-    function updateUI() {
-      fixDatabaseStructure();
-      renderAssets();
-      renderAgents();
-      renderCustomers();
-      populateCbSelect();
-      if (AUTH.current && AUTH.current.role === 'admin') {
-        renderUsers();
-      }
-    }
-
-    function renderAssets() {
-      const el = document.getElementById('assetCards');
-      const q = document.getElementById('assetSearch').value.toLowerCase();
-      const st = document.getElementById('filterStatus').value;
-
-      let list = [];
-      for (let i = 0; i < DB.assets.length; i++) {
-        let a = DB.assets[i];
-        if (a) {
-          let matchName = !q || (a.name || '').toLowerCase().includes(q);
-          let matchStatus = !st || a.status === st;
-          if (matchName && matchStatus) {
-            list.push(a);
-          }
-        }
-      }
-
-      if (list.length === 0) {
-        el.innerHTML = '<p style="color:var(--text3)">ยังไม่มีข้อมูลทรัพย์สิน</p>';
-        return;
-      }
-
-      let html = '';
-      for (let i = 0; i < list.length; i++) {
-        let a = list[i];
-        let ri = DB.assets.indexOf(a);
-        let imgHtml = a.image ? `<img src="${a.image}" class="card-img">` : '';
-
-        html += `<div class="card">
-      <div class="card-header"><div class="card-title">${a.name}</div><span class="badge">${a.status}</span></div>
-      ${imgHtml}
-      <div class="card-row"><span class="label">ราคา:</span> <span style="color:var(--gold); font-weight:700;">${a.price}</span></div>
-      <div class="card-row"><span class="label">ห้อง:</span> <span>${a.roomtype}</span></div>
-      <div class="card-row"><span class="label">ติดต่อเดิม:</span> <span style="color:var(--red)">${a.contact}</span></div>
-      ${a.link ? `<div class="card-row"><a href="${a.link}" target="_blank" style="color:var(--blue); font-size:12px;">🔗 ดูลิงก์อ้างอิง</a></div>` : ''}
-      <div style="margin-top:15px; display:flex; gap:8px;">
-        <button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️ แก้ไข</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteItem('assets', ${ri})">🗑️ ลบ</button>
-      </div>
-    </div>`;
-      }
-      el.innerHTML = html;
-    }
-
-    function renderAgents() {
-      const tb = document.getElementById('agentTable');
-      if (DB.agents.length === 0) {
-        tb.innerHTML = '<tr><td colspan="6">ยังไม่มีข้อมูล</td></tr>';
-        return;
-      }
-      let html = '';
-      for (let i = 0; i < DB.agents.length; i++) {
-        let a = DB.agents[i];
-        if (a) {
-          html += `<tr><td>${a.name}</td><td>${a.company}</td><td>${a.tel}</td><td>${a.line}</td><td><button class="btn btn-outline btn-sm" onclick="editAgent(${i})">แก้</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('agents',${i})">ลบ</button></td></tr>`;
-        }
-      }
-      tb.innerHTML = html;
-    }
-
-    function renderCustomers() {
-      const tb = document.getElementById('customerTable');
-      if (DB.customers.length === 0) {
-        tb.innerHTML = '<tr><td colspan="6">ยังไม่มีข้อมูล</td></tr>';
-        return;
-      }
-      let html = '';
-      for (let i = 0; i < DB.customers.length; i++) {
-        let a = DB.customers[i];
-        if (a) {
-          html += `<tr><td>${a.name}</td><td>${a.status}</td><td>${a.budget}</td><td>${a.contact}</td><td>${a.note}</td><td><button class="btn btn-outline btn-sm" onclick="editCustomer(${i})">แก้</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${i})">ลบ</button></td></tr>`;
-        }
-      }
-      tb.innerHTML = html;
-    }
-
-    function renderUsers() {
-      const tb = document.getElementById('userTable');
-      let html = '';
-      for (let i = 0; i < AUTH.users.length; i++) {
-        let u = AUTH.users[i];
-        if (u) {
-          html += `<tr><td>${u.username}</td><td>${u.displayname}</td><td>${u.role}</td><td><button class="btn btn-outline btn-sm" onclick="editUser(${i})">แก้</button> <button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">ลบ</button></td></tr>`;
-        }
-      }
-      tb.innerHTML = html;
-    }
-
-
-    // ==================== 4. FACEBOOK GRAPH API ====================
-    window.fbAsyncInit = function () {
-      FB.init({ appId: '26534886769453064', cookie: true, xfbml: true, version: 'v19.0' });
-    };
+    // ==================== 3. FACEBOOK API ====================
+    window.fbAsyncInit = function () { FB.init({ appId: '26534886769453064', cookie: true, xfbml: true, version: 'v19.0' }); };
 
     function fetchFromFacebookAPI() {
       const url = document.getElementById('qs_link').value;
-      if (!url) {
-        alert('เบนซ์อย่าลืมใส่ลิงก์ Facebook ก่อนนะคะ!');
-        return;
-      }
-
+      if (!url) return alert('เบนซ์อย่าลืมใส่ลิงก์ Facebook ก่อนนะคะ!');
       const postIdMatch = url.match(/(?:posts\/|fbid=|permalink\/)([0-9]+)/);
-      if (!postIdMatch) {
-        alert('หา ID โพสต์ไม่เจอค่ะ ลองวางเนื้อหาโดยตรงในกล่องด้านล่างแทนนะคะ');
-        return;
-      }
+      if (!postIdMatch) return alert('หา ID โพสต์ไม่เจอค่ะ ลองวางเนื้อหาโดยตรงในกล่องด้านล่างแทนนะคะ');
 
       const postId = postIdMatch[1];
       const pageAccessToken = 'EAF5FVsQMaAgBRXD519TZCZCZAuNG6tZBVGzM7vBBSivMSovmf7QgysCbVHooodcxM8XwitDKF4340QnuJcFDItrtCGNIE6EDYZBsRQ3GZB3egQ9HNzK55j3snLyjFw5QjFWbFuGEN3LuEuQoz60r9tE3CJcFC39sGGgI9aQkZBdVga8TLrcNjbXujZClNSSpmWQTIJyZAH65McDKmdmP3tcvX6iKQYO6Hq9WfekUoI5lMpZB8ugtNEAshOVJJerfRtIn7hrwVpQgbvnfNo2OeCDGwZCOqpIn9TbEAa49JsZD';
@@ -1087,282 +890,102 @@
       );
     }
 
-
-    // ==================== 5. BATCH RECORDING / QUICK SAVE ====================
+    // ==================== 4. QUICK SAVE ====================
     function quickSaveAsset() {
       const raw = document.getElementById('qs_raw').value;
       const link = document.getElementById('qs_link').value;
       const imageUrl = document.getElementById('qs_image_url').value;
 
-      if (!raw || raw === 'กำลังดึงข้อมูล...') {
-        alert('กรุณาวางเนื้อหาโพสต์ก่อนค่ะ');
-        return;
-      }
+      if (!raw || raw === 'กำลังดึงข้อมูล...') return alert('กรุณาวางเนื้อหาโพสต์ก่อนค่ะ');
 
-      const projectMatch = raw.match(/(โครงการ|หมู่บ้าน|คอนโด)\s*([^\n,]+)/);
-      const project = projectMatch ? projectMatch[2].trim() : "ไม่ระบุชื่อ";
-
-      const priceMatch = raw.match(/([0-9,.]+)\s*(บาท|ล้าน|/เดือน) /);
-      const price = priceMatch ? priceMatch[0].trim() : "ไม่ระบุ";
-
-      const areaMatch = raw.match(/([0-9,.]+)\s*(ตร\.ม\.|ตร\.ว\.)/);
-      const area = areaMatch ? areaMatch[0].trim() : "";
-
-      const floorMatch = raw.match(/(ชั้นที่|ชั้น)\s*([0-9]+)/);
-      const floor = floorMatch ? floorMatch[0].trim() : "";
-
+      const project = (raw.match(/(โครงการ|หมู่บ้าน|คอนโด)\s*([^\n,]+)/) || ["", "", "ไม่ระบุชื่อ"])[2].trim();
+      const price = (raw.match(/([0-9,.]+)\s*(บาท|ล้าน|\/เดือน)/) || ["ไม่ระบุ"])[0].trim();
+      const area = (raw.match(/([0-9,.]+)\s*(ตร\.ม\.|ตร\.ว\.)/) || [""]).join(' ').trim();
+      const floor = (raw.match(/(ชั้นที่|ชั้น)\s*([0-9]+)/) || [""]).join(' ').trim();
       const status = raw.includes("เช่า") ? "เช่า" : (raw.includes("ขาย") ? "ขาย" : "เช่า/ขาย");
+      const contactInfo = (raw.match(/(0[0-9]{1,2}-?[0-9]{3}-?[0-9]{4}|[Ll]ine\s*[:@]?\s*[a-zA-Z0-9._-]+)/g) || []).join(', ');
 
-      const contactMatch = raw.match(/(0[0-9]{1,2}-?[0-9]{3}-?[0-9]{4}|[Ll]ine\s*[:@]?\s*[a-zA-Z0-9._-]+)/g);
-      const contactInfo = contactMatch ? contactMatch.join(', ') : "";
-
-      const newAsset = {
-        name: project,
-        location: '',
-        status: status,
-        type: 'คอนโด',
-        price: price,
-        roomtype: `${area} ${floor}`.trim(),
-        contact: contactInfo,
-        note: raw,
-        link: link,
-        image: imageUrl
-      };
+      const newAsset = { name: project, location: '', status: status, type: 'คอนโด', price: price, roomtype: `${area} ${floor}`.trim(), area: '', floor: '', contact: contactInfo, note: raw, link: link, image: imageUrl };
 
       fixDatabaseStructure();
-      DB.assets.push(newAsset);
-      saveToCloud();
-      updateUI();
+      DB.assets.push(newAsset); saveToCloud(); updateUI();
 
-      document.getElementById('qs_raw').value = '';
-      document.getElementById('qs_link').value = '';
-      document.getElementById('qs_image_url').value = '';
-      document.getElementById('img_preview_container').style.display = 'none';
-      document.getElementById('qs_image_preview').innerHTML = '';
-
+      document.getElementById('qs_raw').value = ''; document.getElementById('qs_link').value = ''; document.getElementById('qs_image_url').value = '';
+      document.getElementById('img_preview_container').style.display = 'none'; document.getElementById('qs_image_preview').innerHTML = '';
       alert('⚡ บันทึกข้อมูลเรียบร้อยแล้วค่ะ!');
     }
 
+    // ==================== 5. RENDER UI ====================
+    function updateUI() { fixDatabaseStructure(); renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); if (AUTH.current && AUTH.current.role === 'admin') renderUsers(); }
 
-    // ==================== 6. MODALS AND FORM SAVING ====================
-    function v(id) { return document.getElementById(id).value.trim(); }
-    function setV(id, val) { document.getElementById(id).value = val || ''; }
-
-    function openModal(type) {
-      document.getElementById('modal' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('open');
-      editMode = { type: type, idx: -1 };
-
-      if (type === 'asset') {
-        setV('a_name', ''); setV('a_status', 'ขาย'); setV('a_type', 'คอนโด'); setV('a_price', '');
-        setV('a_roomtype', ''); setV('a_location', ''); setV('a_contact', ''); setV('a_note', '');
-        setV('a_link', ''); setV('a_image', '');
-      }
-      if (type === 'agent') {
-        setV('ag_name', ''); setV('ag_company', ''); setV('ag_coagent', 'รับ'); setV('ag_tel', ''); setV('ag_line', '');
-      }
-      if (type === 'customer') {
-        setV('cu_name', ''); setV('cu_status', 'เช่า'); setV('cu_budget', ''); setV('cu_contact', ''); setV('cu_note', '');
-      }
-      if (type === 'user') {
-        setV('u_username', ''); setV('u_password', ''); setV('u_displayname', ''); setV('u_role', 'user');
-      }
+    function renderAssets() {
+      const el = document.getElementById('assetCards'); const q = document.getElementById('assetSearch').value.toLowerCase(); const st = document.getElementById('filterStatus').value;
+      let list = DB.assets.filter(a => a && (!q || (a.name || '').toLowerCase().includes(q)) && (!st || a.status === st));
+      if (!list.length) { el.innerHTML = '<p style="color:var(--text3)">ยังไม่มีข้อมูลทรัพย์สิน</p>'; return; }
+      el.innerHTML = list.map(a => {
+        const ri = DB.assets.indexOf(a);
+        const imgHtml = a.image ? `<img src="${a.image}" class="card-img">` : '';
+        return `<div class="card">
+      <div class="card-header"><div class="card-title">${a.name}</div><span class="badge">${a.status}</span></div>
+      ${imgHtml}
+      <div class="card-row"><span class="label">ราคา:</span> <span style="color:var(--gold); font-weight:700;">${a.price}</span></div>
+      <div class="card-row"><span class="label">ห้อง:</span> <span>${a.roomtype}</span></div>
+      <div class="card-row"><span class="label">ติดต่อเดิม:</span> <span style="color:var(--red)">${a.contact}</span></div>
+      ${a.link ? `<div class="card-row"><a href="${a.link}" target="_blank" style="color:var(--blue); font-size:12px;">🔗 ดูลิงก์อ้างอิง</a></div>` : ''}
+      <div style="margin-top:15px; display:flex; gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️ แก้ไข</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('assets', ${ri})">🗑️ ลบ</button>
+      </div>
+    </div>`;
+      }).join('');
     }
 
-    function closeModal(type) {
-      document.getElementById('modal' + type.charAt(0).toUpperCase() + type.slice(1)).classList.remove('open');
-    }
+    function renderAgents() { const tb = document.getElementById('agentTable'); if (!DB.agents.length) { tb.innerHTML = '<tr><td colspan="6">ยังไม่มีข้อมูล</td></tr>'; return; } tb.innerHTML = DB.agents.map((a, i) => { if (!a) return ''; return `<tr><td>${a.name}</td><td>${a.company}</td><td>${a.tel}</td><td>${a.line}</td><td><button class="btn btn-outline btn-sm" onclick="editAgent(${i})">แก้</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('agents',${i})">ลบ</button></td></tr>`; }).join(''); }
+    function renderCustomers() { const tb = document.getElementById('customerTable'); if (!DB.customers.length) { tb.innerHTML = '<tr><td colspan="6">ยังไม่มีข้อมูล</td></tr>'; return; } tb.innerHTML = DB.customers.map((a, i) => { if (!a) return ''; return `<tr><td>${a.name}</td><td>${a.status}</td><td>${a.budget}</td><td>${a.contact}</td><td>${a.note}</td><td><button class="btn btn-outline btn-sm" onclick="editCustomer(${i})">แก้</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${i})">ลบ</button></td></tr>`; }).join(''); }
+    function renderUsers() { const tb = document.getElementById('userTable'); tb.innerHTML = AUTH.users.map((u, i) => { if (!u) return ''; return `<tr><td>${u.username}</td><td>${u.displayname}</td><td>${u.role}</td><td><button class="btn btn-outline btn-sm" onclick="editUser(${i})">แก้</button> <button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">ลบ</button></td></tr>`; }).join(''); }
 
-    function saveAsset() {
-      const a = {
-        name: v('a_name'), location: v('a_location'), status: v('a_status'),
-        type: v('a_type'), price: v('a_price'), roomtype: v('a_roomtype'),
-        contact: v('a_contact'), note: v('a_note'), link: v('a_link'), image: v('a_image')
-      };
-      if (!a.name) return alert("กรุณาใส่ชื่อโครงการค่ะ");
-      if (editMode.idx >= 0) { DB.assets[editMode.idx] = a; } else { DB.assets.push(a); }
-      saveToCloud(); closeModal('asset'); updateUI();
-    }
+    // ==================== 6. MODALS ====================
+    function v(id) { return document.getElementById(id).value.trim(); } function setV(id, val) { document.getElementById(id).value = val || ''; }
+    function openModal(t) { document.getElementById('modal' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('open'); editMode = { type: t, idx: -1 }; if (t === 'asset') { setV('a_name', ''); setV('a_status', 'ขาย'); setV('a_type', 'คอนโด'); setV('a_price', ''); setV('a_roomtype', ''); setV('a_contact', ''); setV('a_note', ''); setV('a_link', ''); setV('a_image', ''); } if (t === 'agent') { setV('ag_name', ''); setV('ag_company', ''); setV('ag_coagent', 'รับ'); setV('ag_tel', ''); setV('ag_line', ''); } if (t === 'user') { setV('u_username', ''); setV('u_password', ''); setV('u_displayname', ''); setV('u_role', 'user'); } }
+    function closeModal(t) { document.getElementById('modal' + t.charAt(0).toUpperCase() + t.slice(1)).classList.remove('open'); }
+    function saveAsset() { const a = { name: v('a_name'), location: v('a_location'), status: v('a_status'), type: v('a_type'), price: v('a_price'), roomtype: v('a_roomtype'), contact: v('a_contact'), note: v('a_note'), link: v('a_link'), image: v('a_image') }; if (!a.name) return; if (editMode.idx >= 0) DB.assets[editMode.idx] = a; else DB.assets.push(a); saveToCloud(); closeModal('asset'); updateUI(); }
+    function editAsset(i) { const a = DB.assets[i]; if (!a) return; setV('a_name', a.name); setV('a_location', a.location); setV('a_status', a.status); setV('a_type', a.type); setV('a_price', a.price); setV('a_roomtype', a.roomtype); setV('a_contact', a.contact); setV('a_note', a.note); setV('a_link', a.link); setV('a_image', a.image); editMode = { type: 'asset', idx: i }; document.getElementById('modalAsset').classList.add('open'); }
+    function saveAgent() { const ag = { name: v('ag_name'), company: v('ag_company'), coagent: v('ag_coagent'), tel: v('ag_tel'), line: v('ag_line') }; if (!ag.name) return; if (editMode.idx >= 0) DB.agents[editMode.idx] = ag; else DB.agents.push(ag); saveToCloud(); closeModal('agent'); updateUI(); }
+    function editAgent(i) { const a = DB.agents[i]; if (!a) return; setV('ag_name', a.name); setV('ag_company', a.company); setV('ag_coagent', a.coagent); setV('ag_tel', a.tel); setV('ag_line', a.line); editMode = { type: 'agent', idx: i }; document.getElementById('modalAgent').classList.add('open'); }
+    function saveCustomer() { const cu = { name: v('cu_name'), status: v('cu_status'), budget: v('cu_budget'), contact: v('cu_contact'), note: v('cu_note') }; if (!cu.name) return; if (editMode.idx >= 0) DB.customers[editMode.idx] = cu; else DB.customers.push(cu); saveToCloud(); closeModal('customer'); updateUI(); }
+    function editCustomer(i) { const a = DB.customers[i]; if (!a) return; setV('cu_name', a.name); setV('cu_status', a.status); setV('cu_budget', a.budget); setV('cu_contact', a.contact); setV('cu_note', a.note); editMode = { type: 'customer', idx: i }; document.getElementById('modalCustomer').classList.add('open'); }
+    function saveUser() { const u = { username: v('u_username'), password: v('u_password'), displayname: v('u_displayname'), role: v('u_role') }; if (!u.username) return; if (editMode.idx >= 0) AUTH.users[editMode.idx] = u; else AUTH.users.push(u); saveToCloud(); closeModal('user'); updateUI(); }
+    function editUser(i) { const a = AUTH.users[i]; if (!a) return; setV('u_username', a.username); setV('u_password', a.password); setV('u_displayname', a.displayname); setV('u_role', a.role); editMode = { type: 'user', idx: i }; document.getElementById('modalUser').classList.add('open'); }
+    function deleteItem(type, i) { if (confirm('ลบรายการนี้?')) { DB[type].splice(i, 1); saveToCloud(); updateUI(); } }
+    function deleteUser(i) { if (confirm('ลบ User นี้?')) { AUTH.users.splice(i, 1); saveToCloud(); updateUI(); } }
 
-    function editAsset(i) {
-      const a = DB.assets[i];
-      if (!a) return;
-      setV('a_name', a.name); setV('a_location', a.location); setV('a_status', a.status);
-      setV('a_type', a.type); setV('a_price', a.price); setV('a_roomtype', a.roomtype);
-      setV('a_contact', a.contact); setV('a_note', a.note); setV('a_link', a.link); setV('a_image', a.image);
-      editMode = { type: 'asset', idx: i };
-      document.getElementById('modalAsset').classList.add('open');
-    }
-
-    function saveAgent() {
-      const ag = { name: v('ag_name'), company: v('ag_company'), coagent: v('ag_coagent'), tel: v('ag_tel'), line: v('ag_line') };
-      if (!ag.name) return;
-      if (editMode.idx >= 0) DB.agents[editMode.idx] = ag; else DB.agents.push(ag);
-      saveToCloud(); closeModal('agent'); updateUI();
-    }
-
-    function editAgent(i) {
-      const a = DB.agents[i];
-      if (!a) return;
-      setV('ag_name', a.name); setV('ag_company', a.company); setV('ag_coagent', a.coagent);
-      setV('ag_tel', a.tel); setV('ag_line', a.line);
-      editMode = { type: 'agent', idx: i };
-      document.getElementById('modalAgent').classList.add('open');
-    }
-
-    function saveCustomer() {
-      const cu = { name: v('cu_name'), status: v('cu_status'), budget: v('cu_budget'), contact: v('cu_contact'), note: v('cu_note') };
-      if (!cu.name) return;
-      if (editMode.idx >= 0) DB.customers[editMode.idx] = cu; else DB.customers.push(cu);
-      saveToCloud(); closeModal('customer'); updateUI();
-    }
-
-    function editCustomer(i) {
-      const a = DB.customers[i];
-      if (!a) return;
-      setV('cu_name', a.name); setV('cu_status', a.status); setV('cu_budget', a.budget);
-      setV('cu_contact', a.contact); setV('cu_note', a.note);
-      editMode = { type: 'customer', idx: i };
-      document.getElementById('modalCustomer').classList.add('open');
-    }
-
-    function saveUser() {
-      const u = { username: v('u_username'), password: v('u_password'), displayname: v('u_displayname'), role: v('u_role') };
-      if (!u.username) return;
-      if (editMode.idx >= 0) AUTH.users[editMode.idx] = u; else AUTH.users.push(u);
-      saveToCloud(); closeModal('user'); updateUI();
-    }
-
-    function editUser(i) {
-      const a = AUTH.users[i];
-      if (!a) return;
-      setV('u_username', a.username); setV('u_password', a.password);
-      setV('u_displayname', a.displayname); setV('u_role', a.role);
-      editMode = { type: 'user', idx: i };
-      document.getElementById('modalUser').classList.add('open');
-    }
-
-    function deleteItem(type, i) {
-      if (confirm('ต้องการลบรายการนี้ใช่ไหม?')) {
-        DB[type].splice(i, 1);
-        saveToCloud();
-        updateUI();
-      }
-    }
-
-    function deleteUser(i) {
-      if (confirm('ต้องการลบ User นี้ใช่ไหม?')) {
-        AUTH.users.splice(i, 1);
-        saveToCloud();
-        updateUI();
-      }
-    }
-
-
-    // ==================== 7. ระบบสร้างคลิปบอร์ด (CLIPBOARD) ====================
+    // ==================== 7. CLIPBOARD ====================
     function populateCbSelect() {
-      const selAs = document.getElementById('cbAssetSelect');
-      const selAg = document.getElementById('cbAgentSelect');
-
-      let asHtml = '<option value="">-- กรุณาเลือกทรัพย์สิน --</option>';
-      for (let i = 0; i < DB.assets.length; i++) {
-        if (DB.assets[i]) asHtml += `<option value="${i}">${DB.assets[i].name} (${DB.assets[i].status})</option>`;
-      }
-      selAs.innerHTML = asHtml;
-
-      let agHtml = '<option value="">-- ใช้ข้อมูลติดต่อเดิม (ไม่แนะนำ) --</option>';
-      for (let i = 0; i < DB.agents.length; i++) {
-        if (DB.agents[i]) {
-          let comp = DB.agents[i].company ? `(${DB.agents[i].company})` : '';
-          agHtml += `<option value="${i}">${DB.agents[i].name} ${comp}</option>`;
-        }
-      }
-      selAg.innerHTML = agHtml;
-
+      const selAs = document.getElementById('cbAssetSelect'); const selAg = document.getElementById('cbAgentSelect');
+      selAs.innerHTML = '<option value="">-- กรุณาเลือกทรัพย์สิน --</option>' + DB.assets.map((a, i) => { if (!a) return ''; return `<option value="${i}">${a.name} (${a.status})</option>`; }).join('');
+      selAg.innerHTML = '<option value="">-- ใช้ข้อมูลติดต่อเดิม (ไม่แนะนำ) --</option>' + DB.agents.map((ag, i) => { if (!ag) return ''; return `<option value="${i}">${ag.name} ${ag.company ? '(' + ag.company + ')' : ''}</option>`; }).join('');
       generateClipboard();
     }
-
     function generateClipboard() {
-      const asIdx = document.getElementById('cbAssetSelect').value;
-      const agIdx = document.getElementById('cbAgentSelect').value;
-      const tmpl = document.getElementById('cbTemplate').value;
-      const out = document.getElementById('cbOutput');
-
-      if (asIdx === '') {
-        out.innerText = 'เลือกทรัพย์สินด้านบนเพื่อดูตัวอย่างข้อความโพสต์ค่ะ...';
-        return;
-      }
-
-      const a = DB.assets[asIdx];
-      if (!a) return;
-
-      let finalContact = a.contact || 'ไม่ได้ระบุเบอร์ติดต่อ';
-
-      if (agIdx !== '') {
-        const ag = DB.agents[agIdx];
-        if (ag) {
-          let comp = ag.company ? `(${ag.company})` : '';
-          finalContact = `${ag.name} ${comp}\n📞 โทร: ${ag.tel}\n📱 Line: ${ag.line}`;
-        }
-      }
-
+      const asIdx = document.getElementById('cbAssetSelect').value; const agIdx = document.getElementById('cbAgentSelect').value; const tmpl = document.getElementById('cbTemplate').value; const out = document.getElementById('cbOutput');
+      if (asIdx === '') { out.innerText = 'เลือกทรัพย์สินด้านบนเพื่อดูตัวอย่างข้อความโพสต์ค่ะ...'; return; }
+      const a = DB.assets[asIdx]; if (!a) return;
+      let finalContact = a.contact || 'ไม่ได้ระบุ';
+      if (agIdx !== '') { const ag = DB.agents[agIdx]; if (ag) finalContact = `${ag.name} ${ag.company ? '(' + ag.company + ')' : ''}\n📞 โทร: ${ag.tel}\n📱 Line: ${ag.line}`; }
       let txt = '';
       if (tmpl === 'fb') {
-        txt = `✨ ปล่อย${a.status}ด่วน! ${a.name}\n━━━━━━━━━━━━━━━━━━━━\n`;
-        if (a.location) txt += `📍 ทำเล: ${a.location}\n`;
-        txt += `💰 ราคา: ${a.price}\n`;
-        if (a.roomtype) txt += `🛏️ รายละเอียด: ${a.roomtype}\n`;
-        if (a.note) txt += `\n📝 หมายเหตุ:\n${a.note}\n`;
-        txt += `━━━━━━━━━━━━━━━━━━━━\n📌 สนใจติดต่อสอบถาม / นัดชม:\n${finalContact}\n`;
-        if (a.link) txt += `\n🔗 ลิงก์อ้างอิง: ${a.link}\n`;
-        txt += `\n#BENZHOME #อสังหา #รับฝากขายเช่าคอนโด`;
-      } else {
-        txt = `🔥 ประกาศ${a.status}: ${a.name}\n💰 ราคา: ${a.price}\n👉 รายละเอียด: ${a.roomtype}\n📞 ติดต่อ: ${finalContact.replace(/\n/g, ' ')}`;
-      }
+        txt = `✨ ปล่อย${a.status}ด่วน! ${a.name}\n━━━━━━━━━━━━━━━━━━━━\n${a.location ? `📍 ทำเล: ${a.location}\n` : ''}💰 ราคา: ${a.price}\n${a.roomtype ? `🛏️ รายละเอียด: ${a.roomtype}\n` : ''}${a.note ? `\n📝 หมายเหตุ:\n${a.note}\n` : ''}━━━━━━━━━━━━━━━━━━━━\n📌 สนใจติดต่อ / นัดชม:\n${finalContact}\n${a.link ? `\n🔗 ลิงก์อ้างอิง: ${a.link}\n` : ''}\n#BENZHOME #อสังหา #รับฝากขายเช่าคอนโด`;
+      } else { txt = `ประกาศ${a.status}: ${a.name}\n💰 ราคา: ${a.price}\n👉 รายละเอียด: ${a.roomtype}\n📞 สนใจติดต่อ: ${finalContact.replace(/\n/g, ' ')}`; }
       out.innerText = txt;
     }
+    function copyClipboard() { const txt = document.getElementById('cbOutput').innerText; if (txt.includes('เลือกทรัพย์สิน')) return alert('กรุณาเลือกทรัพย์สินก่อนก๊อปปี้ค่ะ!'); navigator.clipboard.writeText(txt).then(() => alert('📋 ก๊อปปี้เรียบร้อย!')); }
 
-    function copyClipboard() {
-      const txt = document.getElementById('cbOutput').innerText;
-      if (txt.includes('เลือกทรัพย์สิน')) {
-        alert('กรุณาเลือกทรัพย์สินก่อนก๊อปปี้ค่ะ!');
-        return;
-      }
-      navigator.clipboard.writeText(txt).then(() => {
-        alert('📋 ก๊อปปี้ข้อความเรียบร้อย นำไปโพสต์ได้เลยค่ะ!');
-      });
-    }
-
-
-    // ==================== 8. ส่งออกข้อมูล (EXPORT CSV) ====================
-    function csvEscape(v) {
-      return '"' + (String(v || '').replace(/"/g, '""')) + '"';
-    }
-
+    // ==================== 8. EXPORT CSV ====================
+    function csvEscape(v) { return '"' + (String(v || '').replace(/"/g, '""')) + '"'; }
     function exportCSV(type) {
-      let rows = [];
-      let fname = '';
-
-      if (type === 'assets') {
-        rows = [['ชื่อโครงการ', 'สถานะ', 'ราคา', 'รายละเอียดห้อง', 'ทำเล', 'เบอร์ติดต่อเดิม', 'Note', 'Link', 'Image URL']];
-        for (let i = 0; i < DB.assets.length; i++) {
-          let a = DB.assets[i];
-          if (a) {
-            rows.push([a.name, a.status, a.price, a.roomtype, a.location, a.contact, a.note, a.link, a.image].map(csvEscape));
-          }
-        }
-        fname = 'benzhome_assets.csv';
-      }
-
-      let content = '';
-      for (let i = 0; i < rows.length; i++) {
-        content += rows[i].join(',') + '\n';
-      }
-
-      const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = fname;
-      a.click();
+      let rows = [], fname = '';
+      if (type === 'assets') { rows = [['ชื่อโครงการ', 'สถานะ', 'ราคา', 'รายละเอียด', 'ทำเล', 'ติดต่อเดิม', 'Note', 'Link', 'Image URL']]; DB.assets.forEach((a, i) => { if (a) rows.push([a.name, a.status, a.price, a.roomtype, a.location, a.contact, a.note, a.link, a.image].map(csvEscape)); }); fname = 'assets.csv'; }
+      const content = rows.map(r => r.join(',')).join('\n'); const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fname; a.click();
     }
   </script>
 </body>
