@@ -928,12 +928,12 @@
         <div class="logo-icon">🏠</div>
         <div>
           <div class="logo-text">PropertyFlow</div>
-          <div class="logo-sub">Facebook → AI → Firebase → GDrive</div>
+          <div class="logo-sub">Facebook → Gemini AI → Firebase → GDrive</div>
         </div>
       </div>
       <div class="status-bar">
         <div class="status-dot">
-          <div class="dot" id="dotClaude"></div><span id="lblClaude">Claude API</span>
+          <div class="dot" id="dotClaude"></div><span id="lblClaude">Gemini AI</span>
         </div>
         <div class="status-dot">
           <div class="dot" id="dotFb"></div><span id="lblFb">Facebook</span>
@@ -1125,9 +1125,9 @@
           <div class="panel-body api-config">
             <div class="api-field">
               <div class="api-label">
-                Claude API Key <span class="api-required">* จำเป็น</span>
+                Gemini API Key <span class="api-required">* จำเป็น</span>
               </div>
-              <input type="password" class="api-input" id="claudeKey" placeholder="sk-ant-api03-..."
+              <input type="password" class="api-input" id="claudeKey" placeholder="AIzaSy... (จาก Google AI Studio)"
                 oninput="checkConfig()">
             </div>
             <div class="api-field">
@@ -1185,9 +1185,10 @@
                 ID จาก URL
               </div>
               <div class="setup-item">
-                <strong>Claude API Key</strong><br>
-                <a href="https://console.anthropic.com" target="_blank" class="setup-link">console.anthropic.com</a> →
-                API Keys → สร้าง key ใหม่ (มี Free tier $5)
+                <strong>Gemini API Key (ฟรี 1,500 req/วัน)</strong><br>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank"
+                  class="setup-link">aistudio.google.com/app/apikey</a> → Sign in ด้วย Google → Get API Key → Create API
+                Key → Copy key ที่ขึ้นต้น <code style="color:var(--accent3)">AIzaSy...</code>
               </div>
             </div>
           </div>
@@ -1203,8 +1204,8 @@
               <div style="color:var(--accent)">// ขั้นตอนอัตโนมัติ</div>
               <div>1. รับ FB URL → Extract Post ID</div>
               <div>2. FB Graph API → ดึงข้อมูลโพสต์</div>
-              <div>3. Claude AI → วิเคราะห์อสังหาฯ</div>
-              <div>4. Claude AI → สร้าง Social Post</div>
+              <div>3. Gemini AI → วิเคราะห์อสังหาฯ</div>
+              <div>4. Gemini AI → สร้าง Social Post</div>
               <div>5. Firestore → บันทึก Database</div>
               <div>6. Google Drive → อัพโหลดไฟล์</div>
               <div style="margin-top:8px;color:var(--accent)">// ข้อมูลที่สกัด</div>
@@ -1354,7 +1355,7 @@
       if (!url) { showToast('⚠️ กรุณาใส่ URL Facebook', 'error'); return; }
 
       const claudeKey = document.getElementById('claudeKey').value;
-      if (!claudeKey) { showToast('⚠️ กรุณาใส่ Claude API Key ก่อน', 'error'); return; }
+      if (!claudeKey) { showToast('⚠️ กรุณาใส่ Gemini API Key ก่อน', 'error'); return; }
 
       // Reset
       document.getElementById('progressSteps').innerHTML = '';
@@ -1411,7 +1412,7 @@
 
         // Step 3: Claude AI Analysis
         setStep(2);
-        const p3 = addProgress('🤖', 'AI วิเคราะห์ข้อมูลอสังหาฯ', 'Claude กำลังประมวลผล...');
+        const p3 = addProgress('🤖', 'Gemini AI วิเคราะห์ข้อมูลอสังหาฯ', 'Gemini กำลังประมวลผล...');
 
         const postType = document.getElementById('postType').value;
         const postStyle = document.getElementById('postStyle').value;
@@ -1447,29 +1448,29 @@ URL: ${url}
   "confidence": "ความน่าเชื่อถือ 0-100"
 }`;
 
-        const analysisRes = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': claudeKey,
-            'anthropic-version': '2023-06-01'
-          },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 1000,
-            messages: [{ role: 'user', content: analysisPrompt }]
-          })
-        });
+        const analysisRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${claudeKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: analysisPrompt }] }],
+              generationConfig: { temperature: 0.2, maxOutputTokens: 1500 }
+            })
+          }
+        );
 
         if (!analysisRes.ok) {
           const err = await analysisRes.json();
-          throw new Error('Claude API: ' + (err.error?.message || 'error'));
+          throw new Error('Gemini API: ' + (err.error?.message || 'ตรวจสอบ API Key อีกครั้ง'));
         }
 
         const analysisData = await analysisRes.json();
         let propertyInfo;
         try {
-          const rawText = analysisData.content[0].text;
+          let rawText = analysisData.candidates[0].content.parts[0].text;
+          // strip possible markdown fences
+          rawText = rawText.replace(/```json|```/g, '').trim();
           propertyInfo = JSON.parse(rawText);
         } catch (e) {
           propertyInfo = {
@@ -1486,7 +1487,7 @@ URL: ${url}
 
         // Step 4: Create Social Post
         setStep(3);
-        const p4 = addProgress('✍️', 'สร้าง Social Media Post', 'Claude กำลังเขียนโพสต์...');
+        const p4 = addProgress('✍️', 'Gemini สร้าง Social Media Post', 'Gemini กำลังเขียนโพสต์...');
 
         const langInstr = lang === 'th' ? 'ภาษาไทย' : lang === 'en' ? 'English' : 'ทั้งภาษาไทยและอังกฤษ';
         const platformInstr = platform === 'facebook' ? 'Facebook Post' : platform === 'instagram' ? 'Instagram Caption' : platform === 'line' ? 'LINE OA' : 'ทุกแพลตฟอร์ม';
@@ -1505,22 +1506,20 @@ ${JSON.stringify(propertyInfo, null, 2)}
 - น่าดึงดูด กระตุ้นให้ contact
 - ตอบเป็น text โพสต์เท่านั้น ห้ามมี markdown`;
 
-        const postRes = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': claudeKey,
-            'anthropic-version': '2023-06-01'
-          },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 1000,
-            messages: [{ role: 'user', content: postPrompt }]
-          })
-        });
+        const postRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${claudeKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: postPrompt }] }],
+              generationConfig: { temperature: 0.8, maxOutputTokens: 1500 }
+            })
+          }
+        );
 
         const postData = await postRes.json();
-        const socialPost = postData.content[0].text;
+        const socialPost = postData.candidates[0].content.parts[0].text.trim();
         updateProgress(p4, 'done', `โพสต์สร้างแล้ว (${socialPost.length} ตัวอักษร)`);
 
         // Step 5: Firebase
