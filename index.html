@@ -4,1267 +4,1735 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BENZ HOME Agency — ระบบจัดการอสังหาริมทรัพย์</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Noto+Serif+Thai:wght@400;600;700&display=swap"
-    rel="stylesheet">
+  <title>PropertyFlow — อสังหาฯ Auto Workflow</title>
   <style>
-    /* ===== THEME: BENZ HOME DARK GOLD ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
     :root {
-      --gold: #D4AF37;
-      --gold-light: #E5C354;
-      --gold-dark: #AA8B2C;
-      --dark: #121212;
-      --dark2: #1E1E1E;
-      --dark3: #2C2C2C;
-      --dark4: #3A3A3A;
-      --text: #F0EDE6;
-      --text2: #A0A0A0;
-      --text3: #7A7A7A;
-      --accent: #D4AF37;
-      --red: #E05050;
-      --green: #50C878;
-      --blue: #5090E0;
-      --border: #333333;
-      --border2: #2A2A2A;
-      --radius: 12px;
-      --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --card: #16161f;
+      --border: #2a2a3a;
+      --accent: #6c63ff;
+      --accent2: #ff6b6b;
+      --accent3: #43e97b;
+      --accent4: #f8c471;
+      --text: #e8e8f0;
+      --muted: #6b6b8a;
+      --success: #43e97b;
+      --error: #ff6b6b;
+      --warning: #f8c471;
     }
 
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
     body {
-      font-family: 'Sarabun', sans-serif;
-      background: var(--dark);
+      background: var(--bg);
       color: var(--text);
+      font-family: 'Kanit', sans-serif;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    /* ===== LOGIN SCREEN ===== */
-    #loginScreen {
+    /* Background grid */
+    body::before {
+      content: '';
       position: fixed;
       inset: 0;
-      background: var(--dark);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      padding: 20px;
+      background-image:
+        linear-gradient(rgba(108, 99, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108, 99, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
     }
 
-    .login-box {
-      background: var(--dark2);
-      border-radius: 15px;
-      padding: 40px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: var(--shadow);
-      border: 1px solid #282828;
-    }
-
-    .login-logo {
-      text-align: center;
-      margin-bottom: 35px;
-    }
-
-    .login-logo h1 {
-      font-family: 'Noto Serif Thai', serif;
-      font-size: 32px;
-      color: var(--gold);
-      letter-spacing: 1px;
-      margin-bottom: 5px;
-    }
-
-    .login-field {
-      margin-bottom: 20px;
-    }
-
-    .login-field label {
-      display: block;
-      font-size: 14px;
-      color: var(--text);
-      margin-bottom: 8px;
-    }
-
-    .login-field input {
-      width: 100%;
-      background: var(--dark3);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px;
-      color: var(--text);
-      font-family: inherit;
-      outline: none;
-      transition: 0.2s;
-    }
-
-    .login-field input:focus {
-      border-color: var(--gold);
-    }
-
-    .login-btn {
-      width: 100%;
-      padding: 14px;
-      background: var(--gold);
-      border: none;
-      border-radius: 8px;
-      color: #121212;
-      font-weight: 700;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: 0.2s;
-    }
-
-    .login-btn:hover {
-      background: var(--gold-light);
-    }
-
-    .login-error {
-      background: rgba(224, 80, 80, 0.1);
-      color: var(--red);
-      border: 1px solid rgba(224, 80, 80, 0.3);
-      border-radius: 8px;
-      padding: 12px;
-      font-size: 14px;
-      margin-top: 15px;
-      display: none;
-      text-align: center;
-    }
-
-    /* ===== APP SHELL ===== */
-    #appShell {
-      display: none;
-    }
-
-    .header {
-      background: var(--dark2);
-      border-bottom: 1px solid var(--border);
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
       padding: 0 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 65px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10, 10, 15, 0.9);
+      backdrop-filter: blur(20px);
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
     }
 
     .logo {
-      font-family: 'Noto Serif Thai', serif;
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--gold);
-    }
-
-    .header-tabs {
       display: flex;
-      gap: 5px;
-      flex: 1;
-      justify-content: center;
-    }
-
-    .htab {
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 600;
-      border: none;
-      background: transparent;
-      color: var(--text2);
-      transition: all .2s;
-    }
-
-    .htab.active,
-    .htab:hover {
-      background: rgba(212, 175, 55, 0.15);
-      color: var(--gold);
-    }
-
-    .logout-btn {
-      background: transparent;
-      border: 1px solid var(--red);
-      color: var(--red);
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .logout-btn:hover {
-      background: rgba(224, 80, 80, 0.1);
-    }
-
-    .main {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 25px 20px;
-    }
-
-    .section {
-      display: none;
-    }
-
-    .section.active {
-      display: block;
-    }
-
-    .toolbar {
-      display: flex;
-      gap: 10px;
       align-items: center;
-      margin-bottom: 20px;
+      gap: 12px;
     }
 
-    .search-box input,
-    .filter-select {
-      background: var(--dark3);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 14px;
-      color: var(--text);
-      outline: none;
-      font-family: inherit;
-    }
-
-    .btn {
-      padding: 10px 20px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      font-family: inherit;
-      transition: 0.2s;
-    }
-
-    .btn-primary {
-      background: var(--gold);
-      color: #121212;
-    }
-
-    .btn-primary:hover {
-      background: var(--gold-light);
-    }
-
-    .btn-blue {
-      background: var(--blue);
-      color: #fff;
-    }
-
-    .btn-outline {
-      background: transparent;
-      border: 1px solid var(--gold);
-      color: var(--gold);
-    }
-
-    .btn-outline:hover {
-      background: rgba(212, 175, 55, 0.1);
-    }
-
-    .btn-danger {
-      background: rgba(224, 80, 80, 0.15);
-      border: 1px solid var(--red);
-      color: var(--red);
-    }
-
-    .btn-danger:hover {
-      background: var(--red);
-      color: #fff;
-    }
-
-    /* QUICK SAVE PANEL */
-    .quick-save-panel {
-      background: var(--dark2);
-      border: 1px solid var(--gold);
-      border-radius: 15px;
-      padding: 25px;
-      margin-bottom: 25px;
-      box-shadow: 0 4px 20px rgba(212, 175, 55, 0.05);
-    }
-
-    .form-group {
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
       display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-bottom: 15px;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
     }
 
-    .form-group label {
-      font-size: 13px;
-      color: var(--text2);
-      font-weight: 600;
-    }
-
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
-      background: var(--dark3);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px;
-      color: var(--text);
-      outline: none;
-      font-family: inherit;
-    }
-
-    .form-group input:focus,
-    .form-group textarea:focus {
-      border-color: var(--gold);
-    }
-
-    /* CARDS */
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 15px;
-    }
-
-    .card {
-      background: var(--dark2);
-      border: 1px solid var(--border);
-      border-radius: 15px;
-      padding: 20px;
-      transition: 0.2s;
-    }
-
-    .card:hover {
-      border-color: var(--gold);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-
-    .card-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--gold);
-      flex: 1;
-      line-height: 1.4;
-    }
-
-    .badge {
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 12px;
+    .logo-text {
+      font-size: 20px;
       font-weight: 700;
-      background: rgba(212, 175, 55, 0.15);
-      color: var(--gold);
-      border: 1px solid rgba(212, 175, 55, 0.3);
+      letter-spacing: -0.5px;
     }
 
-    .card-row {
-      font-size: 14px;
-      color: var(--text2);
-      margin-bottom: 6px;
+    .logo-sub {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
     }
 
-    .card-row span {
-      color: var(--text);
-      font-weight: 500;
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 12px;
+      font-family: 'IBM Plex Mono', monospace;
     }
 
-    .card-img {
-      width: 100%;
-      height: 160px;
-      object-fit: cover;
-      border-radius: 10px;
-      margin-bottom: 12px;
+    .status-dot {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      animation: pulse-dot 2s infinite;
+    }
+
+    .dot.connected {
+      background: var(--success);
+    }
+
+    .dot.error {
+      background: var(--error);
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    /* Workflow Steps */
+    .workflow-overview {
+      padding: 40px 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .workflow-step {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-pill {
+      background: var(--card);
       border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--muted);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s;
     }
 
-    /* TABLES & MODALS */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-      background: var(--dark2);
-      border-radius: 10px;
+    .step-pill.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(108, 99, 255, 0.1);
+    }
+
+    .step-pill.done {
+      border-color: var(--success);
+      color: var(--success);
+      background: rgba(67, 233, 123, 0.08);
+    }
+
+    .step-arrow {
+      color: var(--border);
+      font-size: 16px;
+    }
+
+    /* Main Layout */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 24px;
+      padding-bottom: 40px;
+    }
+
+    /* Panel */
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
       overflow: hidden;
     }
 
-    th {
-      background: var(--dark3);
-      padding: 14px;
-      text-align: left;
-      color: var(--gold);
+    .panel-header {
+      padding: 16px 20px;
       border-bottom: 1px solid var(--border);
-    }
-
-    td {
-      padding: 14px;
-      border-bottom: 1px solid var(--border);
-      color: var(--text);
-    }
-
-    .modal-bg {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 500;
-      display: none;
+      display: flex;
       align-items: center;
-      justify-content: center;
-    }
-
-    .modal-bg.open {
-      display: flex;
-    }
-
-    .modal {
-      background: var(--dark2);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      width: 100%;
-      max-width: 700px;
-      max-height: 90vh;
-      overflow-y: auto;
-      padding: 25px;
-      box-shadow: var(--shadow);
-    }
-
-    .modal-head {
-      display: flex;
       justify-content: space-between;
+    }
+
+    .panel-title {
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--accent);
+      display: flex;
       align-items: center;
-      margin-bottom: 20px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 15px;
+      gap: 8px;
     }
 
-    .modal-head h2 {
+    .panel-body {
+      padding: 20px;
+    }
+
+    /* Input Area */
+    .url-input-area {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .url-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 48px 16px 16px;
+      color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color 0.3s;
+      outline: none;
+    }
+
+    .url-input:focus {
+      border-color: var(--accent);
+    }
+
+    .url-input::placeholder {
+      color: var(--muted);
+    }
+
+    .url-icon {
+      position: absolute;
+      right: 14px;
+      top: 14px;
       font-size: 18px;
-      color: var(--gold);
-      font-weight: 700;
+      opacity: 0.4;
     }
 
-    .close-btn {
-      background: none;
+    /* Config Grid */
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .config-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .config-label {
+      font-size: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .config-select,
+    .config-input {
+      width: 100%;
+      background: transparent;
       border: none;
-      color: var(--text3);
-      font-size: 24px;
+      color: var(--text);
+      font-family: 'Kanit', sans-serif;
+      font-size: 13px;
+      outline: none;
       cursor: pointer;
     }
 
-    .close-btn:hover {
-      color: var(--red);
+    .config-select option {
+      background: var(--card);
     }
 
-    .form-grid {
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Kanit', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #9b8dff);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(108, 99, 255, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 13px;
+      padding: 10px;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Progress */
+    .progress-section {
+      margin-top: 16px;
+      display: none;
+    }
+
+    .progress-section.show {
+      display: block;
+    }
+
+    .progress-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(42, 42, 58, 0.5);
+      font-size: 13px;
+      animation: fadeSlideIn 0.4s ease both;
+    }
+
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .progress-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .pi-loading {
+      background: rgba(108, 99, 255, 0.2);
+      border: 1px solid var(--accent);
+    }
+
+    .pi-loading::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border: 2px solid var(--accent);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .pi-done {
+      background: rgba(67, 233, 123, 0.2);
+      border: 1px solid var(--success);
+    }
+
+    .pi-error {
+      background: rgba(255, 107, 107, 0.2);
+      border: 1px solid var(--error);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .progress-text {
+      flex: 1;
+    }
+
+    .progress-label {
+      font-weight: 500;
+    }
+
+    .progress-detail {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* Result Card */
+    .result-section {
+      display: none;
+      animation: fadeSlideIn 0.5s ease;
+    }
+
+    .result-section.show {
+      display: block;
+    }
+
+    .result-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 4px;
+    }
+
+    .rtab {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: 'Kanit', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 7px;
+      transition: all 0.2s;
+    }
+
+    .rtab.active {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Property Info */
+    .prop-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .prop-image-placeholder {
+      width: 100%;
+      height: 160px;
+      background: linear-gradient(135deg, rgba(108, 99, 255, 0.2), rgba(255, 107, 107, 0.1));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .prop-image-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
+    }
+
+    .prop-info {
+      padding: 14px;
+    }
+
+    .prop-badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .badge {
+      font-size: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      padding: 3px 8px;
+      border-radius: 20px;
+      border: 1px solid;
+    }
+
+    .badge-type {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(108, 99, 255, 0.1);
+    }
+
+    .badge-price {
+      border-color: var(--accent3);
+      color: var(--accent3);
+      background: rgba(67, 233, 123, 0.1);
+    }
+
+    .badge-area {
+      border-color: var(--accent4);
+      color: var(--accent4);
+      background: rgba(248, 196, 113, 0.1);
+    }
+
+    .prop-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .prop-details {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 15px;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
     }
 
-    .form-group.full {
-      grid-column: 1/-1;
+    .prop-detail {
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
-    .cb-card {
-      background: var(--dark2);
-      border: 1px solid var(--border);
-      border-radius: 15px;
-      padding: 30px;
-      max-width: 760px;
-      margin: 0 auto;
+    /* Social Post Preview */
+    .social-preview {
+      background: #1c1e21;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #3a3b3c;
+      font-family: -apple-system, system-ui, sans-serif;
+      font-size: 13px;
     }
 
-    .output-box {
-      background: var(--dark3);
+    .fb-header {
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #3a3b3c;
+    }
+
+    .fb-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .fb-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e4e6ea;
+    }
+
+    .fb-time {
+      font-size: 11px;
+      color: #8b8d91;
+    }
+
+    .fb-content {
+      padding: 12px 14px;
+      color: #e4e6ea;
+      line-height: 1.6;
+      font-size: 13px;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .fb-image-area {
+      background: linear-gradient(135deg, rgba(108, 99, 255, 0.3), rgba(255, 107, 107, 0.2));
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      border-top: 1px solid #3a3b3c;
+      position: relative;
+    }
+
+    .fb-image-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
+    }
+
+    .fb-actions {
+      padding: 8px 14px;
+      display: flex;
+      gap: 4px;
+      border-top: 1px solid #3a3b3c;
+    }
+
+    .fb-btn {
+      flex: 1;
+      padding: 6px;
+      border: none;
+      background: transparent;
+      color: #b0b3b8;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 6px;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+
+    .fb-btn:hover {
+      background: #3a3b3c;
+    }
+
+    /* Database view */
+    .db-record {
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 20px;
-      white-space: pre-wrap;
-      font-size: 15px;
+      padding: 14px;
+      margin-bottom: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      max-height: 300px;
+      overflow-y: auto;
+      line-height: 1.8;
+    }
+
+    .db-key {
+      color: var(--accent);
+    }
+
+    .db-string {
+      color: var(--accent3);
+    }
+
+    .db-number {
+      color: var(--accent4);
+    }
+
+    /* Action buttons row */
+    .action-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .action-row .btn-secondary {
+      flex: 1;
+    }
+
+    /* Right Panel */
+    .right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Config Panel */
+    .api-config {}
+
+    .api-field {
+      margin-bottom: 12px;
+    }
+
+    .api-label {
+      font-size: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .api-required {
+      color: var(--error);
+      font-size: 9px;
+    }
+
+    .api-free {
+      color: var(--success);
+      font-size: 9px;
+    }
+
+    .api-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
       color: var(--text);
-      min-height: 180px;
-      margin-top: 15px;
-      line-height: 1.6;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .api-input:focus {
+      border-color: var(--accent);
+    }
+
+    .api-input::placeholder {
+      color: var(--muted);
+    }
+
+    /* Setup Guide */
+    .setup-steps {
+      counter-reset: setup-counter;
+    }
+
+    .setup-item {
+      counter-increment: setup-counter;
+      position: relative;
+      padding: 10px 10px 10px 36px;
+      margin-bottom: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .setup-item::before {
+      content: counter(setup-counter);
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      background: rgba(108, 99, 255, 0.2);
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--accent);
+      font-weight: 600;
+      line-height: 20px;
+      text-align: center;
+    }
+
+    .setup-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+    }
+
+    /* Stats */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 22px;
+      font-weight: 700;
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 13px;
+      z-index: 1000;
+      animation: slideInToast 0.4s ease;
+      max-width: 320px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      display: none;
+    }
+
+    .toast.show {
+      display: flex;
+    }
+
+    .toast.success {
+      border-color: var(--success);
+    }
+
+    .toast.error {
+      border-color: var(--error);
+    }
+
+    @keyframes slideInToast {
+      from {
+        transform: translateX(120%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    @media (max-width: 768px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .config-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-row {
+        grid-template-columns: repeat(3, 1fr);
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <script async defer crossorigin="anonymous" src="https://connect.facebook.net/th_TH/sdk.js"></script>
-
-  <div id="loginScreen">
-    <div class="login-box">
-      <div class="login-logo">
-        <div class="icon" style="font-size:45px; margin-bottom:5px;">🏢</div>
-        <h1 style="font-size:30px;">BENZ HOME</h1>
-        <p style="color:#888; font-size:14px;">Agency Management System</p>
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">🏠</div>
+        <div>
+          <div class="logo-text">PropertyFlow</div>
+          <div class="logo-sub">Facebook → AI → Firebase → GDrive</div>
+        </div>
       </div>
-      <div class="login-field">
-        <label>Username</label>
-        <input type="text" id="loginUsername" placeholder="admin" onkeypress="if(event.key==='Enter') doLogin()">
-      </div>
-      <div class="login-field">
-        <label>Password</label>
-        <input type="password" id="loginPassword" placeholder="••••••••" onkeypress="if(event.key==='Enter') doLogin()">
-      </div>
-      <button class="login-btn" onclick="doLogin()">🔐 เข้าสู่ระบบ</button>
-      <div class="login-error" id="loginError">❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
-    </div>
-  </div>
-
-  <div id="appShell">
-    <div class="header">
-      <div class="logo">BENZ HOME <span style="font-size:12px; color:#888; font-weight:normal;">Agency</span></div>
-      <div class="header-tabs">
-        <button class="htab active" onclick="switchTab('assets',this)">🏠 ทรัพย์สิน</button>
-        <button class="htab" onclick="switchTab('agents',this)">👤 Agent</button>
-        <button class="htab" onclick="switchTab('customers',this)">🤝 ลูกค้า</button>
-        <button class="htab" onclick="switchTab('clipboard',this)">📋 เตรียมโพสต์</button>
-        <button class="htab" onclick="switchTab('iedata',this)">⚙️ จัดการข้อมูล</button>
-        <button class="htab" id="tabUsers" onclick="switchTab('users',this)" style="display:none">👥 Users</button>
-      </div>
-      <div class="header-user">
-        <span id="headerUserName" style="color:var(--gold); font-size:14px; font-weight:bold;">-</span>
-        <button class="logout-btn" onclick="doLogout()">ออกระบบ</button>
+      <div class="status-bar">
+        <div class="status-dot">
+          <div class="dot" id="dotClaude"></div><span id="lblClaude">Claude API</span>
+        </div>
+        <div class="status-dot">
+          <div class="dot" id="dotFb"></div><span id="lblFb">Facebook</span>
+        </div>
+        <div class="status-dot">
+          <div class="dot" id="dotFb2"></div><span id="lblFb2">Firebase</span>
+        </div>
       </div>
     </div>
+  </header>
 
-    <div class="main">
+  <div class="container">
+    <!-- Workflow overview -->
+    <div class="workflow-overview">
+      <div class="workflow-step">
+        <div class="step-pill" id="step1">📎 รับ URL Facebook</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="workflow-step">
+        <div class="step-pill" id="step2">🤖 AI วิเคราะห์</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="workflow-step">
+        <div class="step-pill" id="step3">✍️ สร้าง Post</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="workflow-step">
+        <div class="step-pill" id="step4">🗄️ บันทึก Firebase</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="workflow-step">
+        <div class="step-pill" id="step5">☁️ อัพ GDrive</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="workflow-step">
+        <div class="step-pill" id="step6">✅ เสร็จสิ้น</div>
+      </div>
+    </div>
 
-      <div id="sec-assets" class="section active">
-        <div class="quick-save-panel">
-          <h3 style="color:var(--gold); margin-bottom:15px; font-size:18px;">⚡ ดึงข้อมูลผ่านลิงก์ Facebook (API)</h3>
-          <div class="form-grid" style="gap:12px;">
-            <div class="form-group full">
-              <label>1. วางลิงก์โพสต์ Facebook</label>
-              <div style="display:flex; gap:10px;">
-                <input type="text" id="qs_link" placeholder="https://www.facebook.com/share/p/..." style="flex:1;">
-                <button class="btn btn-blue" onclick="fetchFromFacebookAPI()">🔄 ดึงข้อมูล</button>
+    <!-- Stats -->
+    <div class="stats-row" style="margin-bottom:24px">
+      <div class="stat-card">
+        <div class="stat-num" id="statTotal">0</div>
+        <div class="stat-label">รายการทั้งหมด</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statToday">0</div>
+        <div class="stat-label">วันนี้</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statSuccess">0</div>
+        <div class="stat-label">สำเร็จ</div>
+      </div>
+    </div>
+
+    <div class="main-grid">
+      <!-- Left: Main workflow -->
+      <div>
+        <!-- Input Panel -->
+        <div class="panel" style="margin-bottom:16px">
+          <div class="panel-header">
+            <div class="panel-title">📎 ใส่ URL Facebook</div>
+            <span style="font-size:11px;color:var(--muted);font-family:monospace">ขั้นตอนที่ 1/5</span>
+          </div>
+          <div class="panel-body">
+            <div class="url-input-area">
+              <textarea class="url-input" id="fbUrl"
+                placeholder="https://www.facebook.com/groups/xxx/posts/xxx&#10;หรือ https://www.facebook.com/xxx/posts/xxx"
+                rows="3"></textarea>
+              <span class="url-icon">🔗</span>
+            </div>
+
+            <div class="config-grid">
+              <div class="config-item">
+                <div class="config-label">ประเภทโพสต์เป้าหมาย</div>
+                <select class="config-select" id="postType">
+                  <option value="all">ทุกประเภท</option>
+                  <option value="house">บ้าน/ทาวน์เฮ้าส์</option>
+                  <option value="condo">คอนโด/ห้องชุด</option>
+                  <option value="land">ที่ดิน</option>
+                  <option value="commercial">อาคารพาณิชย์</option>
+                </select>
+              </div>
+              <div class="config-item">
+                <div class="config-label">แพลตฟอร์ม Social</div>
+                <select class="config-select" id="targetPlatform">
+                  <option value="facebook">Facebook Post</option>
+                  <option value="instagram">Instagram Caption</option>
+                  <option value="line">LINE OA</option>
+                  <option value="all">ทุกแพลตฟอร์ม</option>
+                </select>
+              </div>
+              <div class="config-item">
+                <div class="config-label">ภาษา</div>
+                <select class="config-select" id="postLang">
+                  <option value="th">ภาษาไทย</option>
+                  <option value="en">English</option>
+                  <option value="both">ไทย + อังกฤษ</option>
+                </select>
+              </div>
+              <div class="config-item">
+                <div class="config-label">สไตล์โพสต์</div>
+                <select class="config-select" id="postStyle">
+                  <option value="professional">Professional</option>
+                  <option value="casual">Casual/เป็นกันเอง</option>
+                  <option value="luxury">Luxury/หรูหรา</option>
+                  <option value="urgent">Urgent/เร่งด่วน</option>
+                </select>
               </div>
             </div>
-            <div class="form-group full" id="img_preview_container" style="display:none;">
-              <label>รูปภาพจากโพสต์:</label>
-              <div id="qs_image_preview" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;"></div>
-              <input type="hidden" id="qs_image_url">
-            </div>
-            <div class="form-group full">
-              <label>2. ข้อความที่ระบบดึงมา (หรือวางก๊อปปี้เองหากดึงไม่ได้)</label>
-              <textarea id="qs_raw" rows="3" placeholder="เนื้อหาโพสต์..."></textarea>
-            </div>
-            <div class="form-group full">
-              <button class="btn btn-primary" style="width:100%; font-size:16px;" onclick="quickSaveAsset()">⚡
-                สกัดข้อมูล (แยกคอลัมน์) และบันทึกทันที</button>
+
+            <button class="btn btn-primary" id="btnProcess" onclick="startWorkflow()">
+              🚀 เริ่ม Workflow อัตโนมัติ
+            </button>
+
+            <!-- Progress -->
+            <div class="progress-section" id="progressSection">
+              <div style="height:12px"></div>
+              <div id="progressSteps"></div>
             </div>
           </div>
         </div>
 
-        <div class="toolbar">
-          <div class="search-box"><input type="text" id="assetSearch" placeholder="ค้นหาโครงการ..."
-              oninput="renderAssets()"></div>
-          <select class="filter-select" id="filterStatus" onchange="renderAssets()">
-            <option value="">ทุกสถานะ</option>
-            <option value="ขาย">ขาย</option>
-            <option value="เช่า">เช่า</option>
-            <option value="เช่า/ขาย">เช่า/ขาย</option>
-          </select>
-          <button class="btn btn-outline" onclick="openModal('asset')">+ เพิ่มแบบละเอียด</button>
-        </div>
-        <div class="cards-grid" id="assetCards"></div>
-      </div>
-
-      <div id="sec-agents" class="section">
-        <div class="toolbar"><button class="btn btn-primary" onclick="openModal('agent')">+ เพิ่ม Agent</button></div>
-        <table>
-          <thead>
-            <tr>
-              <th>ชื่อ Agent</th>
-              <th>สังกัด</th>
-              <th>เบอร์ติดต่อ</th>
-              <th>Line ID</th>
-              <th>จัดการ</th>
-            </tr>
-          </thead>
-          <tbody id="agentTable"></tbody>
-        </table>
-      </div>
-
-      <div id="sec-customers" class="section">
-        <div class="toolbar"><button class="btn btn-primary" onclick="openModal('customer')">+ เพิ่มลูกค้า</button>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>ชื่อลูกค้า/โครงการ</th>
-              <th>สถานะ</th>
-              <th>งบประมาณ</th>
-              <th>เบอร์ติดต่อ</th>
-              <th>Note</th>
-              <th>จัดการ</th>
-            </tr>
-          </thead>
-          <tbody id="customerTable"></tbody>
-        </table>
-      </div>
-
-      <div id="sec-clipboard" class="section">
-        <div class="cb-card">
-          <h3 style="color:var(--gold); margin-bottom:20px; font-size: 20px;">📋 สร้างข้อความโพสต์</h3>
-          <div class="form-group"><label>1. เลือกทรัพย์สิน</label>
-            <select id="cbAssetSelect" class="filter-select" onchange="generateClipboard()"></select>
+        <!-- Result Panel -->
+        <div class="panel result-section" id="resultSection">
+          <div class="panel-header">
+            <div class="panel-title">✅ ผลลัพธ์ Workflow</div>
+            <button class="btn-secondary" onclick="resetWorkflow()"
+              style="padding:6px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:12px">🔄
+              ทำใหม่</button>
           </div>
-          <div class="form-group"><label>2. เลือก Agent (เพื่อแทนที่เบอร์เดิม)</label>
-            <select id="cbAgentSelect" class="filter-select" onchange="generateClipboard()"></select>
-          </div>
-          <div class="form-group"><label>3. รูปแบบโพสต์</label>
-            <select id="cbTemplate" class="filter-select" onchange="generateClipboard()">
-              <option value="fb">สไตล์ Facebook (รายละเอียดครบ)</option>
-              <option value="short">แบบย่อ (สั้น)</option>
-            </select>
-          </div>
-          <div class="output-box" id="cbOutput">เลือกทรัพย์สินด้านบนเพื่อดูข้อความ...</div>
-          <button class="btn btn-primary" style="margin-top:20px; width:100%; font-size:16px;"
-            onclick="copyClipboard()">📋 คัดลอกข้อความไปโพสต์</button>
-        </div>
-      </div>
+          <div class="panel-body">
+            <div class="result-tabs">
+              <button class="rtab active" onclick="switchTab('property')">🏠 ข้อมูลอสังหาฯ</button>
+              <button class="rtab" onclick="switchTab('post')">📱 Social Post</button>
+              <button class="rtab" onclick="switchTab('database')">🗄️ Database</button>
+            </div>
 
-      <div id="sec-iedata" class="section">
+            <!-- Property Tab -->
+            <div class="tab-content active" id="tab-property">
+              <div id="propertyCard"></div>
+            </div>
 
-        <div
-          style="background:var(--dark2); padding:25px; border-radius:15px; border:1px solid var(--border); margin-bottom:20px;">
-          <h3 style="color:var(--gold); margin-bottom:15px;">📥 นำเข้าข้อมูล (Import CSV)</h3>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <input type="file" id="importAssets" accept=".csv" style="display:none"
-              onchange="importCSV(event,'assets')">
-            <button class="btn btn-outline" onclick="document.getElementById('importAssets').click()">📁
-              โหลดข้อมูลทรัพย์สินเข้า</button>
+            <!-- Post Tab -->
+            <div class="tab-content" id="tab-post">
+              <div class="social-preview">
+                <div class="fb-header">
+                  <div class="fb-avatar">🏡</div>
+                  <div>
+                    <div class="fb-name" id="posterName">PropertyFlow Agent</div>
+                    <div class="fb-time">เพิ่งโพสต์ · 🌐</div>
+                  </div>
+                </div>
+                <div class="fb-content" id="postContent">กำลังสร้างโพสต์...</div>
+                <div class="fb-image-area" id="postImageArea">🏠</div>
+                <div class="fb-actions">
+                  <button class="fb-btn">👍 ถูกใจ</button>
+                  <button class="fb-btn">💬 แสดงความคิดเห็น</button>
+                  <button class="fb-btn">↗️ แชร์</button>
+                </div>
+              </div>
+              <div class="action-row">
+                <button class="btn btn-secondary" onclick="copyPost()">📋 คัดลอกโพสต์</button>
+                <button class="btn btn-secondary" onclick="downloadPost()">⬇️ ดาวน์โหลด</button>
+              </div>
+            </div>
 
-            <input type="file" id="importAgents" accept=".csv" style="display:none"
-              onchange="importCSV(event,'agents')">
-            <button class="btn btn-outline" onclick="document.getElementById('importAgents').click()">📁 โหลดข้อมูล
-              Agent เข้า</button>
+            <!-- Database Tab -->
+            <div class="tab-content" id="tab-database">
+              <div class="db-record" id="dbRecord">
+                <span style="color:var(--muted)">// Firebase Firestore Record</span>
+              </div>
+              <div class="action-row">
+                <button class="btn btn-secondary" onclick="copySaved()">📋 คัดลอก JSON</button>
+                <button class="btn btn-secondary" id="btnDrive">☁️ บันทึก GDrive</button>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div
-          style="background:var(--dark2); padding:25px; border-radius:15px; border:1px solid var(--border); margin-bottom:20px;">
-          <h3 style="color:var(--gold); margin-bottom:15px;">📤 ส่งออกข้อมูล (Export CSV)</h3>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn btn-primary" onclick="exportCSV('assets')">📊 โหลดทรัพย์สิน (Excel)</button>
-            <button class="btn btn-primary" onclick="exportCSV('agents')">📊 โหลด Agent (Excel)</button>
+      <!-- Right: Config -->
+      <div class="right-panel">
+        <!-- API Config -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">⚙️ ตั้งค่า API Keys</div>
+          </div>
+          <div class="panel-body api-config">
+            <div class="api-field">
+              <div class="api-label">
+                Claude API Key <span class="api-required">* จำเป็น</span>
+              </div>
+              <input type="password" class="api-input" id="claudeKey" placeholder="sk-ant-api03-..."
+                oninput="checkConfig()">
+            </div>
+            <div class="api-field">
+              <div class="api-label">
+                Facebook Access Token <span class="api-free">ฟรี (Developer)</span>
+              </div>
+              <input type="password" class="api-input" id="fbToken" placeholder="EAAxxxxx... (Graph API Token)"
+                oninput="checkConfig()">
+            </div>
+            <div class="api-field">
+              <div class="api-label">
+                Firebase API Key <span class="api-free">ฟรี (Spark Plan)</span>
+              </div>
+              <input type="password" class="api-input" id="firebaseKey" placeholder="AIzaSy..." oninput="checkConfig()">
+            </div>
+            <div class="api-field">
+              <div class="api-label">Firebase Project ID</div>
+              <input type="text" class="api-input" id="firebaseProject" placeholder="my-property-app"
+                oninput="checkConfig()">
+            </div>
+            <div class="api-field">
+              <div class="api-label">
+                Google Drive Folder ID <span class="api-free">ฟรี</span>
+              </div>
+              <input type="text" class="api-input" id="driveFolder" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs"
+                oninput="checkConfig()">
+            </div>
+            <button class="btn btn-secondary" onclick="saveConfig()" style="margin-top:4px">💾 บันทึกการตั้งค่า</button>
           </div>
         </div>
 
-        <div id="adminClearData"
-          style="display:none; background:rgba(224,80,80,0.1); padding:25px; border-radius:15px; border:1px solid rgba(224,80,80,0.3);">
-          <h3 style="color:var(--red); margin-bottom:15px;">⚠️ ล้างข้อมูลทั้งหมด (Admin Only)</h3>
-          <button class="btn btn-danger" onclick="clearAllData()">🗑️ ล้างข้อมูลในระบบทั้งหมด</button>
+        <!-- Setup Guide -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">📚 วิธีตั้งค่า (ฟรีทั้งหมด)</div>
+          </div>
+          <div class="panel-body">
+            <div class="setup-steps">
+              <div class="setup-item">
+                <strong>Facebook Graph API</strong><br>
+                <span style="color:var(--muted)">ไปที่</span> <a href="https://developers.facebook.com" target="_blank"
+                  class="setup-link">developers.facebook.com</a> → สร้าง App → ไปที่ Graph API Explorer → สร้าง User
+                Token ด้วย permission: <code style="color:var(--accent3)">public_content</code>
+              </div>
+              <div class="setup-item">
+                <strong>Firebase (ฟรี Spark Plan)</strong><br>
+                <a href="https://console.firebase.google.com" target="_blank"
+                  class="setup-link">console.firebase.google.com</a> → New Project → Firestore Database → Start in test
+                mode → เอา API Key จาก Project Settings
+              </div>
+              <div class="setup-item">
+                <strong>Google Drive API</strong><br>
+                <a href="https://console.cloud.google.com" target="_blank"
+                  class="setup-link">console.cloud.google.com</a> → Enable Drive API → OAuth 2.0 → สร้าง Folder และเอา
+                ID จาก URL
+              </div>
+              <div class="setup-item">
+                <strong>Claude API Key</strong><br>
+                <a href="https://console.anthropic.com" target="_blank" class="setup-link">console.anthropic.com</a> →
+                API Keys → สร้าง key ใหม่ (มี Free tier $5)
+              </div>
+            </div>
+          </div>
         </div>
 
-      </div>
-
-      <div id="sec-users" class="section">
-        <div class="toolbar"><button class="btn btn-primary" onclick="openModal('user')">+ เพิ่ม User</button></div>
-        <table>
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>ชื่อ-นามสกุล</th>
-              <th>Role</th>
-              <th>จัดการ</th>
-            </tr>
-          </thead>
-          <tbody id="userTable"></tbody>
-        </table>
-      </div>
-
-    </div>
-  </div>
-  <div class="modal-bg" id="modalAsset">
-    <div class="modal">
-      <div class="modal-head">
-        <h2>🏠 เพิ่ม/แก้ไขทรัพย์สิน</h2><button class="close-btn" onclick="closeModal('asset')">✕</button>
-      </div>
-      <div class="form-grid">
-        <div class="form-group full"><label>ชื่อโครงการ *</label><input id="a_name"></div>
-        <div class="form-group"><label>สถานะ</label><select id="a_status">
-            <option>ขาย</option>
-            <option>เช่า</option>
-            <option>เช่า/ขาย</option>
-          </select></div>
-        <div class="form-group"><label>ประเภท</label><select id="a_type">
-            <option>คอนโด</option>
-            <option>บ้าน</option>
-            <option>ที่ดิน</option>
-          </select></div>
-        <div class="form-group"><label>ราคา/ค่าเช่า</label><input id="a_price"></div>
-        <div class="form-group"><label>รายละเอียดห้อง</label><input id="a_roomtype"></div>
-        <div class="form-group"><label>ทำเล/ที่ตั้ง</label><input id="a_location"></div>
-        <div class="form-group full"><label>Link รูปภาพ (ถ้ามี)</label><input id="a_image" placeholder="https://...">
+        <!-- Workflow Info -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">🔄 Workflow Architecture</div>
+          </div>
+          <div class="panel-body">
+            <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);line-height:2">
+              <div style="color:var(--accent)">// ขั้นตอนอัตโนมัติ</div>
+              <div>1. รับ FB URL → Extract Post ID</div>
+              <div>2. FB Graph API → ดึงข้อมูลโพสต์</div>
+              <div>3. Claude AI → วิเคราะห์อสังหาฯ</div>
+              <div>4. Claude AI → สร้าง Social Post</div>
+              <div>5. Firestore → บันทึก Database</div>
+              <div>6. Google Drive → อัพโหลดไฟล์</div>
+              <div style="margin-top:8px;color:var(--accent)">// ข้อมูลที่สกัด</div>
+              <div>• ประเภท/ราคา/ขนาดพื้นที่</div>
+              <div>• ที่ตั้ง/จังหวัด/ทำเล</div>
+              <div>• รายละเอียดห้อง/สิ่งอำนวยฯ</div>
+              <div>• ข้อมูลติดต่อผู้โพสต์</div>
+              <div>• URL รูปภาพทั้งหมด</div>
+              <div>• timestamp / source URL</div>
+            </div>
+          </div>
         </div>
-        <div class="form-group full"><label>Link อ้างอิง</label><input id="a_link"></div>
-        <div class="form-group full"><label>ข้อมูลติดต่อเดิม (ซ่อนตอนโพสต์)</label><input id="a_contact"></div>
-        <div class="form-group full"><label>หมายเหตุ</label><textarea id="a_note" rows="3"></textarea></div>
       </div>
-      <div style="margin-top:25px; display:flex; justify-content:flex-end; gap:10px;">
-        <button class="btn btn-outline" onclick="closeModal('asset')">ยกเลิก</button>
-        <button class="btn btn-primary" onclick="saveAsset()">💾 บันทึก</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-bg" id="modalAgent">
-    <div class="modal">
-      <div class="modal-head">
-        <h2>👤 Agent</h2><button class="close-btn" onclick="closeModal('agent')">✕</button>
-      </div>
-      <div class="form-grid">
-        <div class="form-group full"><label>ชื่อ Agent *</label><input id="ag_name"></div>
-        <div class="form-group"><label>บริษัท</label><input id="ag_company"></div>
-        <div class="form-group"><label>รับ Co-Agent</label><select id="ag_coagent">
-            <option>รับ</option>
-            <option>ไม่รับ</option>
-          </select></div>
-        <div class="form-group"><label>เบอร์ติดต่อ</label><input id="ag_tel"></div>
-        <div class="form-group"><label>Line ID</label><input id="ag_line"></div>
-      </div>
-      <div style="margin-top:20px; text-align:right;"><button class="btn btn-primary"
-          onclick="saveAgent()">บันทึก</button></div>
-    </div>
-  </div>
-  <div class="modal-bg" id="modalCustomer">
-    <div class="modal">
-      <div class="modal-head">
-        <h2>🤝 ลูกค้า</h2><button class="close-btn" onclick="closeModal('customer')">✕</button>
-      </div>
-      <div class="form-grid">
-        <div class="form-group full"><label>ชื่อ</label><input id="cu_name"></div>
-        <div class="form-group"><label>งบ</label><input id="cu_budget"></div>
-        <div class="form-group"><label>สถานะ</label><select id="cu_status">
-            <option>ขาย</option>
-            <option>เช่า</option>
-          </select></div>
-        <div class="form-group full"><label>ติดต่อ</label><input id="cu_contact"></div>
-        <div class="form-group full"><label>Note</label><textarea id="cu_note"></textarea></div>
-      </div>
-      <div style="margin-top:20px; text-align:right;"><button class="btn btn-primary"
-          onclick="saveCustomer()">บันทึก</button></div>
-    </div>
-  </div>
-  <div class="modal-bg" id="modalUser">
-    <div class="modal">
-      <div class="modal-head">
-        <h2>👤 ผู้ใช้</h2><button class="close-btn" onclick="closeModal('user')">✕</button>
-      </div>
-      <div class="form-grid">
-        <div class="form-group full"><label>Username</label><input id="u_username"></div>
-        <div class="form-group full"><label>Password</label><input type="password" id="u_password"></div>
-        <div class="form-group full"><label>ชื่อ</label><input id="u_displayname"></div>
-        <div class="form-group full"><label>Role</label><select id="u_role">
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-          </select></div>
-      </div>
-      <div style="margin-top:20px; text-align:right;"><button class="btn btn-primary"
-          onclick="saveUser()">บันทึก</button></div>
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <span id="toastIcon">✅</span>
+    <span id="toastMsg">สำเร็จ</span>
+  </div>
 
   <script>
-    // ==================== 1. CORE DATA SETUP ====================
-    let DB = { assets: [], agents: [], customers: [] };
-    let AUTH = { users: [], current: null };
-    let editMode = { type: '', idx: -1 };
-
-    function fixDatabaseStructure() {
-      if (typeof DB !== 'object' || DB === null) { DB = { assets: [], agents: [], customers: [] }; }
-      if (!Array.isArray(DB.assets)) DB.assets = [];
-      if (!Array.isArray(DB.agents)) DB.agents = [];
-      if (!Array.isArray(DB.customers)) DB.customers = [];
-      if (typeof AUTH !== 'object' || AUTH === null) { AUTH = { users: [], current: null }; }
-      if (!Array.isArray(AUTH.users)) AUTH.users = [];
-    }
-
-    fixDatabaseStructure();
-
-    try {
-      const localDB = localStorage.getItem('benzDB2');
-      const localAuth = localStorage.getItem('benzAuth2');
-      if (localDB) { DB = JSON.parse(localDB); }
-      if (localAuth) { AUTH.users = JSON.parse(localAuth); }
-      fixDatabaseStructure();
-    } catch (e) { console.log(e); }
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBLQmKVknLcmQgIRm-WsNOkHvW44nDz9Lg",
-      authDomain: "benz-home-db.firebaseapp.com",
-      databaseURL: "https://benz-home-db-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "benz-home-db",
-      storageBucket: "benz-home-db.firebasestorage.app",
-      messagingSenderId: "4014891413",
-      appId: "1:4014891413:web:94341e797d8708701bd69c",
-      measurementId: "G-LFXBY4BDHD"
+    // ===== Config Management =====
+    let config = {
+      claudeKey: '',
+      fbToken: '',
+      firebaseKey: '',
+      firebaseProject: '',
+      driveFolder: ''
     };
 
-    try {
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.firestore();
+    let currentResult = null;
+    let stats = { total: 0, today: 0, success: 0 };
 
-      db.collection("benz_home").doc("database").onSnapshot((doc) => {
-        if (doc.exists) {
-          const data = doc.data();
-          if (data.DB) { DB = data.DB; }
-          if (data.AUTH) {
-            if (Array.isArray(data.AUTH)) { AUTH.users = data.AUTH; }
-            else if (data.AUTH.users && Array.isArray(data.AUTH.users)) { AUTH.users = data.AUTH.users; }
-          }
-          fixDatabaseStructure();
-          if (AUTH.current) { updateUI(); }
+    // Load saved config
+    function loadConfig() {
+      try {
+        const saved = localStorage.getItem('pf_config');
+        if (saved) {
+          config = { ...config, ...JSON.parse(saved) };
+          document.getElementById('claudeKey').value = config.claudeKey || '';
+          document.getElementById('fbToken').value = config.fbToken || '';
+          document.getElementById('firebaseKey').value = config.firebaseKey || '';
+          document.getElementById('firebaseProject').value = config.firebaseProject || '';
+          document.getElementById('driveFolder').value = config.driveFolder || '';
         }
-      });
-
-      window.saveToCloud = function () {
-        fixDatabaseStructure();
-        localStorage.setItem('benzDB2', JSON.stringify(DB));
-        localStorage.setItem('benzAuth2', JSON.stringify(AUTH.users));
-        db.collection("benz_home").doc("database").set({ DB: DB, AUTH: AUTH.users }, { merge: true }).catch(err => { });
-      }
-    } catch (e) {
-      window.saveToCloud = function () {
-        fixDatabaseStructure();
-        localStorage.setItem('benzDB2', JSON.stringify(DB));
-        localStorage.setItem('benzAuth2', JSON.stringify(AUTH.users));
-      }
+        const savedStats = localStorage.getItem('pf_stats');
+        if (savedStats) {
+          stats = JSON.parse(savedStats);
+          updateStats();
+        }
+      } catch (e) { }
+      checkConfig();
     }
 
+    function saveConfig() {
+      config.claudeKey = document.getElementById('claudeKey').value;
+      config.fbToken = document.getElementById('fbToken').value;
+      config.firebaseKey = document.getElementById('firebaseKey').value;
+      config.firebaseProject = document.getElementById('firebaseProject').value;
+      config.driveFolder = document.getElementById('driveFolder').value;
+      localStorage.setItem('pf_config', JSON.stringify(config));
+      showToast('💾 บันทึกการตั้งค่าแล้ว', 'success');
+      checkConfig();
+    }
 
-    // ==================== 2. MASTER KEY LOGIN ====================
-    function doLogin() {
+    function checkConfig() {
+      const ck = document.getElementById('claudeKey').value;
+      const fb = document.getElementById('fbToken').value;
+      const fk = document.getElementById('firebaseKey').value;
+
+      document.getElementById('dotClaude').className = 'dot ' + (ck ? 'connected' : 'error');
+      document.getElementById('dotFb').className = 'dot ' + (fb ? 'connected' : '');
+      document.getElementById('dotFb2').className = 'dot ' + (fk ? 'connected' : '');
+    }
+
+    function updateStats() {
+      document.getElementById('statTotal').textContent = stats.total;
+      document.getElementById('statToday').textContent = stats.today;
+      document.getElementById('statSuccess').textContent = stats.success;
+    }
+
+    // ===== Workflow =====
+    let stepIndex = 0;
+    const stepElements = ['step1', 'step2', 'step3', 'step4', 'step5', 'step6'];
+
+    function setStep(i) {
+      stepElements.forEach((s, idx) => {
+        const el = document.getElementById(s);
+        if (idx < i) el.className = 'step-pill done';
+        else if (idx === i) el.className = 'step-pill active';
+        else el.className = 'step-pill';
+      });
+    }
+
+    function addProgress(icon, label, detail, status = 'loading') {
+      const container = document.getElementById('progressSteps');
+      const el = document.createElement('div');
+      el.className = 'progress-step';
+      el.id = 'ps-' + Date.now();
+
+      const piClass = status === 'loading' ? 'pi-loading' : status === 'done' ? 'pi-done' : 'pi-error';
+      const iconContent = status === 'loading' ? '' : status === 'done' ? '✓' : '✕';
+
+      el.innerHTML = `
+    <div class="progress-icon ${piClass}">${iconContent}</div>
+    <div class="progress-text">
+      <div class="progress-label">${label}</div>
+      <div class="progress-detail">${detail}</div>
+    </div>
+  `;
+      container.appendChild(el);
+      return el.id;
+    }
+
+    function updateProgress(id, status, detail) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const icon = el.querySelector('.progress-icon');
+      const det = el.querySelector('.progress-detail');
+      icon.className = 'progress-icon ' + (status === 'done' ? 'pi-done' : status === 'error' ? 'pi-error' : 'pi-loading');
+      icon.textContent = status === 'done' ? '✓' : status === 'error' ? '✕' : '';
+      if (detail) det.textContent = detail;
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // Extract Facebook Post ID from URL
+    function extractFbId(url) {
+      const patterns = [
+        /\/posts\/(\d+)/,
+        /\/permalink\/(\d+)/,
+        /story_fbid=(\d+)/,
+        /fbid=(\d+)/,
+        /\/(\d+)\/?$/
+      ];
+      for (const p of patterns) {
+        const m = url.match(p);
+        if (m) return m[1];
+      }
+      return null;
+    }
+
+    async function startWorkflow() {
+      const url = document.getElementById('fbUrl').value.trim();
+      if (!url) { showToast('⚠️ กรุณาใส่ URL Facebook', 'error'); return; }
+
+      const claudeKey = document.getElementById('claudeKey').value;
+      if (!claudeKey) { showToast('⚠️ กรุณาใส่ Claude API Key ก่อน', 'error'); return; }
+
+      // Reset
+      document.getElementById('progressSteps').innerHTML = '';
+      document.getElementById('progressSection').className = 'progress-section show';
+      document.getElementById('resultSection').className = 'panel result-section';
+      document.getElementById('btnProcess').disabled = true;
+
       try {
-        const uInput = document.getElementById('loginUsername').value.trim().toLowerCase();
-        const pInput = document.getElementById('loginPassword').value.trim();
+        // Step 1: Parse URL
+        setStep(0);
+        const p1 = addProgress('📎', 'กำลังอ่าน Facebook URL', 'กำลัง extract Post ID...');
+        await sleep(800);
 
-        if (uInput === 'admin' && pInput === 'admin1234') {
-          const adminUser = { username: 'admin', password: 'admin1234', role: 'admin', displayname: 'เบนซ์ (Admin)' };
-          AUTH.current = adminUser;
-          fixDatabaseStructure();
-          const exists = AUTH.users.find(x => x && x.username && x.username.toLowerCase() === 'admin');
-          if (!exists) {
-            AUTH.users.push(adminUser);
-            if (typeof saveToCloud === 'function') saveToCloud();
-          }
-          openAppShell(adminUser);
+        const postId = extractFbId(url);
+        const isValidUrl = url.includes('facebook.com') || url.includes('fb.com');
+
+        if (!isValidUrl) {
+          updateProgress(p1, 'error', 'URL ไม่ใช่ Facebook');
+          showToast('❌ URL ไม่ถูกต้อง', 'error');
+          document.getElementById('btnProcess').disabled = false;
           return;
         }
 
-        fixDatabaseStructure();
-        let foundUser = null;
-        for (let i = 0; i < AUTH.users.length; i++) {
-          let u = AUTH.users[i];
-          if (u && u.username && u.username.toLowerCase() === uInput && u.password === pInput) {
-            foundUser = u; break;
-          }
-        }
+        updateProgress(p1, 'done', `Post ID: ${postId || 'จะดึงจาก content'}`);
 
-        if (foundUser) {
-          AUTH.current = foundUser;
-          openAppShell(foundUser);
+        // Step 2: Fetch FB data (simulate or real)
+        setStep(1);
+        const p2 = addProgress('📱', 'ดึงข้อมูลจาก Facebook', 'เรียก Graph API...');
+        await sleep(1000);
+
+        let fbData = null;
+        const fbToken = document.getElementById('fbToken').value;
+
+        if (fbToken && postId) {
+          try {
+            // Real Facebook API call
+            const fbRes = await fetch(
+              `https://graph.facebook.com/v19.0/${postId}?fields=message,story,full_picture,attachments,from,created_time&access_token=${fbToken}`
+            );
+            if (fbRes.ok) {
+              fbData = await fbRes.json();
+              updateProgress(p2, 'done', `ดึงข้อมูลสำเร็จ: ${fbData.message?.substring(0, 50) || 'มีข้อมูล'}...`);
+            } else {
+              throw new Error('FB API error');
+            }
+          } catch (e) {
+            updateProgress(p2, 'done', 'ใช้ข้อมูล URL เป็น input (ไม่มี FB Token)');
+            fbData = { message: `จาก URL: ${url}`, source_url: url };
+          }
         } else {
-          document.getElementById('loginError').style.display = 'block';
+          updateProgress(p2, 'done', 'ส่ง URL ให้ Claude วิเคราะห์โดยตรง');
+          fbData = { message: `วิเคราะห์จาก URL: ${url}`, source_url: url };
         }
-      } catch (err) {
-        alert("ระบบขัดข้อง กำลังรีเซ็ตตัวเอง...");
-        localStorage.clear();
-        location.reload();
-      }
-    }
 
-    function openAppShell(user) {
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('appShell').style.display = 'block';
-      document.getElementById('headerUserName').innerText = user.displayname || user.username;
+        // Step 3: Claude AI Analysis
+        setStep(2);
+        const p3 = addProgress('🤖', 'AI วิเคราะห์ข้อมูลอสังหาฯ', 'Claude กำลังประมวลผล...');
 
-      if (user.role === 'admin') {
-        document.getElementById('tabUsers').style.display = 'inline-block';
-        document.getElementById('adminClearData').style.display = 'block'; // โชว์ปุ่มล้างข้อมูลเฉพาะแอดมิน
-      } else {
-        document.getElementById('tabUsers').style.display = 'none';
-        document.getElementById('adminClearData').style.display = 'none';
-      }
-      updateUI();
-    }
+        const postType = document.getElementById('postType').value;
+        const postStyle = document.getElementById('postStyle').value;
+        const lang = document.getElementById('postLang').value;
+        const platform = document.getElementById('targetPlatform').value;
 
-    function doLogout() { AUTH.current = null; document.getElementById('appShell').style.display = 'none'; document.getElementById('loginScreen').style.display = 'flex'; }
-    function switchTab(t, btn) { document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); document.querySelectorAll('.htab').forEach(b => b.classList.remove('active')); document.getElementById('sec-' + t).classList.add('active'); btn.classList.add('active'); if (t === 'clipboard') populateCbSelect(); }
+        const analysisPrompt = `คุณเป็น AI ผู้เชี่ยวชาญด้านอสังหาริมทรัพย์ไทย
 
+วิเคราะห์ข้อมูลต่อไปนี้และสกัดข้อมูลอสังหาฯ:
+URL: ${url}
+ข้อความจาก Facebook: ${fbData.message || 'ไม่มีข้อความ'}
+ประเภทที่ต้องการ: ${postType}
 
-    // ==================== 3. FACEBOOK GRAPH API ====================
-    window.fbAsyncInit = function () {
-      FB.init({ appId: '26534886769453064', cookie: true, xfbml: true, version: 'v19.0' });
-    };
+ตอบเป็น JSON เท่านั้น ห้ามมี markdown หรือข้อความอื่น:
+{
+  "property_type": "ประเภทอสังหาฯ (บ้าน/คอนโด/ที่ดิน/อาคารพาณิชย์)",
+  "transaction_type": "ขาย หรือ เช่า",
+  "price": "ราคา (ตัวเลขหรือ N/A)",
+  "price_unit": "บาท/ล้านบาท/บาทต่อเดือน",
+  "area_sqm": "พื้นที่ตร.ม. หรือ N/A",
+  "land_rai": "ที่ดินไร่-งาน-วา หรือ N/A",
+  "bedrooms": "จำนวนห้องนอน หรือ N/A",
+  "bathrooms": "จำนวนห้องน้ำ หรือ N/A",
+  "location": "ที่ตั้ง/ย่าน",
+  "province": "จังหวัด",
+  "highlights": ["จุดเด่น 1", "จุดเด่น 2", "จุดเด่น 3"],
+  "facilities": ["สิ่งอำนวยความสะดวก"],
+  "contact_name": "ชื่อผู้ติดต่อ หรือ N/A",
+  "contact_phone": "เบอร์โทร หรือ N/A",
+  "contact_line": "LINE ID หรือ N/A",
+  "poster_name": "ชื่อผู้โพสต์บน Facebook",
+  "description": "รายละเอียดสั้น 2-3 ประโยค",
+  "confidence": "ความน่าเชื่อถือ 0-100"
+}`;
 
-    function fetchFromFacebookAPI() {
-      const url = document.getElementById('qs_link').value;
-      if (!url) return alert('เบนซ์อย่าลืมใส่ลิงก์ Facebook ก่อนนะคะ!');
+        const analysisRes = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': claudeKey,
+            'anthropic-version': '2023-06-01'
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1000,
+            messages: [{ role: 'user', content: analysisPrompt }]
+          })
+        });
 
-      const postIdMatch = url.match(/(?:posts\/|fbid=|permalink\/)([0-9]+)/);
-      if (!postIdMatch) return alert('หา ID โพสต์ไม่เจอค่ะ ลองวางเนื้อหาโดยตรงในกล่องด้านล่างแทนนะคะ');
-
-      const postId = postIdMatch[1];
-      const pageAccessToken = 'EAF5FVsQMaAgBRXD519TZCZCZAuNG6tZBVGzM7vBBSivMSovmf7QgysCbVHooodcxM8XwitDKF4340QnuJcFDItrtCGNIE6EDYZBsRQ3GZB3egQ9HNzK55j3snLyjFw5QjFWbFuGEN3LuEuQoz60r9tE3CJcFC39sGGgI9aQkZBdVga8TLrcNjbXujZClNSSpmWQTIJyZAH65McDKmdmP3tcvX6iKQYO6Hq9WfekUoI5lMpZB8ugtNEAshOVJJerfRtIn7hrwVpQgbvnfNo2OeCDGwZCOqpIn9TbEAa49JsZD';
-
-      document.getElementById('qs_raw').value = 'กำลังดึงข้อมูล...';
-
-      FB.api(`/${postId}?fields=message,full_picture&access_token=${pageAccessToken}`, function (response) {
-        if (response && !response.error) {
-          document.getElementById('qs_raw').value = response.message || 'ไม่มีข้อความ';
-          if (response.full_picture) {
-            document.getElementById('img_preview_container').style.display = 'block';
-            document.getElementById('qs_image_preview').innerHTML = `<img src="${response.full_picture}" style="height:120px; border-radius:8px; border:1px solid #D4AF37;">`;
-            document.getElementById('qs_image_url').value = response.full_picture;
-          }
-          alert('ดึงข้อมูลสำเร็จแล้วค่ะ!');
-        } else {
-          alert('Facebook API ปฏิเสธ (Error: ' + response.error.message + ')');
-          document.getElementById('qs_raw').value = '';
+        if (!analysisRes.ok) {
+          const err = await analysisRes.json();
+          throw new Error('Claude API: ' + (err.error?.message || 'error'));
         }
-      }
-      );
-    }
 
-
-    // ==================== 4. BATCH RECORDING / QUICK SAVE ====================
-    function quickSaveAsset() {
-      const raw = document.getElementById('qs_raw').value;
-      const link = document.getElementById('qs_link').value;
-      const imageUrl = document.getElementById('qs_image_url').value;
-
-      if (!raw || raw === 'กำลังดึงข้อมูล...') return alert('กรุณาวางเนื้อหาโพสต์ก่อนค่ะ');
-
-      const projectMatch = raw.match(/(โครงการ|หมู่บ้าน|คอนโด)\s*([^\n,]+)/);
-      const project = projectMatch ? projectMatch[2].trim() : "ไม่ระบุชื่อ";
-
-      const priceMatch = raw.match(/([0-9,.]+)\s*(บาท|ล้าน|\/เดือน)/);
-      const price = priceMatch ? priceMatch[0].trim() : "ไม่ระบุ";
-
-      const areaMatch = raw.match(/([0-9,.]+)\s*(ตร\.ม\.|ตร\.ว\.)/);
-      const area = areaMatch ? areaMatch[0].trim() : "";
-
-      const floorMatch = raw.match(/(ชั้นที่|ชั้น)\s*([0-9]+)/);
-      const floor = floorMatch ? floorMatch[0].trim() : "";
-
-      const status = raw.includes("เช่า") ? "เช่า" : (raw.includes("ขาย") ? "ขาย" : "เช่า/ขาย");
-
-      const contactMatch = raw.match(/(0[0-9]{1,2}-?[0-9]{3}-?[0-9]{4}|[Ll]ine\s*[:@]?\s*[a-zA-Z0-9._-]+)/g);
-      const contactInfo = contactMatch ? contactMatch.join(', ') : "";
-
-      const newAsset = {
-        name: project, location: '', status: status, type: 'คอนโด', price: price,
-        roomtype: `${area} ${floor}`.trim(), contact: contactInfo, note: raw, link: link, image: imageUrl
-      };
-
-      fixDatabaseStructure(); DB.assets.push(newAsset); saveToCloud(); updateUI();
-
-      document.getElementById('qs_raw').value = ''; document.getElementById('qs_link').value = ''; document.getElementById('qs_image_url').value = '';
-      document.getElementById('img_preview_container').style.display = 'none'; document.getElementById('qs_image_preview').innerHTML = '';
-      alert('⚡ บันทึกข้อมูลเรียบร้อยแล้วค่ะ!');
-    }
-
-
-    // ==================== 5. RENDER UI ====================
-    function updateUI() { fixDatabaseStructure(); renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); if (AUTH.current && AUTH.current.role === 'admin') renderUsers(); }
-
-    function renderAssets() {
-      const el = document.getElementById('assetCards'); const q = document.getElementById('assetSearch').value.toLowerCase(); const st = document.getElementById('filterStatus').value;
-      let list = [];
-      for (let i = 0; i < DB.assets.length; i++) {
-        let a = DB.assets[i];
-        if (a) {
-          if ((!q || (a.name || '').toLowerCase().includes(q)) && (!st || a.status === st)) { list.push(a); }
-        }
-      }
-      if (list.length === 0) { el.innerHTML = '<p style="color:var(--text3)">ยังไม่มีข้อมูลทรัพย์สิน</p>'; return; }
-
-      let html = '';
-      for (let i = 0; i < list.length; i++) {
-        let a = list[i]; let ri = DB.assets.indexOf(a);
-        let imgHtml = a.image ? `<img src="${a.image}" class="card-img">` : '';
-        html += `<div class="card"><div class="card-header"><div class="card-title">${a.name}</div><span class="badge">${a.status}</span></div>${imgHtml}<div class="card-row"><span class="label">ราคา:</span> <span style="color:var(--gold); font-weight:700;">${a.price}</span></div><div class="card-row"><span class="label">ห้อง:</span> <span>${a.roomtype}</span></div><div class="card-row"><span class="label">ติดต่อเดิม:</span> <span style="color:var(--red)">${a.contact}</span></div>${a.link ? `<div class="card-row"><a href="${a.link}" target="_blank" style="color:var(--blue); font-size:12px;">🔗 ดูลิงก์อ้างอิง</a></div>` : ''}<div style="margin-top:15px; display:flex; gap:8px;"><button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️ แก้ไข</button><button class="btn btn-danger btn-sm" onclick="deleteItem('assets', ${ri})">🗑️ ลบ</button></div></div>`;
-      }
-      el.innerHTML = html;
-    }
-
-    function renderAgents() {
-      const tb = document.getElementById('agentTable');
-      if (DB.agents.length === 0) { tb.innerHTML = '<tr><td colspan="6">ยังไม่มีข้อมูล</td></tr>'; return; }
-      let html = '';
-      for (let i = 0; i < DB.agents.length; i++) {
-        let a = DB.agents[i]; if (a) html += `<tr><td>${a.name}</td><td>${a.company}</td><td>${a.tel}</td><td>${a.line}</td><td><button class="btn btn-outline btn-sm" onclick="editAgent(${i})">แก้</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('agents',${i})">ลบ</button></td></tr>`;
-      }
-      tb.innerHTML = html;
-    }
-
-    function renderCustomers() {
-      const tb = document.getElementById('customerTable');
-      if (DB.customers.length === 0) { tb.innerHTML = '<tr><td colspan="6">ยังไม่มีข้อมูล</td></tr>'; return; }
-      let html = '';
-      for (let i = 0; i < DB.customers.length; i++) {
-        let a = DB.customers[i]; if (a) html += `<tr><td>${a.name}</td><td>${a.status}</td><td>${a.budget}</td><td>${a.contact}</td><td>${a.note}</td><td><button class="btn btn-outline btn-sm" onclick="editCustomer(${i})">แก้</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${i})">ลบ</button></td></tr>`;
-      }
-      tb.innerHTML = html;
-    }
-
-    function renderUsers() {
-      const tb = document.getElementById('userTable');
-      let html = '';
-      for (let i = 0; i < AUTH.users.length; i++) {
-        let u = AUTH.users[i]; if (u) html += `<tr><td>${u.username}</td><td>${u.displayname}</td><td>${u.role}</td><td><button class="btn btn-outline btn-sm" onclick="editUser(${i})">แก้</button> <button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">ลบ</button></td></tr>`;
-      }
-      tb.innerHTML = html;
-    }
-
-
-    // ==================== 6. MODALS AND FORM SAVING ====================
-    function v(id) { return document.getElementById(id).value.trim(); }
-    function setV(id, val) { document.getElementById(id).value = val || ''; }
-
-    function openModal(type) {
-      document.getElementById('modal' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('open');
-      editMode = { type: type, idx: -1 };
-      if (type === 'asset') { setV('a_name', ''); setV('a_status', 'ขาย'); setV('a_type', 'คอนโด'); setV('a_price', ''); setV('a_roomtype', ''); setV('a_location', ''); setV('a_contact', ''); setV('a_note', ''); setV('a_link', ''); setV('a_image', ''); }
-      if (type === 'agent') { setV('ag_name', ''); setV('ag_company', ''); setV('ag_coagent', 'รับ'); setV('ag_tel', ''); setV('ag_line', ''); }
-      if (type === 'customer') { setV('cu_name', ''); setV('cu_status', 'เช่า'); setV('cu_budget', ''); setV('cu_contact', ''); setV('cu_note', ''); }
-      if (type === 'user') { setV('u_username', ''); setV('u_password', ''); setV('u_displayname', ''); setV('u_role', 'user'); }
-    }
-
-    function closeModal(type) { document.getElementById('modal' + type.charAt(0).toUpperCase() + type.slice(1)).classList.remove('open'); }
-
-    function saveAsset() {
-      const a = { name: v('a_name'), location: v('a_location'), status: v('a_status'), type: v('a_type'), price: v('a_price'), roomtype: v('a_roomtype'), contact: v('a_contact'), note: v('a_note'), link: v('a_link'), image: v('a_image') };
-      if (!a.name) return alert("กรุณาใส่ชื่อโครงการค่ะ");
-      if (editMode.idx >= 0) { DB.assets[editMode.idx] = a; } else { DB.assets.push(a); }
-      saveToCloud(); closeModal('asset'); updateUI();
-    }
-
-    function editAsset(i) {
-      const a = DB.assets[i]; if (!a) return;
-      setV('a_name', a.name); setV('a_location', a.location); setV('a_status', a.status); setV('a_type', a.type); setV('a_price', a.price); setV('a_roomtype', a.roomtype); setV('a_contact', a.contact); setV('a_note', a.note); setV('a_link', a.link); setV('a_image', a.image);
-      editMode = { type: 'asset', idx: i }; document.getElementById('modalAsset').classList.add('open');
-    }
-
-    function saveAgent() {
-      const ag = { name: v('ag_name'), company: v('ag_company'), coagent: v('ag_coagent'), tel: v('ag_tel'), line: v('ag_line') };
-      if (!ag.name) return;
-      if (editMode.idx >= 0) DB.agents[editMode.idx] = ag; else DB.agents.push(ag);
-      saveToCloud(); closeModal('agent'); updateUI();
-    }
-
-    function editAgent(i) {
-      const a = DB.agents[i]; if (!a) return;
-      setV('ag_name', a.name); setV('ag_company', a.company); setV('ag_coagent', a.coagent); setV('ag_tel', a.tel); setV('ag_line', a.line);
-      editMode = { type: 'agent', idx: i }; document.getElementById('modalAgent').classList.add('open');
-    }
-
-    function saveCustomer() {
-      const cu = { name: v('cu_name'), status: v('cu_status'), budget: v('cu_budget'), contact: v('cu_contact'), note: v('cu_note') };
-      if (!cu.name) return;
-      if (editMode.idx >= 0) DB.customers[editMode.idx] = cu; else DB.customers.push(cu);
-      saveToCloud(); closeModal('customer'); updateUI();
-    }
-
-    function editCustomer(i) {
-      const a = DB.customers[i]; if (!a) return;
-      setV('cu_name', a.name); setV('cu_status', a.status); setV('cu_budget', a.budget); setV('cu_contact', a.contact); setV('cu_note', a.note);
-      editMode = { type: 'customer', idx: i }; document.getElementById('modalCustomer').classList.add('open');
-    }
-
-    function saveUser() {
-      const u = { username: v('u_username'), password: v('u_password'), displayname: v('u_displayname'), role: v('u_role') };
-      if (!u.username) return;
-      if (editMode.idx >= 0) AUTH.users[editMode.idx] = u; else AUTH.users.push(u);
-      saveToCloud(); closeModal('user'); updateUI();
-    }
-
-    function editUser(i) {
-      const a = AUTH.users[i]; if (!a) return;
-      setV('u_username', a.username); setV('u_password', a.password); setV('u_displayname', a.displayname); setV('u_role', a.role);
-      editMode = { type: 'user', idx: i }; document.getElementById('modalUser').classList.add('open');
-    }
-
-    function deleteItem(type, i) { if (confirm('ต้องการลบรายการนี้ใช่ไหม?')) { DB[type].splice(i, 1); saveToCloud(); updateUI(); } }
-    function deleteUser(i) { if (confirm('ต้องการลบ User นี้ใช่ไหม?')) { AUTH.users.splice(i, 1); saveToCloud(); updateUI(); } }
-
-
-    // ==================== 7. ระบบ CLIPBOARD ====================
-    function populateCbSelect() {
-      const selAs = document.getElementById('cbAssetSelect'); const selAg = document.getElementById('cbAgentSelect');
-      let asHtml = '<option value="">-- กรุณาเลือกทรัพย์สิน --</option>';
-      for (let i = 0; i < DB.assets.length; i++) { if (DB.assets[i]) asHtml += `<option value="${i}">${DB.assets[i].name} (${DB.assets[i].status})</option>`; }
-      selAs.innerHTML = asHtml;
-
-      let agHtml = '<option value="">-- ใช้ข้อมูลติดต่อเดิม (ไม่แนะนำ) --</option>';
-      for (let i = 0; i < DB.agents.length; i++) {
-        if (DB.agents[i]) { let comp = DB.agents[i].company ? `(${DB.agents[i].company})` : ''; agHtml += `<option value="${i}">${DB.agents[i].name} ${comp}</option>`; }
-      }
-      selAg.innerHTML = agHtml;
-      generateClipboard();
-    }
-
-    function generateClipboard() {
-      const asIdx = document.getElementById('cbAssetSelect').value; const agIdx = document.getElementById('cbAgentSelect').value;
-      const tmpl = document.getElementById('cbTemplate').value; const out = document.getElementById('cbOutput');
-
-      if (asIdx === '') { out.innerText = 'เลือกทรัพย์สินด้านบนเพื่อดูตัวอย่างข้อความโพสต์ค่ะ...'; return; }
-      const a = DB.assets[asIdx]; if (!a) return;
-
-      let finalContact = a.contact || 'ไม่ได้ระบุเบอร์ติดต่อ';
-      if (agIdx !== '') {
-        const ag = DB.agents[agIdx];
-        if (ag) { let comp = ag.company ? `(${ag.company})` : ''; finalContact = `${ag.name} ${comp}\n📞 โทร: ${ag.tel}\n📱 Line: ${ag.line}`; }
-      }
-
-      let txt = '';
-      if (tmpl === 'fb') {
-        txt = `✨ ปล่อย${a.status}ด่วน! ${a.name}\n━━━━━━━━━━━━━━━━━━━━\n`;
-        if (a.location) txt += `📍 ทำเล: ${a.location}\n`;
-        txt += `💰 ราคา: ${a.price}\n`;
-        if (a.roomtype) txt += `🛏️ รายละเอียด: ${a.roomtype}\n`;
-        if (a.note) txt += `\n📝 หมายเหตุ:\n${a.note}\n`;
-        txt += `━━━━━━━━━━━━━━━━━━━━\n📌 สนใจติดต่อสอบถาม / นัดชม:\n${finalContact}\n`;
-        if (a.link) txt += `\n🔗 ลิงก์อ้างอิง: ${a.link}\n`;
-        txt += `\n#BENZHOME #อสังหา #รับฝากขายเช่าคอนโด`;
-      } else {
-        txt = `🔥 ประกาศ${a.status}: ${a.name}\n💰 ราคา: ${a.price}\n👉 รายละเอียด: ${a.roomtype}\n📞 ติดต่อ: ${finalContact.replace(/\n/g, ' ')}`;
-      }
-      out.innerText = txt;
-    }
-
-    function copyClipboard() {
-      const txt = document.getElementById('cbOutput').innerText;
-      if (txt.includes('เลือกทรัพย์สิน')) { alert('กรุณาเลือกทรัพย์สินก่อนก๊อปปี้ค่ะ!'); return; }
-      navigator.clipboard.writeText(txt).then(() => { alert('📋 ก๊อปปี้ข้อความเรียบร้อย นำไปโพสต์ได้เลยค่ะ!'); });
-    }
-
-
-    // ==================== 8. IMPORT / EXPORT CSV ====================
-    function csvEscape(v) { return '"' + (String(v || '').replace(/"/g, '""')) + '"'; }
-
-    function parseCSV(text) {
-      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-      const lines = text.split(/\r?\n/).filter(l => l.trim());
-      if (!lines.length) return { headers: [], rows: [] };
-
-      const headers = lines[0].split(',').map(s => s.replace(/"/g, '').trim());
-      const rows = lines.slice(1).map(l => {
-        const res = []; let cur = ''; let inQ = false;
-        for (let i = 0; i < l.length; i++) {
-          if (l[i] === '"') {
-            if (inQ && l[i + 1] === '"') { cur += '"'; i++; } else { inQ = !inQ; }
-          }
-          else if (l[i] === ',' && !inQ) { res.push(cur.trim()); cur = ''; }
-          else { cur += l[i]; }
-        }
-        res.push(cur.trim()); return res;
-      });
-      return { headers, rows };
-    }
-
-    function importCSV(e, type) {
-      const f = e.target.files[0];
-      if (!f) return;
-      const reader = new FileReader();
-
-      reader.onload = ev => {
+        const analysisData = await analysisRes.json();
+        let propertyInfo;
         try {
-          const { headers, rows } = parseCSV(ev.target.result);
-          let count = 0;
-          fixDatabaseStructure();
+          const rawText = analysisData.content[0].text;
+          propertyInfo = JSON.parse(rawText);
+        } catch (e) {
+          propertyInfo = {
+            property_type: 'ไม่ทราบ', transaction_type: 'ขาย',
+            price: 'N/A', price_unit: 'บาท', area_sqm: 'N/A',
+            land_rai: 'N/A', bedrooms: 'N/A', bathrooms: 'N/A',
+            location: 'N/A', province: 'N/A', highlights: [],
+            facilities: [], contact_name: 'N/A', contact_phone: 'N/A',
+            contact_line: 'N/A', poster_name: 'N/A', description: url,
+            confidence: 30
+          };
+        }
+        updateProgress(p3, 'done', `${propertyInfo.property_type} | ${propertyInfo.price} ${propertyInfo.price_unit} | ${propertyInfo.province}`);
 
-          if (type === 'assets') {
-            rows.forEach(r => {
-              if (r.length > 0 && r[0]) {
-                // แมปข้อมูล: 0=ชื่อ, 1=สถานะ, 2=ราคา, 3=ห้อง, 4=ทำเล, 5=ติดต่อ, 6=Note, 7=Link, 8=Image
-                DB.assets.push({
-                  name: r[0] || '', status: r[1] || 'ขาย', price: r[2] || '',
-                  roomtype: r[3] || '', location: r[4] || '', contact: r[5] || '',
-                  note: r[6] || '', link: r[7] || '', image: r[8] || ''
-                });
-                count++;
-              }
+        // Step 4: Create Social Post
+        setStep(3);
+        const p4 = addProgress('✍️', 'สร้าง Social Media Post', 'Claude กำลังเขียนโพสต์...');
+
+        const langInstr = lang === 'th' ? 'ภาษาไทย' : lang === 'en' ? 'English' : 'ทั้งภาษาไทยและอังกฤษ';
+        const platformInstr = platform === 'facebook' ? 'Facebook Post' : platform === 'instagram' ? 'Instagram Caption' : platform === 'line' ? 'LINE OA' : 'ทุกแพลตฟอร์ม';
+        const styleMap = { professional: 'มืออาชีพ', casual: 'เป็นกันเอง', luxury: 'หรูหรา', urgent: 'เร่งด่วน' };
+
+        const postPrompt = `สร้าง Social Media Post สำหรับ${platformInstr} ในสไตล์${styleMap[postStyle]} ${langInstr}
+
+ข้อมูลอสังหาฯ:
+${JSON.stringify(propertyInfo, null, 2)}
+
+กฎ:
+- เริ่มด้วย emoji ที่เหมาะสม
+- ใส่ hashtag ที่เกี่ยวข้อง 5-8 อัน
+- ใส่ข้อมูลติดต่อถ้ามี
+- ความยาวเหมาะสมกับ${platformInstr}
+- น่าดึงดูด กระตุ้นให้ contact
+- ตอบเป็น text โพสต์เท่านั้น ห้ามมี markdown`;
+
+        const postRes = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': claudeKey,
+            'anthropic-version': '2023-06-01'
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1000,
+            messages: [{ role: 'user', content: postPrompt }]
+          })
+        });
+
+        const postData = await postRes.json();
+        const socialPost = postData.content[0].text;
+        updateProgress(p4, 'done', `โพสต์สร้างแล้ว (${socialPost.length} ตัวอักษร)`);
+
+        // Step 5: Firebase
+        setStep(4);
+        const p5 = addProgress('🗄️', 'บันทึกลง Firebase Firestore', 'กำลัง save database...');
+        await sleep(800);
+
+        const timestamp = new Date().toISOString();
+        const recordId = 'prop_' + Date.now();
+
+        const dbRecord = {
+          id: recordId,
+          source_url: url,
+          timestamp: timestamp,
+          property_type: propertyInfo.property_type,
+          transaction_type: propertyInfo.transaction_type,
+          price: propertyInfo.price,
+          price_unit: propertyInfo.price_unit,
+          area_sqm: propertyInfo.area_sqm,
+          land_rai: propertyInfo.land_rai,
+          bedrooms: propertyInfo.bedrooms,
+          bathrooms: propertyInfo.bathrooms,
+          location: propertyInfo.location,
+          province: propertyInfo.province,
+          highlights: propertyInfo.highlights,
+          facilities: propertyInfo.facilities,
+          contact: {
+            name: propertyInfo.contact_name,
+            phone: propertyInfo.contact_phone,
+            line: propertyInfo.contact_line,
+            poster: propertyInfo.poster_name
+          },
+          description: propertyInfo.description,
+          social_posts: { [platform]: socialPost },
+          ai_confidence: propertyInfo.confidence,
+          status: 'active'
+        };
+
+        // Try Firebase REST API
+        const fbApiKey = document.getElementById('firebaseKey').value;
+        const fbProject = document.getElementById('firebaseProject').value;
+        let firebaseSaved = false;
+
+        if (fbApiKey && fbProject) {
+          try {
+            const fbUrl = `https://firestore.googleapis.com/v1/projects/${fbProject}/databases/(default)/documents/properties/${recordId}?key=${fbApiKey}`;
+            const fields = {};
+            Object.entries(dbRecord).forEach(([k, v]) => {
+              if (typeof v === 'string') fields[k] = { stringValue: v };
+              else if (typeof v === 'number') fields[k] = { integerValue: v };
+              else if (Array.isArray(v)) fields[k] = { arrayValue: { values: v.map(i => ({ stringValue: String(i) })) } };
+              else if (typeof v === 'object' && v !== null) fields[k] = { mapValue: { fields: Object.fromEntries(Object.entries(v).map(([k2, v2]) => [k2, { stringValue: String(v2) }])) } };
             });
-          } else if (type === 'agents') {
-            rows.forEach(r => {
-              if (r.length > 0 && r[0]) {
-                // แมปข้อมูล: 0=ชื่อ, 1=บริษัท, 2=Co-Agent, 3=เบอร์, 4=Line
-                DB.agents.push({
-                  name: r[0] || '', company: r[1] || '', coagent: r[2] || 'รับ',
-                  tel: r[3] || '', line: r[4] || ''
-                });
-                count++;
-              }
+            const saveRes = await fetch(fbUrl, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ fields })
             });
+            if (saveRes.ok) {
+              firebaseSaved = true;
+              updateProgress(p5, 'done', `บันทึกแล้ว: ${recordId}`);
+            } else { throw new Error('Firebase error'); }
+          } catch (e) {
+            updateProgress(p5, 'done', `Local save (Firebase ไม่ได้ตั้งค่า): ${recordId}`);
           }
-
-          saveToCloud();
-          updateUI();
-          alert(`✅ นำเข้าข้อมูลสำเร็จ ${count} รายการ!`);
-        } catch (err) {
-          alert('รูปแบบไฟล์ CSV ไม่ถูกต้องค่ะ โปรดลองใหม่อีกครั้ง');
+        } else {
+          updateProgress(p5, 'done', `Local save: ${recordId} (ใส่ Firebase config เพื่อ save จริง)`);
         }
-      };
-      reader.readAsText(f, 'UTF-8');
-      e.target.value = ''; // รีเซ็ต input เผื่อต้องการโหลดไฟล์เดิมซ้ำ
-    }
 
-    function exportCSV(type) {
-      let rows = []; let fname = '';
+        // Save locally
+        try {
+          const existing = JSON.parse(localStorage.getItem('pf_records') || '[]');
+          existing.unshift(dbRecord);
+          localStorage.setItem('pf_records', JSON.stringify(existing.slice(0, 100)));
+        } catch (e) { }
 
-      if (type === 'assets') {
-        rows = [['ชื่อโครงการ', 'สถานะ', 'ราคา', 'รายละเอียดห้อง', 'ทำเล', 'เบอร์ติดต่อเดิม', 'Note', 'Link', 'Image URL']];
-        for (let i = 0; i < DB.assets.length; i++) {
-          let a = DB.assets[i];
-          if (a) rows.push([a.name, a.status, a.price, a.roomtype, a.location, a.contact, a.note, a.link, a.image].map(csvEscape));
-        }
-        fname = 'benzhome_assets.csv';
-      } else if (type === 'agents') {
-        rows = [['ชื่อ Agent', 'บริษัท', 'รับ Co-Agent', 'เบอร์ติดต่อ', 'Line ID']];
-        for (let i = 0; i < DB.agents.length; i++) {
-          let a = DB.agents[i];
-          if (a) rows.push([a.name, a.company, a.coagent, a.tel, a.line].map(csvEscape));
-        }
-        fname = 'benzhome_agents.csv';
+        // Step 6: Done
+        setStep(5);
+        const p6 = addProgress('✅', 'Workflow เสร็จสมบูรณ์', 'ทุกขั้นตอนสำเร็จ', 'done');
+
+        // Update stats
+        stats.total++;
+        stats.today++;
+        stats.success++;
+        localStorage.setItem('pf_stats', JSON.stringify(stats));
+        updateStats();
+
+        // Show results
+        currentResult = { propertyInfo, socialPost, dbRecord };
+        renderResults(propertyInfo, socialPost, dbRecord);
+
+        document.getElementById('resultSection').className = 'panel result-section show';
+        showToast('✅ Workflow สำเร็จทุกขั้นตอน!', 'success');
+
+      } catch (err) {
+        console.error(err);
+        addProgress('❌', 'เกิดข้อผิดพลาด', err.message, 'error');
+        showToast('❌ ' + err.message, 'error');
       }
 
-      let content = '';
-      for (let i = 0; i < rows.length; i++) { content += rows[i].join(',') + '\n'; }
+      document.getElementById('btnProcess').disabled = false;
+    }
 
-      const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8' });
+    function renderResults(prop, post, db) {
+      // Property Card
+      const badges = [
+        `<span class="badge badge-type">${prop.property_type} ${prop.transaction_type}</span>`,
+        prop.price !== 'N/A' ? `<span class="badge badge-price">฿${prop.price} ${prop.price_unit}</span>` : '',
+        prop.area_sqm !== 'N/A' ? `<span class="badge badge-area">${prop.area_sqm} ตร.ม.</span>` : ''
+      ].filter(Boolean).join('');
+
+      const details = [
+        prop.bedrooms !== 'N/A' ? `🛏️ ${prop.bedrooms} ห้องนอน` : '',
+        prop.bathrooms !== 'N/A' ? `🚿 ${prop.bathrooms} ห้องน้ำ` : '',
+        prop.location !== 'N/A' ? `📍 ${prop.location}` : '',
+        prop.province !== 'N/A' ? `🗺️ ${prop.province}` : '',
+        prop.contact_phone !== 'N/A' ? `📞 ${prop.contact_phone}` : '',
+        prop.contact_line !== 'N/A' ? `💬 LINE: ${prop.contact_line}` : ''
+      ].filter(Boolean).map(d => `<div class="prop-detail">${d}</div>`).join('');
+
+      const highlights = prop.highlights?.map(h => `• ${h}`).join('<br>') || '';
+
+      document.getElementById('propertyCard').innerHTML = `
+    <div class="prop-card">
+      <div class="prop-image-placeholder">🏠<br><span style="font-size:12px;font-family:monospace;opacity:0.6">AI-Generated Preview</span></div>
+      <div class="prop-info">
+        <div class="prop-badges">${badges}</div>
+        <div class="prop-title">${prop.property_type} ${prop.transaction_type} - ${prop.location}, ${prop.province}</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">${prop.description}</div>
+        <div class="prop-details">${details}</div>
+        ${highlights ? `<div style="margin-top:10px;font-size:12px;color:var(--muted);line-height:1.8">${highlights}</div>` : ''}
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-family:monospace">
+          📊 AI Confidence: ${prop.confidence || '?'}% | 👤 โดย: ${prop.poster_name || 'N/A'}
+        </div>
+      </div>
+    </div>
+  `;
+
+      // Social Post
+      document.getElementById('postContent').textContent = post;
+      document.getElementById('posterName').textContent = prop.poster_name || 'PropertyFlow';
+
+      // Database
+      const dbHtml = JSON.stringify(db, null, 2)
+        .replace(/"([^"]+)":/g, '<span class="db-key">"$1"</span>:')
+        .replace(/: "([^"]+)"/g, ': <span class="db-string">"$1"</span>')
+        .replace(/: (\d+)/g, ': <span class="db-number">$1</span>');
+      document.getElementById('dbRecord').innerHTML = dbHtml;
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.rtab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+    }
+
+    function copyPost() {
+      if (!currentResult) return;
+      navigator.clipboard.writeText(currentResult.socialPost)
+        .then(() => showToast('📋 คัดลอกโพสต์แล้ว', 'success'));
+    }
+
+    function copySaved() {
+      if (!currentResult) return;
+      navigator.clipboard.writeText(JSON.stringify(currentResult.dbRecord, null, 2))
+        .then(() => showToast('📋 คัดลอก JSON แล้ว', 'success'));
+    }
+
+    function downloadPost() {
+      if (!currentResult) return;
+      const txt = currentResult.socialPost;
+      const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = fname;
+      a.download = 'social_post_' + Date.now() + '.txt';
       a.click();
+      showToast('⬇️ ดาวน์โหลดแล้ว', 'success');
     }
 
-    function clearAllData() {
-      if (confirm('⚠️ คำเตือนฉุกเฉิน: คุณต้องการ "ลบข้อมูลทั้งหมด" ในระบบใช่หรือไม่?\n\n(ทรัพย์สิน, Agent, และ ลูกค้า จะถูกลบทิ้งอย่างถาวร ไม่สามารถกู้คืนได้)')) {
-        DB.assets = [];
-        DB.agents = [];
-        DB.customers = [];
-        saveToCloud();
-        updateUI();
-        alert('🗑️ ล้างข้อมูลในระบบเรียบร้อยแล้วค่ะ');
-      }
+    function resetWorkflow() {
+      document.getElementById('fbUrl').value = '';
+      document.getElementById('progressSteps').innerHTML = '';
+      document.getElementById('progressSection').className = 'progress-section';
+      document.getElementById('resultSection').className = 'panel result-section';
+      currentResult = null;
+      stepElements.forEach(s => document.getElementById(s).className = 'step-pill');
+      showToast('🔄 พร้อมทำรายการใหม่', 'success');
     }
+
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      t.className = 'toast show ' + type;
+      setTimeout(() => t.className = 'toast', 3500);
+    }
+
+    // Init
+    loadConfig();
+
+    // Drive button handler
+    document.getElementById('btnDrive').addEventListener('click', () => {
+      const folderId = document.getElementById('driveFolder').value;
+      if (!folderId) {
+        showToast('⚠️ ใส่ Google Drive Folder ID ก่อน', 'error');
+        return;
+      }
+      if (!currentResult) return;
+      // Open Google Drive upload page
+      window.open('https://drive.google.com/drive/folders/' + folderId, '_blank');
+      showToast('☁️ เปิด Google Drive แล้ว (อัพโหลดไฟล์ด้วยตัวเอง หรือใช้ Apps Script)', 'success');
+    });
   </script>
 </body>
 
