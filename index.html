@@ -94,6 +94,118 @@
       --stat-num: #FF6B35;
     }
 
+    /* ===== THEME: OCEAN ===== */
+    [data-theme="ocean"] {
+      --gold: #00D2FF;
+      --gold-light: #33DDFF;
+      --gold-dark: #00A8CC;
+      --dark: #020B18;
+      --dark2: #041424;
+      --dark3: #072030;
+      --dark4: #0B2C40;
+      --text: #E0F7FF;
+      --text2: #7EC8E3;
+      --text3: #3A7A96;
+      --accent: #00D2FF;
+      --red: #FF5F87;
+      --green: #00F5A0;
+      --blue: #00D2FF;
+      --purple: #9B8FFF;
+      --border: rgba(0, 210, 255, 0.22);
+      --border2: rgba(0, 210, 255, 0.09);
+      --shadow: 0 4px 24px rgba(0, 210, 255, 0.18);
+      --login-bg1: #020B18;
+      --login-bg2: #041424;
+      --header-bg1: #041424;
+      --header-bg2: #062032;
+      --card-hover-shadow: rgba(0, 210, 255, 0.12);
+      --stat-num: #00D2FF;
+    }
+
+    /* ===== THEME: SAKURA ===== */
+    [data-theme="sakura"] {
+      --gold: #FF6FA8;
+      --gold-light: #FF91BE;
+      --gold-dark: #E05590;
+      --dark: #1A0814;
+      --dark2: #26101C;
+      --dark3: #341525;
+      --dark4: #421B2F;
+      --text: #FFE8F3;
+      --text2: #E8A0C0;
+      --text3: #8A4A68;
+      --accent: #FF6FA8;
+      --red: #FF4455;
+      --green: #7EE87E;
+      --blue: #78C8FF;
+      --purple: #D07EFF;
+      --border: rgba(255, 111, 168, 0.25);
+      --border2: rgba(255, 111, 168, 0.1);
+      --shadow: 0 4px 24px rgba(255, 111, 168, 0.18);
+      --login-bg1: #1A0814;
+      --login-bg2: #220E1A;
+      --header-bg1: #26101C;
+      --header-bg2: #2E1322;
+      --card-hover-shadow: rgba(255, 111, 168, 0.12);
+      --stat-num: #FF6FA8;
+    }
+
+    /* ===== THEME: FOREST ===== */
+    [data-theme="forest"] {
+      --gold: #4ADE80;
+      --gold-light: #6EE89C;
+      --gold-dark: #22C55E;
+      --dark: #021208;
+      --dark2: #051C0E;
+      --dark3: #082916;
+      --dark4: #0C361E;
+      --text: #E0FFF0;
+      --text2: #7EC89A;
+      --text3: #3A7A58;
+      --accent: #4ADE80;
+      --red: #FF6B6B;
+      --green: #4ADE80;
+      --blue: #5BC8FF;
+      --purple: #C084FC;
+      --border: rgba(74, 222, 128, 0.22);
+      --border2: rgba(74, 222, 128, 0.09);
+      --shadow: 0 4px 24px rgba(74, 222, 128, 0.15);
+      --login-bg1: #021208;
+      --login-bg2: #051C0E;
+      --header-bg1: #051C0E;
+      --header-bg2: #072618;
+      --card-hover-shadow: rgba(74, 222, 128, 0.1);
+      --stat-num: #4ADE80;
+    }
+
+    /* ===== THEME: SUNSET ===== */
+    [data-theme="sunset"] {
+      --gold: #FBBF24;
+      --gold-light: #FCD34D;
+      --gold-dark: #F59E0B;
+      --dark: #160A00;
+      --dark2: #231200;
+      --dark3: #311B00;
+      --dark4: #3F2400;
+      --text: #FFF8E8;
+      --text2: #F0C070;
+      --text3: #9A6830;
+      --accent: #FBBF24;
+      --red: #FF4D6D;
+      --green: #34D399;
+      --blue: #60A5FA;
+      --purple: #E879F9;
+      --border: rgba(251, 191, 36, 0.25);
+      --border2: rgba(251, 191, 36, 0.1);
+      --shadow: 0 4px 24px rgba(251, 191, 36, 0.15);
+      --login-bg1: #160A00;
+      --login-bg2: #231200;
+      --header-bg1: #231200;
+      --header-bg2: #2E1800;
+      --card-hover-shadow: rgba(251, 191, 36, 0.1);
+      --stat-num: #FBBF24;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -1059,6 +1171,42 @@
       box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.35);
     }
 
+    .theme-btn-ocean {
+      background: radial-gradient(circle at 40% 40%, #072030, #020B18);
+    }
+
+    .theme-btn-ocean.active {
+      border-color: #00D2FF;
+      box-shadow: 0 0 0 2px rgba(0, 210, 255, 0.35);
+    }
+
+    .theme-btn-sakura {
+      background: radial-gradient(circle at 40% 40%, #341525, #1A0814);
+    }
+
+    .theme-btn-sakura.active {
+      border-color: #FF6FA8;
+      box-shadow: 0 0 0 2px rgba(255, 111, 168, 0.35);
+    }
+
+    .theme-btn-forest {
+      background: radial-gradient(circle at 40% 40%, #082916, #021208);
+    }
+
+    .theme-btn-forest.active {
+      border-color: #4ADE80;
+      box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.35);
+    }
+
+    .theme-btn-sunset {
+      background: radial-gradient(circle at 40% 40%, #311B00, #160A00);
+    }
+
+    .theme-btn-sunset.active {
+      border-color: #FBBF24;
+      box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.35);
+    }
+
     .theme-label {
       font-size: 10px;
       color: var(--text3);
@@ -1171,13 +1319,21 @@
       <div class="login-hint">ทดลองใช้: admin / admin1234 &nbsp;|&nbsp; user / user1234</div>
       <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
         <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">เลือกธีม</div>
-        <div style="display:flex;gap:10px;justify-content:center;align-items:center;">
+        <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;">
           <button class="theme-btn theme-btn-dark" id="loginThemeDark" onclick="setTheme('dark')"
             title="ธีมมืด">🌙</button>
           <button class="theme-btn theme-btn-light" id="loginThemeLight" onclick="setTheme('light')"
             title="ธีมสว่าง">☀️</button>
           <button class="theme-btn theme-btn-vibrant" id="loginThemeVibrant" onclick="setTheme('vibrant')"
-            title="ธีมสดใส">✨</button>
+            title="ส้มไฟ">🔥</button>
+          <button class="theme-btn theme-btn-ocean" id="loginThemeOcean" onclick="setTheme('ocean')"
+            title="ทะเล">🌊</button>
+          <button class="theme-btn theme-btn-sakura" id="loginThemeSakura" onclick="setTheme('sakura')"
+            title="ซากุระ">🌸</button>
+          <button class="theme-btn theme-btn-forest" id="loginThemeForest" onclick="setTheme('forest')"
+            title="ป่า">🌿</button>
+          <button class="theme-btn theme-btn-sunset" id="loginThemeSunset" onclick="setTheme('sunset')"
+            title="พระอาทิตย์ตก">🌅</button>
         </div>
       </div>
     </div>
@@ -1205,7 +1361,15 @@
           <button class="theme-btn theme-btn-light" id="themeBtnLight" onclick="setTheme('light')"
             title="ธีมสว่าง ☀️">☀️</button>
           <button class="theme-btn theme-btn-vibrant" id="themeBtnVibrant" onclick="setTheme('vibrant')"
-            title="ธีมสดใส ✨">✨</button>
+            title="ธีมส้มไฟ 🔥">🔥</button>
+          <button class="theme-btn theme-btn-ocean" id="themeBtnOcean" onclick="setTheme('ocean')"
+            title="ธีมทะเล 🌊">🌊</button>
+          <button class="theme-btn theme-btn-sakura" id="themeBtnSakura" onclick="setTheme('sakura')"
+            title="ธีมซากุระ 🌸">🌸</button>
+          <button class="theme-btn theme-btn-forest" id="themeBtnForest" onclick="setTheme('forest')"
+            title="ธีมป่า 🌿">🌿</button>
+          <button class="theme-btn theme-btn-sunset" id="themeBtnSunset" onclick="setTheme('sunset')"
+            title="ธีมพระอาทิตย์ตก 🌅">🌅</button>
         </div>
         <div class="user-badge">
           <span id="headerUserName">-</span>
@@ -1284,6 +1448,7 @@
                 <th>ประเภท</th>
                 <th>งบประมาณ</th>
                 <th>Contact</th>
+                <th>Link Post</th>
                 <th>Note</th>
                 <th>จัดการ</th>
               </tr>
@@ -1324,6 +1489,10 @@
                 Map</label>
               <label class="cb-opt"><input type="checkbox" id="cbNote" checked onchange="generateClipboard()">
                 แสดงหมายเหตุ</label>
+              <label class="cb-opt"><input type="checkbox" id="cbLineAt" checked onchange="generateClipboard()">
+                แสดง Line@ / Link Line</label>
+              <label class="cb-opt"><input type="checkbox" id="cbLinkPic" checked onchange="generateClipboard()">
+                แสดง Link รูปภาพ</label>
             </div>
             <label style="font-size:13px;color:var(--text2);margin-bottom:6px;display:block;">รูปแบบโพสต์</label>
             <select class="cb-select" id="cbTemplate" onchange="generateClipboard()">
@@ -1466,10 +1635,13 @@
             </div>
             <div class="form-group"><label>Location Map</label><input id="a_map"
                 placeholder="https://maps.app.goo.gl/..."></div>
+            <div class="form-group full"><label>🖼️ Link รูปภาพ (Google Drive / Album)</label><input id="a_linkpic"
+                placeholder="https://drive.google.com/... หรือ Link อัลบั้มรูป"></div>
             <div class="form-group"><label>วันที่โพสต์</label><input id="a_postdate" type="date"></div>
             <div class="form-group"><label>วันที่ Update</label><input id="a_updatedate" type="date"></div>
             <div class="form-group full"><label>Contact</label><input id="a_contact" placeholder="ชื่อ-เบอร์โทร-Line">
             </div>
+            <div class="form-group"><label>ผู้โพสต์</label><input id="a_poster" placeholder="ชื่อผู้โพสต์/Agent"></div>
             <div class="form-group full"><label>หมายเหตุ/รายละเอียดเพิ่มเติม</label><textarea id="a_note"
                 placeholder="เฟอร์นิเจอร์, สิ่งอำนวยความสะดวก, เงื่อนไขการขาย..."></textarea></div>
           </div>
@@ -1547,6 +1719,8 @@
             <div class="form-group"><label>ชั้น</label><input id="cu_floor" placeholder="ชั้นที่ต้องการ"></div>
             <div class="form-group full"><label>Contact</label><input id="cu_contact" placeholder="ชื่อ / เบอร์ / Line">
             </div>
+            <div class="form-group full"><label>🔗 Link Post</label><input id="cu_linkpost"
+                placeholder="https://... (Link โพสต์ Facebook หรือ Line)"></div>
             <div class="form-group full"><label>Note / ความต้องการพิเศษ</label><textarea id="cu_note"
                 placeholder="ต้องการวิว, ไม่ติดถนนใหญ่..."></textarea></div>
           </div>
@@ -1766,8 +1940,10 @@
         ${a.floor ? `<div class="card-row"><span class="label">🏗️ ชั้น</span><span class="value">${a.floor}</span></div>` : ''}
         ${a.location ? `<div class="card-row"><span class="label">📍 ทำเล</span><span class="value">${a.location}</span></div>` : ''}
         ${a.contact ? `<div class="card-row"><span class="label">📞 ติดต่อ</span><span class="value">${a.contact}</span></div>` : ''}
+        ${a.poster ? `<div class="card-row"><span class="label">👤 โพสต์โดย</span><span class="value">${a.poster}</span></div>` : ''}
       </div>
       <div class="card-footer">
+        ${a.linkpic ? `<a href="${a.linkpic}" target="_blank" class="btn btn-purple btn-sm">🖼️ รูปภาพ</a>` : ''}
         ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm">🔗 Link</a>` : ''}
         ${a.map ? `<a href="${a.map}" target="_blank" class="btn btn-outline btn-sm">📍 Map</a>` : ''}
         <button class="btn btn-blue btn-sm" onclick="quickClip(${ri})">📋 Clipboard</button>
@@ -1812,7 +1988,7 @@
       const q = document.getElementById('customerSearch').value.toLowerCase();
       let list = DB.customers.filter(a => !q || (a.name || '').toLowerCase().includes(q));
       const tb = document.getElementById('customerTable');
-      if (!list.length) { tb.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีข้อมูลลูกค้า</td></tr>`; return; }
+      if (!list.length) { tb.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีข้อมูลลูกค้า</td></tr>`; return; }
       tb.innerHTML = list.map(a => {
         const ri = DB.customers.indexOf(a);
         const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
@@ -1823,6 +1999,7 @@
       <td>${a.type || '-'}</td>
       <td style="color:var(--gold)">${a.budget || '-'}</td>
       <td>${a.contact || '-'}</td>
+      <td style="font-size:12px">${a.linkpost ? `<a href="${a.linkpost}" target="_blank" style="color:var(--blue)">🔗 Link</a>` : '-'}</td>
       <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.note || '-'}</td>
       <td><div style="display:flex;gap:5px">
         <button class="btn btn-outline btn-sm" onclick="editCustomer(${ri})">✏️</button>
@@ -1938,8 +2115,8 @@
       const a = {
         name: v('a_name'), location: v('a_location'), status: v('a_status'), type: v('a_type'),
         price: v('a_price'), roomtype: v('a_roomtype'), area: v('a_area'), floor: v('a_floor'),
-        link: v('a_link'), map: v('a_map'), postdate: v('a_postdate'), updatedate: v('a_updatedate'),
-        contact: v('a_contact'), note: v('a_note')
+        link: v('a_link'), map: v('a_map'), linkpic: v('a_linkpic'), postdate: v('a_postdate'), updatedate: v('a_updatedate'),
+        contact: v('a_contact'), poster: v('a_poster'), note: v('a_note')
       };
       if (!a.name) { alert('กรุณาใส่ชื่อโครงการ'); return; }
       if (editMode.idx >= 0) DB.assets[editMode.idx] = a; else DB.assets.push(a);
@@ -1949,8 +2126,8 @@
       const a = DB.assets[i];
       setV('a_name', a.name); setV('a_location', a.location); setV('a_status', a.status); setV('a_type', a.type);
       setV('a_price', a.price); setV('a_roomtype', a.roomtype); setV('a_area', a.area); setV('a_floor', a.floor);
-      setV('a_link', a.link); setV('a_map', a.map); setV('a_postdate', a.postdate); setV('a_updatedate', a.updatedate);
-      setV('a_contact', a.contact); setV('a_note', a.note);
+      setV('a_link', a.link); setV('a_map', a.map); setV('a_linkpic', a.linkpic); setV('a_postdate', a.postdate); setV('a_updatedate', a.updatedate);
+      setV('a_contact', a.contact); setV('a_poster', a.poster); setV('a_note', a.note);
       editMode = { type: 'asset', idx: i };
       document.getElementById('modalAsset').classList.add('open');
     }
@@ -1977,7 +2154,7 @@
     // SAVE CUSTOMER
     // ============================
     function saveCustomer() {
-      const a = { name: v('cu_name'), status: v('cu_status'), type: v('cu_type'), budget: v('cu_budget'), area: v('cu_area'), floor: v('cu_floor'), contact: v('cu_contact'), note: v('cu_note') };
+      const a = { name: v('cu_name'), status: v('cu_status'), type: v('cu_type'), budget: v('cu_budget'), area: v('cu_area'), floor: v('cu_floor'), contact: v('cu_contact'), linkpost: v('cu_linkpost'), note: v('cu_note') };
       if (!a.name) { alert('กรุณาใส่ข้อมูล'); return; }
       if (editMode.idx >= 0) DB.customers[editMode.idx] = a; else DB.customers.push(a);
       saveDB(); closeModal('customer'); renderCustomers();
@@ -1986,7 +2163,7 @@
       const a = DB.customers[i];
       setV('cu_name', a.name); setV('cu_status', a.status); setV('cu_type', a.type);
       setV('cu_budget', a.budget); setV('cu_area', a.area); setV('cu_floor', a.floor);
-      setV('cu_contact', a.contact); setV('cu_note', a.note);
+      setV('cu_contact', a.contact); setV('cu_linkpost', a.linkpost); setV('cu_note', a.note);
       editMode = { type: 'customer', idx: i };
       document.getElementById('modalCustomer').classList.add('open');
     }
@@ -2060,12 +2237,23 @@
       if (idx === '') { out.textContent = 'เลือกทรัพย์สินเพื่อสร้าง Clipboard...'; return; }
       const a = DB.assets[parseInt(idx)];
       const contactOverride = getContactForClip(a);
+      const lineAtInfo = getLineAtForClip();
       out.textContent = buildClipText(a, document.getElementById('cbTemplate').value,
         document.getElementById('cbContact').checked, document.getElementById('cbLink').checked,
         document.getElementById('cbMap').checked, document.getElementById('cbNote').checked,
-        contactOverride);
+        contactOverride, document.getElementById('cbLineAt').checked ? lineAtInfo : '',
+        document.getElementById('cbLinkPic').checked);
     }
-    function buildClipText(a, tmpl, showContact, showLink, showMap, showNote, contactOverride) {
+    function getLineAtForClip() {
+      const agIdx = document.getElementById('cbAgentSelect').value;
+      if (agIdx !== '') {
+        const ag = DB.agents[parseInt(agIdx)];
+        if (ag.linelink) return ag.linelink;
+        if (ag.line) return ag.line;
+      }
+      return '';
+    }
+    function buildClipText(a, tmpl, showContact, showLink, showMap, showNote, contactOverride, lineAt, showLinkPic) {
       const contact = (contactOverride !== undefined) ? contactOverride : (a.contact || '');
       const st = a.status === 'ขาย' ? 'For Sale!! 🏷️' : a.status === 'เช่า' ? 'For Rent!! 🏠' : 'For Sale / Rent!! 🏷️🏠';
       if (tmpl === 'short') {
@@ -2075,7 +2263,9 @@
         if (a.area) t += ` | 📐 ${a.area}`;
         if (a.floor) t += ` | 🏗️ ${a.floor}`;
         if (showContact && contact) t += `\n📞 ${contact}`;
+        if (lineAt) t += `\n💚 Line@ : ${lineAt}`;
         if (showLink && a.link) t += `\n🔗 ${a.link}`;
+        if (showLinkPic && a.linkpic) t += `\n🖼️ รูปภาพ: ${a.linkpic}`;
         return t;
       }
       if (tmpl === 'fb') {
@@ -2090,8 +2280,10 @@
         if (showNote && a.note) t += `\n📝 รายละเอียด:\n${a.note}\n`;
         t += `━━━━━━━━━━━━━━━━━━━━\n`;
         if (showContact && contact) t += `📞 สนใจติดต่อ: ${contact}\n`;
+        if (lineAt) t += `💚 Line@ : ${lineAt}\n`;
         if (showLink && a.link) t += `🔗 ${a.link}\n`;
         if (showMap && a.map) t += `📍 Map: ${a.map}\n`;
+        if (showLinkPic && a.linkpic) t += `🖼️ ดูรูปภาพ: ${a.linkpic}\n`;
         t += `\n#อสังหา #คอนโด #${a.status || ''} #YBProperty`;
         return t;
       }
@@ -2103,8 +2295,10 @@
         if (a.location) t += `📌 ${a.location}\n`;
         if (showNote && a.note) t += `\n${a.note}\n`;
         if (showContact && contact) t += `\n📞 ${contact}`;
+        if (lineAt) t += `\n💚 Line@ : ${lineAt}`;
         if (showLink && a.link) t += `\n${a.link}`;
         if (showMap && a.map) t += `\n${a.map}`;
+        if (showLinkPic && a.linkpic) t += `\n🖼️ ${a.linkpic}`;
         return t;
       }
       let t = `🏆 ${st}\nประกาศ${a.status === 'ขาย' ? 'ขาย' : a.status === 'เช่า' ? 'เช่า' : 'ขาย/เช่า'}${a.type || ''} ${a.name || ''}\n\n`;
@@ -2115,13 +2309,15 @@
       if (a.location) t += `📍 ทำเล: ${a.location}\n`;
       if (showNote && a.note) t += `\n📝 รายละเอียด:\n${a.note}\n`;
       if (showContact && contact) t += `\n📞 สนใจโทร/ไลน์: ${contact}\n`;
+      if (lineAt) t += `💚 Line@ : ${lineAt}\n`;
       if (showLink && a.link) t += `🔗 ${a.link}\n`;
       if (showMap && a.map) t += `📍 Map: ${a.map}\n`;
+      if (showLinkPic && a.linkpic) t += `🖼️ ดูรูปภาพ: ${a.linkpic}\n`;
       return t;
     }
     function quickClip(idx) {
       const a = DB.assets[idx];
-      document.getElementById('clipPreviewText').textContent = buildClipText(a, 'full', true, true, true, true, a.contact || '');
+      document.getElementById('clipPreviewText').textContent = buildClipText(a, 'full', true, true, true, true, a.contact || '', '', true);
       document.getElementById('modalClipPreview').classList.add('open');
     }
     function copyClipboard() {
@@ -2173,9 +2369,9 @@
     // EXPORT CSV
     // ============================
     const CSV_HEADERS = {
-      assets: ['No', 'ชื่อโครงการ', 'ทำเล', 'สถานะ', 'ประเภท', 'ราคา', 'ประเภทห้อง', 'ขนาด', 'ชั้นตึก', 'Contact', 'Link', 'Map', 'วันที่โพสต์', 'วันที่อัปเดต', 'หมายเหตุ'],
+      assets: ['No', 'ชื่อโครงการ', 'ทำเล', 'สถานะ', 'ประเภท', 'ราคา', 'ประเภทห้อง', 'ขนาด', 'ชั้นตึก', 'Contact', 'Link', 'Map', 'วันที่โพสต์', 'วันที่อัปเดต', 'หมายเหตุ', 'Link Pic', 'ผู้โพสต์'],
       agents: ['No', 'ชื่อAgent', 'บริษัท', 'Co-Agent', 'เบอร์', 'Facebook', 'LineID', 'LinkLine', 'เลขบัญชี'],
-      customers: ['No', 'ชื่อลูกค้า/โครงการ', 'สถานะ', 'ประเภท', 'งบประมาณ', 'ขนาดห้อง', 'ชั้น', 'Contact', 'Note']
+      customers: ['No', 'ชื่อลูกค้า/โครงการ', 'สถานะ', 'ประเภท', 'งบประมาณ', 'ขนาดห้อง', 'ชั้น', 'Contact', 'Note', 'Link Post']
     };
 
     function exportCSV(type) {
@@ -2186,13 +2382,13 @@
       }
       let rows = [], fname = '';
       if (type === 'assets') {
-        rows = DB.assets.map((a, i) => [i + 1, a.name, a.location, a.status, a.type, a.price, a.roomtype, a.area, a.floor, a.contact, a.link, a.map, a.postdate, a.updatedate, a.note].map(csvEscape).join(','));
+        rows = DB.assets.map((a, i) => [i + 1, a.name, a.location, a.status, a.type, a.price, a.roomtype, a.area, a.floor, a.contact, a.link, a.map, a.postdate, a.updatedate, a.note, a.linkpic, a.poster].map(csvEscape).join(','));
         fname = 'yb_assets.csv';
       } else if (type === 'agents') {
         rows = DB.agents.map((a, i) => [i + 1, a.name, a.company, a.coagent, a.tel, a.fb, a.line, a.linelink, a.bank].map(csvEscape).join(','));
         fname = 'yb_agents.csv';
       } else if (type === 'customers') {
-        rows = DB.customers.map((a, i) => [i + 1, a.name, a.status, a.type, a.budget, a.area, a.floor, a.contact, a.note].map(csvEscape).join(','));
+        rows = DB.customers.map((a, i) => [i + 1, a.name, a.status, a.type, a.budget, a.area, a.floor, a.contact, a.note, a.linkpost].map(csvEscape).join(','));
         fname = 'yb_customers.csv';
       }
       const content = [CSV_HEADERS[type].map(csvEscape).join(','), ...rows].join('\n');
@@ -2215,7 +2411,8 @@
             const hi = n => headers.findIndex(h => h === n);
             const iName = hi('ชื่อโครงการ'), iLoc = hi('ทำเล'), iSt = hi('สถานะ'), iTy = hi('ประเภท'),
               iPr = hi('ราคา'), iRm = hi('ประเภทห้อง'), iAr = hi('ขนาด'), iFl = hi('ชั้นตึก'),
-              iCt = hi('Contact'), iLk = hi('Link'), iMp = hi('Map'), iPd = hi('วันที่โพสต์'), iUd = hi('วันที่อัปเดต'), iNt = hi('หมายเหตุ');
+              iCt = hi('Contact'), iLk = hi('Link'), iMp = hi('Map'), iPd = hi('วันที่โพสต์'), iUd = hi('วันที่อัปเดต'), iNt = hi('หมายเหตุ'),
+              iLp = hi('Link Pic'), iPo = hi('ผู้โพสต์');
             rows.forEach(r => {
               if (r.length < 2) return;
               const a = {
@@ -2223,7 +2420,8 @@
                 type: iTy >= 0 ? r[iTy] : 'คอนโด', price: iPr >= 0 ? r[iPr] : '', roomtype: iRm >= 0 ? r[iRm] : '',
                 area: iAr >= 0 ? r[iAr] : '', floor: iFl >= 0 ? r[iFl] : '', contact: iCt >= 0 ? r[iCt] : '',
                 link: iLk >= 0 ? r[iLk] : '', map: iMp >= 0 ? r[iMp] : '', postdate: iPd >= 0 ? r[iPd] : '',
-                updatedate: iUd >= 0 ? r[iUd] : '', note: iNt >= 0 ? r[iNt] : ''
+                updatedate: iUd >= 0 ? r[iUd] : '', note: iNt >= 0 ? r[iNt] : '',
+                linkpic: iLp >= 0 ? r[iLp] : '', poster: iPo >= 0 ? r[iPo] : ''
               };
               if (a.name) { DB.assets.push(a); imported++; }
             });
@@ -2243,13 +2441,13 @@
           } else if (type === 'customers') {
             const hi = n => headers.findIndex(h => h === n);
             const iNm = hi('ชื่อลูกค้า/โครงการ'), iSt = hi('สถานะ'), iTy = hi('ประเภท'), iBd = hi('งบประมาณ'),
-              iAr = hi('ขนาดห้อง'), iFl = hi('ชั้น'), iCt = hi('Contact'), iNt = hi('Note');
+              iAr = hi('ขนาดห้อง'), iFl = hi('ชั้น'), iCt = hi('Contact'), iNt = hi('Note'), iLk = hi('Link Post');
             rows.forEach(r => {
               if (r.length < 2) return;
               const a = {
                 name: iNm >= 0 ? r[iNm] : '', status: iSt >= 0 ? r[iSt] : '', type: iTy >= 0 ? r[iTy] : '',
                 budget: iBd >= 0 ? r[iBd] : '', area: iAr >= 0 ? r[iAr] : '', floor: iFl >= 0 ? r[iFl] : '',
-                contact: iCt >= 0 ? r[iCt] : '', note: iNt >= 0 ? r[iNt] : ''
+                contact: iCt >= 0 ? r[iCt] : '', note: iNt >= 0 ? r[iNt] : '', linkpost: iLk >= 0 ? r[iLk] : ''
               };
               if (a.name) { DB.customers.push(a); imported++; }
             });
@@ -2277,13 +2475,12 @@
     // ============================
     // THEME SWITCHER
     // ============================
-    const THEME_NAMES = { dark: 'ธีมมืด', light: 'ธีมสว่าง', vibrant: 'ธีมสดใส' };
+    const THEME_NAMES = { dark: 'ธีมมืด', light: 'ธีมสว่าง', vibrant: 'ส้มไฟ', ocean: 'ทะเล', sakura: 'ซากุระ', forest: 'ป่า', sunset: 'พระอาทิตย์ตก' };
 
     function setTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('yb_theme', theme);
-      // Update active state on all theme buttons
-      ['dark', 'light', 'vibrant'].forEach(t => {
+      ['dark', 'light', 'vibrant', 'ocean', 'sakura', 'forest', 'sunset'].forEach(t => {
         const btn1 = document.getElementById('themeBtn' + cap2(t));
         const btn2 = document.getElementById('loginTheme' + cap2(t));
         if (btn1) btn1.classList.toggle('active', t === theme);
@@ -2305,10 +2502,10 @@
       if (!confirm('โหลดข้อมูลตัวอย่าง? (ข้อมูลจะถูกเพิ่มเข้ามา)')) return;
       const sample = {
         assets: [
-          { name: 'บ้านกลางเมือง พระราม 9', location: 'พระราม 9', status: 'เช่า', type: 'ทาวน์โฮม', price: '45,000 บาท/เดือน', roomtype: '3 ห้องนอน, 2 ห้องน้ำ', area: '152 ตร.ม.', floor: '3 ชั้น', link: 'https://www.facebook.com/share/p/1Dj9Ja8WGq/', map: 'https://maps.app.goo.gl/p3RExr2hWfMjjk366', contact: 'Khun Bat 064-654-9935', note: 'มัดจำ 2 เดือน + ค่าเช่าล่วงหน้า 1 เดือน', postdate: '2026-02-22', updatedate: '2026-02-22' },
-          { name: 'IDEO พระราม 9', location: 'Rama 9 - Asoke', status: 'เช่า/ขาย', type: 'คอนโด', price: '19,000 บาท/เดือน | ขาย 3.99 ล้าน', roomtype: '1 ห้องนอน', area: '31.6 ตร.ม.', floor: 'ชั้น 15', link: 'https://www.facebook.com/share/p/1CE33PWtn5/', map: '', contact: 'Praew Maro 0822435968', note: 'เฟอร์นิเจอร์ครบ พร้อมเข้าอยู่', postdate: '2026-02-22', updatedate: '2026-02-22' },
-          { name: 'The Saint Residences', location: 'อโศก', status: 'เช่า', type: 'คอนโด', price: '24,000 บาท/เดือน', roomtype: '2 ห้องนอน 1 ห้องน้ำ', area: '44 ตร.ม.', floor: 'ตึก A ชั้น 34', link: 'https://www.facebook.com/share/p/1HQiSPZeVM/', map: 'https://maps.app.goo.gl/1PJeweuHxXZ1X9uS9', contact: 'คุณณัฐพล (เบนซ์) 098-256-5995', note: 'ฟรีแม่บ้านเดือนละ 1 ครั้ง', postdate: '2026-02-22', updatedate: '2026-02-22' },
-          { name: 'ศุภาลัย เวอเรนด้า พระราม9', location: 'พระราม 9', status: 'เช่า/ขาย', type: 'คอนโด', price: '17,000/เดือน | ขาย 3.49 ล้าน', roomtype: '1 ห้องนอน 1 ห้องน้ำ', area: '41.5 ตร.ม.', floor: 'ชั้น 29 ตึก A', link: '', map: 'https://maps.app.goo.gl/yvx9U2EXFqJYMZMd9', contact: 'Line: imint1988 | มิ้น 0843667190', note: 'ลดเหลือ 3.49 ล้าน', postdate: '2026-02-22', updatedate: '2026-02-22' },
+          { name: 'บ้านกลางเมือง พระราม 9', location: 'พระราม 9', status: 'เช่า', type: 'ทาวน์โฮม', price: '45,000 บาท/เดือน', roomtype: '3 ห้องนอน, 2 ห้องน้ำ', area: '152 ตร.ม.', floor: '3 ชั้น', link: 'https://www.facebook.com/share/p/1Dj9Ja8WGq/', map: 'https://maps.app.goo.gl/p3RExr2hWfMjjk366', contact: 'Khun Bat 064-654-9935', note: 'มัดจำ 2 เดือน + ค่าเช่าล่วงหน้า 1 เดือน', postdate: '2026-02-22', updatedate: '2026-02-22', linkpic: '', poster: 'Benz' },
+          { name: 'IDEO พระราม 9', location: 'Rama 9 - Asoke', status: 'เช่า/ขาย', type: 'คอนโด', price: '19,000 บาท/เดือน | ขาย 3.99 ล้าน', roomtype: '1 ห้องนอน', area: '31.6 ตร.ม.', floor: 'ชั้น 15', link: 'https://www.facebook.com/share/p/1CE33PWtn5/', map: '', contact: 'Praew Maro 0822435968', note: 'เฟอร์นิเจอร์ครบ พร้อมเข้าอยู่', postdate: '2026-02-22', updatedate: '2026-02-22', linkpic: '', poster: '' },
+          { name: 'The Saint Residences', location: 'อโศก', status: 'เช่า', type: 'คอนโด', price: '24,000 บาท/เดือน', roomtype: '2 ห้องนอน 1 ห้องน้ำ', area: '44 ตร.ม.', floor: 'ตึก A ชั้น 34', link: 'https://www.facebook.com/share/p/1HQiSPZeVM/', map: 'https://maps.app.goo.gl/1PJeweuHxXZ1X9uS9', contact: 'คุณณัฐพล (เบนซ์) 098-256-5995', note: 'ฟรีแม่บ้านเดือนละ 1 ครั้ง', postdate: '2026-02-22', updatedate: '2026-02-22', linkpic: '', poster: '' },
+          { name: 'ศุภาลัย เวอเรนด้า พระราม9', location: 'พระราม 9', status: 'เช่า/ขาย', type: 'คอนโด', price: '17,000/เดือน | ขาย 3.49 ล้าน', roomtype: '1 ห้องนอน 1 ห้องน้ำ', area: '41.5 ตร.ม.', floor: 'ชั้น 29 ตึก A', link: '', map: 'https://maps.app.goo.gl/yvx9U2EXFqJYMZMd9', contact: 'Line: imint1988 | มิ้น 0843667190', note: 'ลดเหลือ 3.49 ล้าน', postdate: '2026-02-22', updatedate: '2026-02-22', linkpic: '', poster: '' },
         ],
         agents: [
           { name: 'กรองเกียรติ (เบนซ์)', company: 'Freelance', coagent: 'รับ', tel: '08-4152-9289', fb: '', line: '54445', linelink: '', bank: 'กสิกรไทย# 054-154-0849' }
