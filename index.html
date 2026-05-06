@@ -955,6 +955,10 @@
       margin-bottom: 14px;
     }
 
+    .cb-asset-item:hover {
+      background: var(--dark3);
+    }
+
     .cb-options {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -2100,11 +2104,6 @@
       <div class="login-error" id="loginError">❌ อีเมลหรือรหัสผ่านไม่ถูกต้อง <button onclick="resetAuthData()"
           style="margin-left:10px;background:none;border:1px solid var(--red);color:var(--red);border-radius:5px;padding:2px 8px;cursor:pointer;font-size:12px;">รีเซ็ต</button>
       </div>
-      <div class="login-hint" style="margin-top:10px;">
-        🔑 Default: <code
-          style="background:var(--dark3);padding:2px 7px;border-radius:5px;font-size:12px;">admin@benzhome.com</code> /
-        <code style="background:var(--dark3);padding:2px 7px;border-radius:5px;font-size:12px;">admin1234</code>
-      </div>
       <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
         <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">เลือกธีม</div>
         <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;">
@@ -2195,6 +2194,12 @@
             <option value="เช่า">เช่า</option>
             <option value="เช่า/ขาย">เช่า/ขาย</option>
           </select>
+          <select class="filter-select" id="filterListingActive" onchange="renderAssets()">
+            <option value="active">📢 ใช้งานอยู่</option>
+            <option value="">ทั้งหมด</option>
+            <option value="sold">🔴 ปิดแล้ว</option>
+            <option value="reserved">⏳ จอง</option>
+          </select>
           <select class="filter-select" id="filterType" onchange="renderAssets()">
             <option value="">ทุกประเภท</option>
             <option value="คอนโด">คอนโด</option>
@@ -2268,9 +2273,20 @@
           <div class="cb-card">
             <h3>📋 สร้าง Clipboard โพสต์</h3>
             <label style="font-size:13px;color:var(--text2);margin-bottom:6px;display:block;">เลือกทรัพย์สิน</label>
-            <select class="cb-select" id="cbAssetSelect" onchange="generateClipboard()">
-              <option value="">-- เลือกทรัพย์สิน --</option>
-            </select>
+            <!-- Searchable asset picker -->
+            <div style="position:relative;margin-bottom:14px;" id="cbAssetPickerWrap">
+              <input type="text" id="cbAssetSearch" class="cb-select"
+                style="margin-bottom:0;padding-right:32px;cursor:text;" placeholder="🔍 พิมพ์ชื่อโครงการหรือทำเล..."
+                autocomplete="off" oninput="filterCbAssets()" onfocus="openCbDropdown()"
+                onblur="setTimeout(closeCbDropdown,180)">
+              <span
+                style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text3);pointer-events:none;"
+                id="cbAssetCaret">▼</span>
+              <div id="cbAssetDropdown"
+                style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--dark2);border:1px solid var(--border);border-radius:8px;z-index:200;max-height:240px;overflow-y:auto;box-shadow:var(--shadow);margin-top:2px;">
+              </div>
+            </div>
+            <input type="hidden" id="cbAssetSelect" value="">
 
             <label style="font-size:13px;color:var(--text2);margin-bottom:6px;display:block;">เลือก Agent <span
                 style="color:var(--text3);font-weight:400">(ไม่บังคับ — ถ้าเลือก จะใช้ข้อมูลติดต่อของ Agent
@@ -2501,6 +2517,31 @@
                 <option>เช่า</option>
                 <option>เช่า/ขาย</option>
               </select>
+            </div>
+            <div class="form-group full">
+              <label style="margin-bottom:8px;display:block;">📢 สถานะการเผยแพร่</label>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <label id="lbl_active_available"
+                  style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:9px 16px;border-radius:8px;border:2px solid var(--green);background:rgba(80,200,120,0.08);font-size:14px;font-weight:600;color:var(--green);">
+                  <input type="radio" name="a_listingActive" id="a_active_available" value="available"
+                    style="accent-color:var(--green);">
+                  ✅ พร้อมขาย/เช่าอยู่
+                </label>
+                <label id="lbl_active_reserved"
+                  style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:9px 16px;border-radius:8px;border:2px solid var(--gold);background:rgba(201,168,76,0.08);font-size:14px;font-weight:600;color:var(--gold);">
+                  <input type="radio" name="a_listingActive" id="a_active_reserved" value="reserved"
+                    style="accent-color:var(--gold);">
+                  ⏳ จอง/รอปิดดีล
+                </label>
+                <label id="lbl_active_sold"
+                  style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:9px 16px;border-radius:8px;border:2px solid var(--red);background:rgba(224,80,80,0.08);font-size:14px;font-weight:600;color:var(--red);">
+                  <input type="radio" name="a_listingActive" id="a_active_sold" value="sold"
+                    style="accent-color:var(--red);">
+                  🔴 ขาย/เช่าไปแล้ว (ปิด)
+                </label>
+              </div>
+              <div style="font-size:12px;color:var(--text3);margin-top:6px;">💡 ทรัพย์ที่ปิดแล้วยังเก็บข้อมูลไว้
+                แต่จะแสดง badge แตกต่างและ Clipboard จะไม่ดึงมาแสดงโดยค่าเริ่มต้น</div>
             </div>
             <div class="form-group"><label>ประเภททรัพย์</label>
               <select id="a_type">
@@ -3405,11 +3446,17 @@
       const q = document.getElementById('assetSearch').value.toLowerCase();
       const st = document.getElementById('filterStatus').value;
       const ty = document.getElementById('filterType').value;
+      const laFilter = document.getElementById('filterListingActive') ? document.getElementById('filterListingActive').value : 'active';
       let list = DB.assets.filter(a => {
         const mQ = !q || (a.name || '').toLowerCase().includes(q) || (a.location || '').toLowerCase().includes(q);
         const mS = !st || a.status === st;
         const mT = !ty || (a.type || '').includes(ty);
-        return mQ && mS && mT;
+        const la = a.listingActive || 'available';
+        let mLA = true;
+        if (laFilter === 'active') mLA = la !== 'sold';
+        else if (laFilter === 'sold') mLA = la === 'sold';
+        else if (laFilter === 'reserved') mLA = la === 'reserved';
+        return mQ && mS && mT && mLA;
       });
       const el = document.getElementById('assetCards');
       if (!list.length) {
@@ -3419,11 +3466,13 @@
       el.innerHTML = list.map(a => {
         const ri = DB.assets.indexOf(a);
         const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
+        const la = a.listingActive || 'available';
+        const laBadge = la === 'sold' ? `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(224,80,80,0.15);color:var(--red);margin-left:4px;">🔴 ปิดแล้ว</span>` : la === 'reserved' ? `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(201,168,76,0.15);color:var(--gold);margin-left:4px;">⏳ จอง</span>` : '';
         const canEdit = window._canEdit !== false;
-        return `<div class="card">
+        return `<div class="card"${la === 'sold' ? ' style="opacity:0.6;"' : ''}>
       <div class="card-header">
         <div class="card-title">${a.name || '(ไม่มีชื่อ)'}</div>
-        <span class="badge ${badge}">${a.status || ''}</span>
+        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;"><span class="badge ${badge}">${a.status || ''}</span>${laBadge}</div>
       </div>
       <div class="card-body">
         <div class="card-row"><span class="label">💰 ราคา</span><span class="price-tag">${a.price || '-'}</span></div>
@@ -3637,6 +3686,7 @@
         ['a_name', 'a_location', 'a_price', 'a_roomtype', 'a_area', 'a_floor', 'a_link', 'a_map', 'a_linkpic', 'a_postdate', 'a_updatedate', 'a_contact', 'a_note'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
         document.getElementById('a_status').value = 'เช่า';
         document.getElementById('a_type').value = 'คอนโด';
+        document.getElementById('a_active_available').checked = true;
         // Set today's date
         const today = new Date().toISOString().slice(0, 10);
         document.getElementById('a_postdate').value = today;
@@ -3671,11 +3721,13 @@
     // SAVE ASSET
     // ============================
     async function saveAsset() {
+      const activeVal = document.querySelector('input[name="a_listingActive"]:checked');
       const a = {
         name: v('a_name'), location: v('a_location'), status: v('a_status'), type: v('a_type'),
         price: v('a_price'), roomtype: v('a_roomtype'), area: v('a_area'), floor: v('a_floor'),
         link: v('a_link'), map: v('a_map'), linkpic: v('a_linkpic'), postdate: v('a_postdate'), updatedate: v('a_updatedate'),
-        contact: v('a_contact'), poster: v('a_poster'), note: v('a_note')
+        contact: v('a_contact'), poster: v('a_poster'), note: v('a_note'),
+        listingActive: activeVal ? activeVal.value : 'available'
       };
       if (!a.name) { alert('กรุณาใส่ชื่อโครงการ'); return; }
       if (editMode.idx >= 0) {
@@ -3696,6 +3748,10 @@
       setV('a_link', a.link); setV('a_map', a.map); setV('a_linkpic', a.linkpic); setV('a_postdate', a.postdate); setV('a_updatedate', a.updatedate);
       setV('a_contact', a.contact); setV('a_note', a.note);
       populatePosterSelect(a.poster || '');
+      // set listing active radio
+      const la = a.listingActive || 'available';
+      const laEl = document.getElementById('a_active_' + la);
+      if (laEl) laEl.checked = true; else document.getElementById('a_active_available').checked = true;
       editMode = { type: 'asset', idx: i };
       document.getElementById('modalAsset').classList.add('open');
     }
@@ -3776,11 +3832,67 @@
     // CLIPBOARD
     // ============================
     function populateCbSelect() {
-      const sel = document.getElementById('cbAssetSelect');
-      if (!sel) return;
-      sel.innerHTML = '<option value="">-- เลือกทรัพย์สิน --</option>' +
-        DB.assets.map((a, i) => `<option value="${i}">${a.name || 'ไม่มีชื่อ'} (${a.status || ''})</option>`).join('');
+      // just refresh the hidden select & rebuild dropdown items list
+      // the actual dropdown is rendered by filterCbAssets()
+      const searchEl = document.getElementById('cbAssetSearch');
+      const hiddenEl = document.getElementById('cbAssetSelect');
+      if (!searchEl || !hiddenEl) return;
+      // If current value still valid keep it, else reset
+      const curIdx = hiddenEl.value;
+      if (curIdx !== '' && (!DB.assets[parseInt(curIdx)] || !DB.assets[parseInt(curIdx)].name)) {
+        hiddenEl.value = '';
+        searchEl.value = '';
+        generateClipboard();
+      }
       populateCbAgentSelect();
+    }
+
+    // --- Searchable asset dropdown helpers ---
+    function getCbAssetItems(query) {
+      const q = (query || '').toLowerCase().trim();
+      return DB.assets
+        .map((a, i) => ({ a, i }))
+        .filter(({ a }) => {
+          const la = a.listingActive || 'available';
+          if (la === 'sold') return false; // hide sold by default
+          if (!q) return true;
+          return (a.name || '').toLowerCase().includes(q) || (a.location || '').toLowerCase().includes(q) || (a.status || '').toLowerCase().includes(q);
+        });
+    }
+
+    function openCbDropdown() {
+      filterCbAssets();
+      document.getElementById('cbAssetDropdown').style.display = 'block';
+    }
+    function closeCbDropdown() {
+      const dd = document.getElementById('cbAssetDropdown');
+      if (dd) dd.style.display = 'none';
+    }
+    function filterCbAssets() {
+      const q = document.getElementById('cbAssetSearch').value;
+      const dd = document.getElementById('cbAssetDropdown');
+      if (!dd) return;
+      const items = getCbAssetItems(q);
+      if (!items.length) {
+        dd.innerHTML = `<div style="padding:12px 16px;color:var(--text3);font-size:13px;">ไม่พบทรัพย์สิน</div>`;
+      } else {
+        dd.innerHTML = items.map(({ a, i }) => {
+          const la = a.listingActive || 'available';
+          const laTag = la === 'reserved' ? ` <span style="font-size:10px;background:rgba(201,168,76,0.2);color:var(--gold);border-radius:3px;padding:1px 5px;">จอง</span>` : '';
+          return `<div class="cb-asset-item" onclick="selectCbAsset(${i},'${(a.name || '').replace(/'/g, "\\'")} (${a.status || ''})')"
+            style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border2);font-size:13px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:600;color:var(--text)">${a.name || '(ไม่มีชื่อ)'}${laTag}</span>
+            <span style="color:var(--text3);font-size:12px;">${a.status || ''} · ${a.location || ''}</span>
+          </div>`;
+        }).join('');
+      }
+      dd.style.display = 'block';
+    }
+    function selectCbAsset(idx, label) {
+      document.getElementById('cbAssetSearch').value = label;
+      document.getElementById('cbAssetSelect').value = idx;
+      document.getElementById('cbAssetDropdown').style.display = 'none';
+      generateClipboard();
     }
     function populateCbAgentSelect() {
       const sel = document.getElementById('cbAgentSelect');
