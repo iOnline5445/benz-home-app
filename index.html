@@ -285,7 +285,8 @@
       padding: 14px 16px;
       color: var(--text);
       font-family: inherit;
-      font-size: 16px; /* 16px prevents iOS auto-zoom */
+      font-size: 16px;
+      /* 16px prevents iOS auto-zoom */
       outline: none;
       transition: border-color .2s;
       min-height: 52px;
@@ -1100,23 +1101,52 @@
         flex-wrap: nowrap;
         gap: 8px;
       }
+
       .logo {
         font-size: 16px;
         white-space: nowrap;
       }
-      .logo span { display: none; }
-      .header-tabs { display: none; } /* replaced by bottom-nav */
-      .header-user { gap: 6px; }
-      .user-badge { padding: 4px 10px; font-size: 12px; }
-      .user-badge .role { font-size: 10px; padding: 1px 5px; }
-      .theme-panel-btn { padding: 5px 10px; font-size: 12px; }
-      .logout-btn { padding: 5px 10px; font-size: 12px; }
+
+      .logo span {
+        display: none;
+      }
+
+      .header-tabs {
+        display: none;
+      }
+
+      /* replaced by bottom-nav */
+      .header-user {
+        gap: 6px;
+      }
+
+      .user-badge {
+        padding: 4px 10px;
+        font-size: 12px;
+      }
+
+      .user-badge .role {
+        font-size: 10px;
+        padding: 1px 5px;
+      }
+
+      .theme-panel-btn {
+        padding: 5px 10px;
+        font-size: 12px;
+      }
+
+      .logout-btn {
+        padding: 5px 10px;
+        font-size: 12px;
+      }
 
       /* -- bottom nav -- */
       .bottom-nav {
         display: flex;
         position: fixed;
-        bottom: 0; left: 0; right: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
         background: var(--dark2);
         border-top: 1px solid var(--border);
         z-index: 200;
@@ -1124,6 +1154,7 @@
         padding-bottom: env(safe-area-inset-bottom, 0px);
         align-items: stretch;
       }
+
       .bnav-item {
         flex: 1;
         display: flex;
@@ -1142,12 +1173,24 @@
         transition: color .2s;
         -webkit-tap-highlight-color: transparent;
       }
-      .bnav-item .bnav-icon { font-size: 20px; line-height: 1; }
-      .bnav-item.active { color: var(--gold); }
-      .bnav-item.active .bnav-icon { transform: scale(1.1); }
+
+      .bnav-item .bnav-icon {
+        font-size: 20px;
+        line-height: 1;
+      }
+
+      .bnav-item.active {
+        color: var(--gold);
+      }
+
+      .bnav-item.active .bnav-icon {
+        transform: scale(1.1);
+      }
 
       /* -- main padding -- */
-      .main { padding: 12px 12px 16px; }
+      .main {
+        padding: 12px 12px 16px;
+      }
 
       /* -- stats row: horizontal scroll -- */
       .stats-row {
@@ -1159,14 +1202,24 @@
         scrollbar-width: none;
         grid-template-columns: unset;
       }
-      .stats-row::-webkit-scrollbar { display: none; }
+
+      .stats-row::-webkit-scrollbar {
+        display: none;
+      }
+
       .stat-box {
         min-width: 100px;
         flex-shrink: 0;
         padding: 12px 14px;
       }
-      .stat-box .num { font-size: 22px; }
-      .stat-box .lbl { font-size: 11px; }
+
+      .stat-box .num {
+        font-size: 22px;
+      }
+
+      .stat-box .lbl {
+        font-size: 11px;
+      }
 
       /* -- toolbar: search full-width, btn right -- */
       .toolbar {
@@ -1174,87 +1227,233 @@
         gap: 8px;
         margin-bottom: 12px;
       }
-      .toolbar .search-box { width: 100%; min-width: unset; flex: unset; }
-      .toolbar .filter-select { flex: 1; min-width: 0; font-size: 13px; padding: 10px 10px; }
-      .toolbar .btn { min-height: 44px; padding: 10px 16px; font-size: 14px; }
+
+      .toolbar .search-box {
+        width: 100%;
+        min-width: unset;
+        flex: unset;
+      }
+
+      .toolbar .filter-select {
+        flex: 1;
+        min-width: 0;
+        font-size: 13px;
+        padding: 10px 10px;
+      }
+
+      .toolbar .btn {
+        min-height: 44px;
+        padding: 10px 16px;
+        font-size: 14px;
+      }
 
       /* -- cards: single column, touch-friendly -- */
-      .cards-grid { grid-template-columns: 1fr; gap: 10px; }
-      .card { border-radius: 12px; }
-      .card-header { padding: 12px 14px; }
-      .card-body { padding: 10px 14px; }
-      .card-footer { padding: 10px 14px; gap: 8px; }
-      .card-footer .btn { flex: 1; justify-content: center; min-height: 40px; font-size: 13px; }
+      .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .card {
+        border-radius: 12px;
+      }
+
+      .card-header {
+        padding: 12px 14px;
+      }
+
+      .card-body {
+        padding: 10px 14px;
+      }
+
+      .card-footer {
+        padding: 10px 14px;
+        gap: 8px;
+      }
+
+      .card-footer .btn {
+        flex: 1;
+        justify-content: center;
+        min-height: 40px;
+        font-size: 13px;
+      }
 
       /* -- tables: horizontal scroll with sticky columns -- */
-      .table-wrap { border-radius: 10px; }
-      table { font-size: 13px; }
-      thead th { padding: 10px 12px; font-size: 11px; }
-      tbody td { padding: 10px 12px; }
-      .btn-sm { min-height: 36px; min-width: 36px; padding: 6px 10px; }
+      .table-wrap {
+        border-radius: 10px;
+      }
+
+      table {
+        font-size: 13px;
+      }
+
+      thead th {
+        padding: 10px 12px;
+        font-size: 11px;
+      }
+
+      tbody td {
+        padding: 10px 12px;
+      }
+
+      .btn-sm {
+        min-height: 36px;
+        min-width: 36px;
+        padding: 6px 10px;
+      }
 
       /* -- modals: full-screen slide up -- */
-      .modal-bg { padding: 0; align-items: flex-end; }
+      .modal-bg {
+        padding: 0;
+        align-items: flex-end;
+      }
+
       .modal {
         border-radius: 20px 20px 0 0;
         max-width: 100%;
         max-height: 92vh;
         width: 100%;
       }
-      .modal-sm { max-width: 100%; }
-      .modal-head { padding: 16px 18px; }
-      .modal-head h2 { font-size: 16px; }
-      .modal-body { padding: 14px 18px 8px; }
+
+      .modal-sm {
+        max-width: 100%;
+      }
+
+      .modal-head {
+        padding: 16px 18px;
+      }
+
+      .modal-head h2 {
+        font-size: 16px;
+      }
+
+      .modal-body {
+        padding: 14px 18px 8px;
+      }
+
       .modal-footer {
-        padding: 12px 18px 24px; /* extra bottom for safe area */
+        padding: 12px 18px 24px;
+        /* extra bottom for safe area */
         gap: 10px;
       }
-      .modal-footer .btn { flex: 1; justify-content: center; min-height: 48px; font-size: 15px; }
+
+      .modal-footer .btn {
+        flex: 1;
+        justify-content: center;
+        min-height: 48px;
+        font-size: 15px;
+      }
 
       /* -- form fields: larger touch targets -- */
-      .form-grid { grid-template-columns: 1fr; gap: 10px; }
-      .form-group { gap: 5px; }
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .form-group {
+        gap: 5px;
+      }
+
       .form-group input,
       .form-group select,
       .form-group textarea {
         padding: 12px 14px;
-        font-size: 16px; /* prevents iOS zoom */
+        font-size: 16px;
+        /* prevents iOS zoom */
         border-radius: 10px;
         min-height: 48px;
       }
-      .form-group textarea { min-height: 80px; }
-      .form-group label { font-size: 13px; }
+
+      .form-group textarea {
+        min-height: 80px;
+      }
+
+      .form-group label {
+        font-size: 13px;
+      }
 
       /* -- search box -- */
-      .search-box input { padding: 12px 14px 12px 40px; font-size: 15px; min-height: 48px; }
+      .search-box input {
+        padding: 12px 14px 12px 40px;
+        font-size: 15px;
+        min-height: 48px;
+      }
 
       /* -- filter select -- */
-      .filter-select { font-size: 14px; min-height: 44px; }
+      .filter-select {
+        font-size: 14px;
+        min-height: 44px;
+      }
 
       /* -- clipboard section -- */
-      .cb-container { max-width: 100%; }
-      .cb-card { padding: 16px; }
-      .cb-select { padding: 12px 14px; font-size: 15px; min-height: 48px; }
-      .cb-options { grid-template-columns: 1fr 1fr; gap: 10px; }
-      .cb-opt { font-size: 14px; gap: 10px; }
-      .cb-opt input { width: 20px; height: 20px; }
-      .output-box { font-size: 14px; min-height: 120px; max-height: 320px; }
+      .cb-container {
+        max-width: 100%;
+      }
+
+      .cb-card {
+        padding: 16px;
+      }
+
+      .cb-select {
+        padding: 12px 14px;
+        font-size: 15px;
+        min-height: 48px;
+      }
+
+      .cb-options {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .cb-opt {
+        font-size: 14px;
+        gap: 10px;
+      }
+
+      .cb-opt input {
+        width: 20px;
+        height: 20px;
+      }
+
+      .output-box {
+        font-size: 14px;
+        min-height: 120px;
+        max-height: 320px;
+      }
 
       /* -- IE panel -- */
-      .ie-panel { padding: 16px; }
+      .ie-panel {
+        padding: 16px;
+      }
 
       /* -- buttons global mobile -- */
-      .btn { min-height: 44px; }
+      .btn {
+        min-height: 44px;
+      }
 
       /* -- theme panel -- */
-      .theme-panel { width: 100% !important; right: 0 !important; max-height: 85vh; border-radius: 20px 20px 0 0; bottom: 0 !important; top: unset !important; }
+      .theme-panel {
+        width: 100% !important;
+        right: 0 !important;
+        max-height: 85vh;
+        border-radius: 20px 20px 0 0;
+        bottom: 0 !important;
+        top: unset !important;
+      }
     }
 
     /* Extra small / portrait phones */
     @media(max-width:390px) {
-      .bnav-item { font-size: 9px; }
-      .bnav-item .bnav-icon { font-size: 18px; }
-      .main { padding: 10px 10px 14px; }
+      .bnav-item {
+        font-size: 9px;
+      }
+
+      .bnav-item .bnav-icon {
+        font-size: 18px;
+      }
+
+      .main {
+        padding: 10px 10px 14px;
+      }
     }
 
     /* ===== THEME BUTTON (header quick-pick) ===== */
@@ -1873,15 +2072,15 @@
         <p>ระบบจัดการอสังหาริมทรัพย์</p>
       </div>
       <div class="login-field">
-        <label>ชื่อผู้ใช้ (Username)</label>
-        <input type="text" id="loginUsername" placeholder="กรอก username" onkeydown="if(event.key==='Enter') doLogin()">
+        <label>อีเมล (Email)</label>
+        <input type="email" id="loginUsername" placeholder="example@email.com" autocomplete="email"
+          onkeydown="if(event.key==='Enter') doLogin()">
       </div>
       <div class="login-field">
         <label>รหัสผ่าน (Password)</label>
         <div style="position:relative;">
           <input type="password" id="loginPassword" placeholder="กรอก password"
-            onkeydown="if(event.key==='Enter') doLogin()"
-            style="width:100%;padding-right:52px;">
+            onkeydown="if(event.key==='Enter') doLogin()" style="width:100%;padding-right:52px;">
           <button type="button" id="togglePwBtn" onclick="toggleLoginPw()"
             style="position:absolute;right:0;top:0;bottom:0;width:52px;background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3);display:flex;align-items:center;justify-content:center;border-radius:0 10px 10px 0;-webkit-tap-highlight-color:transparent;"
             title="แสดง/ซ่อนรหัสผ่าน">👁️</button>
@@ -1953,7 +2152,8 @@
       <button class="bnav-item" id="bnav-iedata" onclick="switchTab('iedata',null);updateBnav('iedata')">
         <span class="bnav-icon">⚙️</span><span>Import/Export</span>
       </button>
-      <button class="bnav-item" id="bnav-users" onclick="switchTab('users',null);updateBnav('users')" style="display:none">
+      <button class="bnav-item" id="bnav-users" onclick="switchTab('users',null);updateBnav('users')"
+        style="display:none">
         <span class="bnav-icon">👥</span><span>User</span>
       </button>
     </nav>
@@ -2066,7 +2266,8 @@
                 แสดงข้อมูลติดต่อ</label>
               <label class="cb-opt"><input type="checkbox" id="cbLink" onchange="generateClipboard()"> แสดง Link
                 โครงการ</label>
-              <label class="cb-opt"><input type="checkbox" id="cbMap" checked onchange="generateClipboard()"> แสดง Location
+              <label class="cb-opt"><input type="checkbox" id="cbMap" checked onchange="generateClipboard()"> แสดง
+                Location
                 Map</label>
               <label class="cb-opt"><input type="checkbox" id="cbNote" checked onchange="generateClipboard()">
                 แสดงหมายเหตุ</label>
@@ -2097,18 +2298,22 @@
         <!-- IMPORT -->
         <div class="ie-panel">
           <h3 style="color:var(--gold);font-size:16px;margin-bottom:6px;">📥 Import ข้อมูล (CSV)</h3>
-          <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">อัพโหลดไฟล์ CSV เพื่อนำเข้าข้อมูลทรัพย์สิน, Agent หรือลูกค้า</p>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">อัพโหลดไฟล์ CSV เพื่อนำเข้าข้อมูลทรัพย์สิน,
+            Agent หรือลูกค้า</p>
           <div class="alert alert-info" style="margin-bottom:16px;display:flex;align-items:center;gap:8px;">
             <span style="font-size:15px;">💡</span>
             <span>ไฟล์ CSV ต้องมี header row ตรงกับรูปแบบที่ Export ออกมา</span>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:18px;">
+          <div
+            style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:18px;">
             <!-- ทรัพย์สิน -->
             <div style="background:var(--dark3);border:1px solid var(--border);border-radius:12px;padding:16px;">
               <div style="font-size:20px;margin-bottom:6px;">🏠</div>
               <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">ทรัพย์สิน</div>
-              <input type="file" id="importAssetsCSV" accept=".csv" style="display:none" onchange="importCSV(event,'assets')">
-              <button class="btn btn-outline btn-sm" onclick="document.getElementById('importAssetsCSV').click()" style="width:100%;justify-content:center;">
+              <input type="file" id="importAssetsCSV" accept=".csv" style="display:none"
+                onchange="importCSV(event,'assets')">
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('importAssetsCSV').click()"
+                style="width:100%;justify-content:center;">
                 <span style="font-size:15px;">📁</span> เลือกไฟล์ CSV
               </button>
             </div>
@@ -2116,8 +2321,10 @@
             <div style="background:var(--dark3);border:1px solid var(--border);border-radius:12px;padding:16px;">
               <div style="font-size:20px;margin-bottom:6px;">👤</div>
               <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">Agent</div>
-              <input type="file" id="importAgentsCSV" accept=".csv" style="display:none" onchange="importCSV(event,'agents')">
-              <button class="btn btn-outline btn-sm" onclick="document.getElementById('importAgentsCSV').click()" style="width:100%;justify-content:center;">
+              <input type="file" id="importAgentsCSV" accept=".csv" style="display:none"
+                onchange="importCSV(event,'agents')">
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('importAgentsCSV').click()"
+                style="width:100%;justify-content:center;">
                 <span style="font-size:15px;">📁</span> เลือกไฟล์ CSV
               </button>
             </div>
@@ -2125,8 +2332,10 @@
             <div style="background:var(--dark3);border:1px solid var(--border);border-radius:12px;padding:16px;">
               <div style="font-size:20px;margin-bottom:6px;">🤝</div>
               <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">ลูกค้า</div>
-              <input type="file" id="importCustomersCSV" accept=".csv" style="display:none" onchange="importCSV(event,'customers')">
-              <button class="btn btn-outline btn-sm" onclick="document.getElementById('importCustomersCSV').click()" style="width:100%;justify-content:center;">
+              <input type="file" id="importCustomersCSV" accept=".csv" style="display:none"
+                onchange="importCSV(event,'customers')">
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('importCustomersCSV').click()"
+                style="width:100%;justify-content:center;">
                 <span style="font-size:15px;">📁</span> เลือกไฟล์ CSV
               </button>
             </div>
@@ -2140,7 +2349,8 @@
         <!-- EXPORT -->
         <div class="ie-panel">
           <h3 style="color:var(--gold);font-size:16px;margin-bottom:6px;">📤 Export ข้อมูล (CSV)</h3>
-          <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">ดาวน์โหลดข้อมูลเป็นไฟล์ CSV สำหรับเปิดใน Excel หรือ Google Sheets</p>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">ดาวน์โหลดข้อมูลเป็นไฟล์ CSV สำหรับเปิดใน
+            Excel หรือ Google Sheets</p>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
             <button class="btn btn-green" onclick="exportCSV('assets')">📊 Export ทรัพย์สิน</button>
             <button class="btn btn-blue" onclick="exportCSV('agents')">📊 Export Agent</button>
@@ -2268,7 +2478,8 @@
             <div class="form-group"><label>Line ID</label><input id="ag_line" placeholder="Line ID"></div>
             <div class="form-group"><label>Link Line@</label><input id="ag_linelink"
                 placeholder="@lineoa หรือ https://line.me/ti/..."></div>
-            <div class="form-group full"><label>E-Mail</label><input id="ag_email" type="email" placeholder="example@email.com"></div>
+            <div class="form-group full"><label>E-Mail</label><input id="ag_email" type="email"
+                placeholder="example@email.com"></div>
             <div class="form-group full"><label>เลขบัญชี</label><input id="ag_bank" placeholder="ธนาคาร# เลขบัญชี">
             </div>
           </div>
@@ -2552,14 +2763,39 @@
     let AUTH = { users: [], current: null };
     let editMode = { type: '', idx: -1 };
 
-    function loadDB() { try { const s = localStorage.getItem('yb_db'); if (s) DB = JSON.parse(s); } catch (e) { } }
-    function saveDB() { localStorage.setItem('yb_db', JSON.stringify(DB)); }
+    async function loadDB() {
+      if (!window._firestoreLib || !window._db) return;
+      const { collection, getDocs } = window._firestoreLib;
+      const db = window._db;
+      for (const col of ['assets', 'agents', 'customers']) {
+        try {
+          const snap = await getDocs(collection(db, col));
+          DB[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        } catch (e) { console.warn('loadDB:', col, e); }
+      }
+      renderAssets(); renderAgents(); renderCustomers(); renderStats();
+    }
+
+    async function saveItem(colName, item, id = null) {
+      if (!window._firestoreLib || !window._db) return item;
+      const { collection, doc, setDoc } = window._firestoreLib;
+      const db = window._db;
+      const ref = id ? doc(db, colName, id) : doc(collection(db, colName));
+      item.id = ref.id;
+      await setDoc(ref, item);
+      return item;
+    }
+
+    async function deleteItemFromDB(colName, id) {
+      if (!window._firestoreLib || !window._db) return;
+      const { doc, deleteDoc } = window._firestoreLib;
+      await deleteDoc(doc(window._db, colName, id));
+    }
+
+    function saveDB() { /* ใช้ saveItem แทน */ }
+
     function loadAuth() {
-      try {
-        const s = localStorage.getItem('yb_auth');
-        if (s) { AUTH = JSON.parse(s); }
-      } catch (e) { }
-      // Default users if none exist
+      try { const s = localStorage.getItem('yb_auth'); if (s) AUTH = JSON.parse(s); } catch (e) { }
       if (!AUTH.users || AUTH.users.length === 0) {
         AUTH.users = [
           { username: 'admin', password: 'admin1234', displayname: 'ผู้ดูแลระบบ', role: 'admin', note: 'Super Admin' },
@@ -2569,7 +2805,7 @@
       }
     }
     function saveAuth() { localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users })); }
-    loadDB(); loadAuth();
+    loadAuth();
 
     // ============================
     // LOGIN / LOGOUT
@@ -2587,35 +2823,64 @@
         btn.title = 'แสดงรหัสผ่าน';
       }
     }
-    function doLogin() {
-      const uname = document.getElementById('loginUsername').value.trim();
-      const pw = document.getElementById('loginPassword').value;
-      const errEl = document.getElementById('loginError');
-      const found = AUTH.users.find(u => u.username === uname && u.password === pw);
-      if (!found) {
-        errEl.style.display = 'flex'; return;
-      }
-      errEl.style.display = 'none';
-      AUTH.current = found;
+    // ฟังก์ชันกลางอัปเดต UI หลัง login สำเร็จ
+    function _applyLoginUI(email, displayName, role) {
+      AUTH.current = { username: email, displayname: displayName, role: role };
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('appShell').style.display = 'block';
-      // Set header user info
-      document.getElementById('headerUserName').textContent = found.displayname || found.username;
+      document.getElementById('headerUserName').textContent = displayName;
       const roleEl = document.getElementById('headerUserRole');
-      roleEl.textContent = found.role === 'admin' ? '⭐ Admin' : '👤 User';
-      roleEl.className = 'role ' + (found.role === 'admin' ? 'role-admin' : 'role-user');
-      // Show/hide admin tabs
-      document.getElementById('tabUsers').style.display = found.role === 'admin' ? '' : 'none';
-      document.getElementById('clearDataPanel').style.display = found.role === 'admin' ? '' : 'none';
-      // bottom nav users item
+      roleEl.textContent = role === 'admin' ? '⭐ Admin' : '👤 User';
+      roleEl.className = 'role ' + (role === 'admin' ? 'role-admin' : 'role-user');
+      const isAdmin = role === 'admin';
+      document.getElementById('tabUsers').style.display = isAdmin ? '' : 'none';
+      document.getElementById('clearDataPanel').style.display = isAdmin ? '' : 'none';
       const bnavUsers = document.getElementById('bnav-users');
-      if (bnavUsers) bnavUsers.style.display = found.role === 'admin' ? '' : 'none';
-      // Init render
+      if (bnavUsers) bnavUsers.style.display = isAdmin ? '' : 'none';
       renderAssets(); renderStats(); populateCbSelect();
     }
 
-    function doLogout() {
+    async function doLogin() {
+      const email = document.getElementById('loginUsername').value.trim();
+      const pw = document.getElementById('loginPassword').value;
+      const errEl = document.getElementById('loginError');
+      const loginBtn = document.querySelector('.login-btn');
+      errEl.style.display = 'none';
+
+      if (!email || !pw) {
+        errEl.textContent = '⚠️ กรุณากรอกอีเมลและรหัสผ่าน';
+        errEl.style.display = 'block'; return;
+      }
+      if (!window._auth || !window._authLib) {
+        errEl.textContent = '⏳ ระบบกำลังโหลด กรุณารอสักครู่แล้วลองใหม่';
+        errEl.style.display = 'block'; return;
+      }
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = '⏳ กำลังเข้าสู่ระบบ...';
+      try {
+        const cred = await window._authLib.signInWithEmailAndPassword(window._auth, email, pw);
+        const user = cred.user;
+        _applyLoginUI(user.email, user.displayName || user.email, 'admin');
+        await loadDB();
+      } catch (e) {
+        let msg = '❌ อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+        if (e.code === 'auth/too-many-requests') msg = '⚠️ ลองใหม่เกินจำนวน กรุณารอสักครู่';
+        if (e.code === 'auth/network-request-failed') msg = '⚠️ ไม่มีการเชื่อมต่ออินเทอร์เน็ต';
+        if (e.code === 'auth/invalid-email') msg = '⚠️ รูปแบบอีเมลไม่ถูกต้อง';
+        errEl.textContent = msg;
+        errEl.style.display = 'block';
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = '🔐 เข้าสู่ระบบ';
+      }
+    }
+
+    async function doLogout() {
       if (!confirm('ยืนยันออกจากระบบ?')) return;
+      try {
+        if (window._authLib && window._auth) await window._authLib.signOut(window._auth);
+      } catch (e) { console.warn('signOut:', e); }
       AUTH.current = null;
       document.getElementById('appShell').style.display = 'none';
       document.getElementById('loginScreen').style.display = 'flex';
@@ -2853,23 +3118,23 @@
       if (t === 'asset') {
         document.getElementById('modalAssetTitle').textContent = '🏠 เพิ่มทรัพย์สิน';
         // Clear all fields
-        ['a_name','a_location','a_price','a_roomtype','a_area','a_floor','a_link','a_map','a_linkpic','a_postdate','a_updatedate','a_contact','a_note'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        ['a_name', 'a_location', 'a_price', 'a_roomtype', 'a_area', 'a_floor', 'a_link', 'a_map', 'a_linkpic', 'a_postdate', 'a_updatedate', 'a_contact', 'a_note'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
         document.getElementById('a_status').value = 'เช่า';
         document.getElementById('a_type').value = 'คอนโด';
         // Set today's date
-        const today = new Date().toISOString().slice(0,10);
+        const today = new Date().toISOString().slice(0, 10);
         document.getElementById('a_postdate').value = today;
         document.getElementById('a_updatedate').value = today;
         populatePosterSelect('');
       }
       if (t === 'agent') {
         document.getElementById('modalAgentTitle').textContent = '👤 เพิ่ม Agent';
-        ['ag_name','ag_company','ag_tel','ag_fb','ag_email','ag_line','ag_linelink','ag_bank'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        ['ag_name', 'ag_company', 'ag_tel', 'ag_fb', 'ag_email', 'ag_line', 'ag_linelink', 'ag_bank'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
         document.getElementById('ag_coagent').value = 'รับ';
       }
       if (t === 'customer') {
         document.getElementById('modalCustomerTitle').textContent = '🤝 เพิ่มลูกค้า';
-        ['cu_name','cu_budget','cu_area','cu_floor','cu_contact','cu_linkpost','cu_note'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        ['cu_name', 'cu_budget', 'cu_area', 'cu_floor', 'cu_contact', 'cu_linkpost', 'cu_note'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
       }
       if (t === 'user') {
         document.getElementById('modalUserTitle').textContent = '👤 เพิ่มผู้ใช้งาน';
@@ -2887,7 +3152,7 @@
     // ============================
     // SAVE ASSET
     // ============================
-    function saveAsset() {
+    async function saveAsset() {
       const a = {
         name: v('a_name'), location: v('a_location'), status: v('a_status'), type: v('a_type'),
         price: v('a_price'), roomtype: v('a_roomtype'), area: v('a_area'), floor: v('a_floor'),
@@ -2895,8 +3160,15 @@
         contact: v('a_contact'), poster: v('a_poster'), note: v('a_note')
       };
       if (!a.name) { alert('กรุณาใส่ชื่อโครงการ'); return; }
-      if (editMode.idx >= 0) DB.assets[editMode.idx] = a; else DB.assets.push(a);
-      saveDB(); closeModal('asset'); renderAssets(); populateCbSelect();
+      if (editMode.idx >= 0) {
+        const existing = DB.assets[editMode.idx];
+        await saveItem('assets', a, existing.id);
+        DB.assets[editMode.idx] = a;
+      } else {
+        const saved = await saveItem('assets', a);
+        DB.assets.push(saved);
+      }
+      closeModal('asset'); renderAssets(); populateCbSelect();
     }
     function editAsset(i) {
       const a = DB.assets[i];
@@ -2953,12 +3225,12 @@
     // ============================
     // DELETE
     // ============================
-    function deleteItem(type, i) {
-      if (!confirm('ยืนยันการลบ?')) return;
-      DB[type].splice(i, 1); saveDB();
-      if (type === 'assets') { renderAssets(); populateCbSelect(); }
-      if (type === 'agents') { renderAgents(); populateCbAgentSelect(); }
-      if (type === 'customers') renderCustomers();
+    async function deleteItem(type, idx) {
+      if (!confirm('ยืนยันลบ?')) return;
+      const item = DB[type][idx];
+      await deleteItemFromDB(type, item.id);
+      DB[type].splice(idx, 1);
+      renderAssets(); renderAgents(); renderCustomers(); renderStats();
     }
 
     // ============================
@@ -3410,7 +3682,7 @@
 
     function importSampleData() {
       if (!confirm('โหลดข้อมูลตัวอย่าง? (ข้อมูลจะถูกเพิ่มเข้ามา)')) return;
-      const today = new Date().toISOString().slice(0,10);
+      const today = new Date().toISOString().slice(0, 10);
       const sample = {
         assets: [
           { name: 'บ้านกลางเมือง พระราม 9', location: 'พระราม 9', status: 'เช่า', type: 'ทาวน์โฮม', price: '45,000 บาท/เดือน', roomtype: '3 ห้องนอน, 2 ห้องน้ำ', area: '152 ตร.ม.', floor: '3 ชั้น', link: 'https://www.facebook.com/share/p/1Dj9Ja8WGq/', map: 'https://maps.app.goo.gl/p3RExr2hWfMjjk366', contact: 'คุณแบ็ท 064-654-9935', note: 'มัดจำ 2 เดือน + ค่าเช่าล่วงหน้า 1 เดือน เฟอร์นิเจอร์ครบ', postdate: today, updatedate: today, linkpic: '', poster: 'Benz' },
@@ -3436,6 +3708,48 @@
       saveDB(); renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); renderStats();
       alert(`✅ โหลดข้อมูลตัวอย่างแล้ว!\n🏠 ${sample.assets.length} ทรัพย์สิน\n👤 ${sample.agents.length} Agent\n🤝 ${sample.customers.length} ลูกค้า`);
     }
+  </script>
+
+  <!-- Firebase SDK (ต้องอยู่หลัง script หลัก) -->
+  <script type="module">
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc }
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBLQmKVknLcmQgIRm-WsNOkHvW44nDz9Lg",
+      authDomain: "benz-home-db.firebaseapp.com",
+      databaseURL: "https://benz-home-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "benz-home-db",
+      storageBucket: "benz-home-db.firebasestorage.app",
+      messagingSenderId: "4014891413",
+      appId: "1:4014891413:web:9d0a4435a45f3a4f1bd69c",
+      measurementId: "G-JXF9028SH9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // expose ให้ script หลักใช้งานได้ผ่าน window
+    window._auth = auth;
+    window._db = db;
+    window._authLib = { signInWithEmailAndPassword, signOut };
+    window._firestoreLib = { collection, doc, getDocs, setDoc, deleteDoc };
+
+    // ตรวจ session อัตโนมัติ
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        _applyLoginUI(user.email, user.displayName || user.email, 'admin');
+        await loadDB();
+      } else {
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('appShell').style.display = 'none';
+      }
+    });
   </script>
 </body>
 
