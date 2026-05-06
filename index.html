@@ -1878,8 +1878,14 @@
       </div>
       <div class="login-field">
         <label>รหัสผ่าน (Password)</label>
-        <input type="password" id="loginPassword" placeholder="กรอก password"
-          onkeydown="if(event.key==='Enter') doLogin()">
+        <div style="position:relative;">
+          <input type="password" id="loginPassword" placeholder="กรอก password"
+            onkeydown="if(event.key==='Enter') doLogin()"
+            style="width:100%;padding-right:52px;">
+          <button type="button" id="togglePwBtn" onclick="toggleLoginPw()"
+            style="position:absolute;right:0;top:0;bottom:0;width:52px;background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3);display:flex;align-items:center;justify-content:center;border-radius:0 10px 10px 0;-webkit-tap-highlight-color:transparent;"
+            title="แสดง/ซ่อนรหัสผ่าน">👁️</button>
+        </div>
       </div>
       <button class="login-btn" onclick="doLogin()">🔐 เข้าสู่ระบบ</button>
       <div class="login-error" id="loginError">❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
@@ -2568,6 +2574,19 @@
     // ============================
     // LOGIN / LOGOUT
     // ============================
+    function toggleLoginPw() {
+      const inp = document.getElementById('loginPassword');
+      const btn = document.getElementById('togglePwBtn');
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.textContent = '🙈';
+        btn.title = 'ซ่อนรหัสผ่าน';
+      } else {
+        inp.type = 'password';
+        btn.textContent = '👁️';
+        btn.title = 'แสดงรหัสผ่าน';
+      }
+    }
     function doLogin() {
       const uname = document.getElementById('loginUsername').value.trim();
       const pw = document.getElementById('loginPassword').value;
