@@ -431,6 +431,16 @@
       color: var(--gold);
     }
 
+    .role-agent {
+      background: rgba(80, 200, 120, 0.2);
+      color: var(--green);
+    }
+
+    .role-viewer {
+      background: rgba(80, 144, 224, 0.2);
+      color: var(--blue);
+    }
+
     .role-user {
       background: rgba(80, 144, 224, 0.2);
       color: var(--blue);
@@ -2087,7 +2097,14 @@
         </div>
       </div>
       <button class="login-btn" onclick="doLogin()">🔐 เข้าสู่ระบบ</button>
-      <div class="login-error" id="loginError">❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
+      <div class="login-error" id="loginError">❌ อีเมลหรือรหัสผ่านไม่ถูกต้อง <button onclick="resetAuthData()"
+          style="margin-left:10px;background:none;border:1px solid var(--red);color:var(--red);border-radius:5px;padding:2px 8px;cursor:pointer;font-size:12px;">รีเซ็ต</button>
+      </div>
+      <div class="login-hint" style="margin-top:10px;">
+        🔑 Default: <code
+          style="background:var(--dark3);padding:2px 7px;border-radius:5px;font-size:12px;">admin@benzhome.com</code> /
+        <code style="background:var(--dark3);padding:2px 7px;border-radius:5px;font-size:12px;">admin1234</code>
+      </div>
       <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
         <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">เลือกธีม</div>
         <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;">
@@ -2117,14 +2134,20 @@
       <div class="logo">BENZ HOME Agency <span>ระบบจัดการอสังหาริมทรัพย์</span></div>
       <div class="header-tabs" id="headerTabs">
         <button class="htab active" onclick="switchTab('assets',this)">🏠 ทรัพย์สิน</button>
-        <button class="htab" onclick="switchTab('agents',this)">👤 Agent</button>
-        <button class="htab" onclick="switchTab('customers',this)">🤝 ลูกค้า</button>
-        <button class="htab" onclick="switchTab('clipboard',this)">📋 Clipboard</button>
-        <button class="htab" onclick="switchTab('iedata',this)">⚙️ Import/Export</button>
+        <button class="htab" id="tabAgents" onclick="switchTab('agents',this)">👤 Agent</button>
+        <button class="htab" id="tabCustomers" onclick="switchTab('customers',this)">🤝 ลูกค้า</button>
+        <button class="htab" id="tabClipboard" onclick="switchTab('clipboard',this)">📋 Clipboard</button>
+        <button class="htab" id="tabIedata" onclick="switchTab('iedata',this)">⚙️ Import/Export</button>
         <button class="htab" id="tabUsers" onclick="switchTab('users',this)" style="display:none">👥 จัดการ
           User</button>
       </div>
       <div class="header-user">
+        <!-- Firebase Status -->
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);white-space:nowrap;">
+          <span id="fbStatusDot"
+            style="width:8px;height:8px;border-radius:50%;background:#e8a020;display:inline-block;flex-shrink:0;"></span>
+          <span id="fbStatusText">Firebase...</span>
+        </div>
         <!-- Theme Panel Button -->
         <button class="theme-panel-btn" onclick="openThemePanel()">🎨 Theme</button>
         <div class="user-badge">
@@ -2179,7 +2202,7 @@
             <option value="ทาวน์โฮม">ทาวน์โฮม</option>
             <option value="ที่ดิน">ที่ดิน</option>
           </select>
-          <button class="btn btn-primary" onclick="openModal('asset')">+ เพิ่มทรัพย์สิน</button>
+          <button class="btn btn-primary" id="btnAddAsset" onclick="openModal('asset')">+ เพิ่มทรัพย์สิน</button>
         </div>
         <div class="cards-grid" id="assetCards"></div>
       </div>
@@ -2373,20 +2396,85 @@
           <div style="font-size:18px;font-weight:700;color:var(--gold);">👥 จัดการผู้ใช้งาน</div>
           <button class="btn btn-primary" onclick="openModal('user')" style="margin-left:auto;">+ เพิ่ม User</button>
         </div>
+        <!-- Role info card -->
+        <div
+          style="background:var(--dark3);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:16px;font-size:13px;line-height:1.9;">
+          <div style="font-weight:700;color:var(--gold);margin-bottom:8px;">💡 ระดับสิทธิ์ในระบบ</div>
+          <div><span style="color:var(--gold);font-weight:600;">⭐ admin</span> — เข้าถึงทุกส่วน: ทรัพย์สิน, Agent,
+            ลูกค้า, Clipboard, Import/Export, จัดการ User</div>
+          <div><span style="color:var(--green);font-weight:600;">🏠 agent</span> — เห็นทรัพย์สิน (ดูได้ทั้งหมด ไม่แก้ไข)
+            + ใช้ Clipboard ได้ &nbsp;·&nbsp; สามารถเชื่อมกับ Agent record ได้</div>
+          <div><span style="color:var(--blue);font-weight:600;">👁️ viewer</span> — เห็นเฉพาะทรัพย์สิน อ่านอย่างเดียว
+          </div>
+          <div style="margin-top:6px;color:var(--text3);">📌 User account กับข้อมูล Agent แยกกัน — Agent
+            คือข้อมูลนายหน้า, User คือบัญชี login ที่อาจเชื่อมกับ Agent หรือไม่ก็ได้</div>
+        </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>#</th>
-                <th>Username</th>
+                <th>อีเมล (Login)</th>
                 <th>ชื่อ-นามสกุล</th>
                 <th>Role</th>
+                <th>เชื่อม Agent</th>
                 <th>หมายเหตุ</th>
                 <th>จัดการ</th>
               </tr>
             </thead>
             <tbody id="userTable"></tbody>
           </table>
+        </div>
+
+        <!-- Firebase Config Panel -->
+        <div
+          style="margin-top:24px;background:var(--dark3);border:1px solid var(--border);border-radius:14px;padding:20px;">
+          <div style="font-size:15px;font-weight:700;color:var(--gold);margin-bottom:4px;">🔥 Firebase Configuration
+          </div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">กรอก Firebase config
+            เพื่อเชื่อมต่อฐานข้อมูล — หาได้จาก Firebase Console → Project Settings</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="form-group"><label style="font-size:12px;">API Key</label><input id="fb_apiKey"
+                placeholder="AIzaSy..." style="font-size:12px;font-family:monospace;"></div>
+            <div class="form-group"><label style="font-size:12px;">Auth Domain</label><input id="fb_authDomain"
+                placeholder="project.firebaseapp.com" style="font-size:12px;font-family:monospace;"></div>
+            <div class="form-group"><label style="font-size:12px;">Project ID</label><input id="fb_projectId"
+                placeholder="your-project-id" style="font-size:12px;font-family:monospace;"></div>
+            <div class="form-group"><label style="font-size:12px;">Storage Bucket</label><input id="fb_storageBucket"
+                placeholder="project.appspot.com" style="font-size:12px;font-family:monospace;"></div>
+            <div class="form-group"><label style="font-size:12px;">Messaging Sender ID</label><input
+                id="fb_messagingSenderId" placeholder="123456789" style="font-size:12px;font-family:monospace;"></div>
+            <div class="form-group"><label style="font-size:12px;">App ID</label><input id="fb_appId"
+                placeholder="1:123:web:abc" style="font-size:12px;font-family:monospace;"></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="saveFbConfig()">💾 บันทึกและเชื่อมต่อ Firebase</button>
+            <button class="btn btn-outline" onclick="loadFbConfigUI()">↺ โหลด Config ปัจจุบัน</button>
+            <div id="fbConfigStatus" style="display:flex;align-items:center;font-size:13px;color:var(--text3);"></div>
+          </div>
+        </div>
+
+        <!-- Backup Panel -->
+        <div
+          style="margin-top:16px;background:var(--dark3);border:1px solid var(--border);border-radius:14px;padding:20px;">
+          <div style="font-size:15px;font-weight:700;color:var(--gold);margin-bottom:4px;">💾 Backup & Restore</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">Export ข้อมูลทั้งหมด (ทรัพย์สิน + Agent +
+            ลูกค้า + Users) เป็นไฟล์ JSON เพื่อสำรองข้อมูล</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-green" onclick="backupAll()">📥 Backup ทั้งหมด (.json)</button>
+            <button class="btn btn-blue" onclick="backupUsers()">👥 Backup Users (.json)</button>
+            <label class="btn btn-outline" style="cursor:pointer;">
+              📤 Restore จาก Backup
+              <input type="file" accept=".json" onchange="restoreBackup(event)" style="display:none;">
+            </label>
+          </div>
+          <div style="margin-top:14px;border-top:1px solid var(--border2);padding-top:14px;">
+            <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px;">🔄 Sync ข้อมูล</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn btn-outline" onclick="forceSyncToFirebase()">⬆️ Push ข้อมูล local → Firebase</button>
+              <button class="btn btn-outline" onclick="forceSyncFromFirebase()">⬇️ Pull ข้อมูล Firebase → local</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2563,20 +2651,38 @@
         </div>
         <div class="modal-body">
           <div class="form-grid">
-            <div class="form-group full"><label>Username *</label><input id="u_username"
-                placeholder="ชื่อผู้ใช้สำหรับ Login"></div>
-            <div class="form-group full"><label>Password <span id="u_pw_hint"
-                  style="color:var(--text3);font-weight:400">(เว้นว่างไว้ถ้าไม่ต้องการเปลี่ยน)</span></label><input
-                type="password" id="u_password" placeholder="รหัสผ่าน"></div>
-            <div class="form-group full"><label>ชื่อ-นามสกุล</label><input id="u_displayname"
-                placeholder="ชื่อที่แสดงในระบบ"></div>
-            <div class="form-group"><label>Role</label>
-              <select id="u_role">
-                <option value="user">user — ผู้ใช้ทั่วไป</option>
-                <option value="admin">admin — ผู้ดูแลระบบ</option>
+            <div class="form-group full">
+              <label>อีเมล * <span style="color:var(--text3);font-weight:400;font-size:12px">(ใช้สำหรับ
+                  Login)</span></label>
+              <input type="email" id="u_email" placeholder="example@email.com" autocomplete="off">
+            </div>
+            <div class="form-group full">
+              <label>Password <span id="u_pw_hint"
+                  style="color:var(--text3);font-weight:400">(เว้นว่างไว้ถ้าไม่ต้องการเปลี่ยน)</span></label>
+              <input type="password" id="u_password" placeholder="รหัสผ่านอย่างน้อย 6 ตัวอักษร">
+            </div>
+            <div class="form-group full">
+              <label>ชื่อ-นามสกุล (ชื่อที่แสดงในระบบ)</label>
+              <input id="u_displayname" placeholder="เช่น กรองเกียรติ (เบนซ์)">
+            </div>
+            <div class="form-group">
+              <label>Role</label>
+              <select id="u_role" onchange="toggleLinkedAgent()">
+                <option value="admin">⭐ admin — ผู้ดูแลระบบ</option>
+                <option value="agent">🏠 agent — นายหน้า</option>
+                <option value="viewer">👁️ viewer — ดูอย่างเดียว</option>
               </select>
             </div>
-            <div class="form-group"><label>หมายเหตุ</label><input id="u_note" placeholder="เช่น Agent, ฝ่ายขาย...">
+            <div class="form-group">
+              <label>หมายเหตุ</label>
+              <input id="u_note" placeholder="เพิ่มเติม...">
+            </div>
+            <div class="form-group full" id="linkedAgentRow">
+              <label>🔗 เชื่อมกับ Agent <span style="color:var(--text3);font-weight:400;font-size:12px">(ถ้า Role เป็น
+                  agent)</span></label>
+              <select id="u_linkedAgent">
+                <option value="">— ไม่เชื่อมกับ Agent —</option>
+              </select>
             </div>
           </div>
         </div>
@@ -2757,55 +2863,410 @@
 
   <script>
     // ============================
+    // FIREBASE CONFIG — แก้ค่านี้ให้ตรงกับ project ของคุณ
+    // ============================
+    const FIREBASE_CONFIG = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // โหลด Firebase config ที่บันทึกไว้จาก localStorage (กรอกผ่านหน้า User Management)
+    (function applySavedFbConfig() {
+      try {
+        const s = localStorage.getItem('yb_fb_config');
+        if (s) {
+          const cfg = JSON.parse(s);
+          if (cfg.apiKey && cfg.apiKey !== 'YOUR_API_KEY') {
+            Object.assign(FIREBASE_CONFIG, cfg);
+          }
+        }
+      } catch (e) { }
+    })();
+
+    // ============================
     // DATA STORE
     // ============================
     let DB = { assets: [], agents: [], customers: [] };
     let AUTH = { users: [], current: null };
     let editMode = { type: '', idx: -1 };
+    let _db = null;         // Firestore instance
+    let _fbReady = false;   // Firebase โหลดสำเร็จหรือไม่
+
+    // ============================
+    // FIREBASE INIT
+    // ============================
+    function initFirebase() {
+      return new Promise((resolve) => {
+        // โหลด Firebase SDK แบบ dynamic
+        const sdkVer = '10.12.2';
+        const base = `https://www.gstatic.com/firebasejs/${sdkVer}`;
+        function loadScript(src) {
+          return new Promise((res, rej) => {
+            const s = document.createElement('script');
+            s.type = 'module'; s.src = src;
+            s.onload = res; s.onerror = rej;
+            document.head.appendChild(s);
+          });
+        }
+
+        // ใช้ import() สำหรับ ES modules
+        Promise.all([
+          import(`${base}/firebase-app.js`),
+          import(`${base}/firebase-firestore.js`)
+        ]).then(([appMod, fsMod]) => {
+          const { initializeApp } = appMod;
+          const { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, writeBatch } = fsMod;
+
+          // ตรวจ config ว่ากรอกแล้วหรือยัง
+          if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
+            console.warn('⚠️ Firebase config ยังไม่ได้กรอก — ใช้ localStorage แทน');
+            resolve(false); return;
+          }
+
+          const app = initializeApp(FIREBASE_CONFIG);
+          _db = getFirestore(app);
+          window._db = _db;
+          window._firestoreLib = { collection, doc, getDocs, setDoc, deleteDoc, writeBatch };
+          _fbReady = true;
+          console.log('✅ Firebase connected');
+          resolve(true);
+        }).catch(err => {
+          console.warn('⚠️ Firebase load failed:', err, '— ใช้ localStorage แทน');
+          resolve(false);
+        });
+      });
+    }
+
+    // ============================
+    // STORAGE LAYER (Firebase → localStorage fallback)
+    // ============================
+    const LS_KEY = 'yb_db';
+
+    function saveTolocalStorage() {
+      try { localStorage.setItem(LS_KEY, JSON.stringify(DB)); } catch (e) { console.warn('localStorage save fail', e); }
+    }
+
+    function loadFromlocalStorage() {
+      try {
+        const s = localStorage.getItem(LS_KEY);
+        if (s) { const d = JSON.parse(s); DB.assets = d.assets || []; DB.agents = d.agents || []; DB.customers = d.customers || []; }
+      } catch (e) { }
+    }
+
+    function showToast(msg, color) {
+      const t = document.createElement('div');
+      t.textContent = msg;
+      Object.assign(t.style, {
+        position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+        background: color || 'var(--gold)', color: '#fff', padding: '10px 22px', borderRadius: '30px',
+        fontWeight: '700', fontSize: '13px', zIndex: '9999', boxShadow: '0 4px 20px rgba(0,0,0,.4)', transition: 'opacity .4s', whiteSpace: 'nowrap'
+      });
+      document.body.appendChild(t);
+      setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 2000);
+    }
+
+    function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
     async function loadDB() {
-      if (!window._firestoreLib || !window._db) return;
-      const { collection, getDocs } = window._firestoreLib;
-      const db = window._db;
-      for (const col of ['assets', 'agents', 'customers']) {
-        try {
-          const snap = await getDocs(collection(db, col));
-          DB[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        } catch (e) { console.warn('loadDB:', col, e); }
+      if (_fbReady && _db) {
+        // โหลดจาก Firebase
+        const { collection, getDocs } = window._firestoreLib;
+        let anyFail = false;
+        for (const col of ['assets', 'agents', 'customers']) {
+          try {
+            const snap = await getDocs(collection(_db, col));
+            DB[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          } catch (e) { console.warn('loadDB Firebase fail:', col, e); anyFail = true; }
+        }
+        if (anyFail) showToast('⚠️ Firebase โหลดบางส่วนไม่ได้ — ใช้ cache', '#e05050');
+        saveTolocalStorage(); // sync local cache
+      } else {
+        // Fallback: โหลดจาก localStorage
+        loadFromlocalStorage();
+        showToast('📦 ใช้ข้อมูล offline (localStorage)', '#5090e0');
       }
+      updateFirebaseStatus();
       renderAssets(); renderAgents(); renderCustomers(); renderStats();
     }
 
     async function saveItem(colName, item, id = null) {
-      if (!window._firestoreLib || !window._db) return item;
-      const { collection, doc, setDoc } = window._firestoreLib;
-      const db = window._db;
-      const ref = id ? doc(db, colName, id) : doc(collection(db, colName));
-      item.id = ref.id;
-      await setDoc(ref, item);
+      if (!item.id) item.id = id || genId();
+      if (_fbReady && _db) {
+        try {
+          const { collection, doc, setDoc } = window._firestoreLib;
+          const ref = doc(collection(_db, colName), item.id);
+          await setDoc(ref, item);
+        } catch (e) {
+          console.warn('saveItem Firebase fail:', e);
+          showToast('⚠️ Firebase บันทึกไม่ได้ — บันทึก offline', '#e05050');
+        }
+      }
+      saveTolocalStorage();
       return item;
     }
 
     async function deleteItemFromDB(colName, id) {
-      if (!window._firestoreLib || !window._db) return;
-      const { doc, deleteDoc } = window._firestoreLib;
-      await deleteDoc(doc(window._db, colName, id));
+      if (_fbReady && _db && id) {
+        try {
+          const { collection, doc, deleteDoc } = window._firestoreLib;
+          await deleteDoc(doc(collection(_db, colName), id));
+        } catch (e) { console.warn('deleteItem Firebase fail:', e); }
+      }
+      saveTolocalStorage();
     }
 
-    function saveDB() { /* ใช้ saveItem แทน */ }
+    async function saveDB() {
+      // สำหรับ agents และ customers ที่ยังใช้ saveDB() อยู่
+      if (_fbReady && _db) {
+        for (const col of ['agents', 'customers']) {
+          try {
+            const { collection, doc, setDoc, writeBatch } = window._firestoreLib;
+            const batch = writeBatch(_db);
+            DB[col].forEach(item => {
+              if (!item.id) item.id = genId();
+              const ref = doc(collection(_db, col), item.id);
+              batch.set(ref, item);
+            });
+            await batch.commit();
+          } catch (e) { console.warn('saveDB Firebase fail:', col, e); }
+        }
+      }
+      saveTolocalStorage();
+    }
 
-    function loadAuth() {
-      try { const s = localStorage.getItem('yb_auth'); if (s) AUTH = JSON.parse(s); } catch (e) { }
-      if (!AUTH.users || AUTH.users.length === 0) {
-        AUTH.users = [
-          { username: 'admin', password: 'admin1234', displayname: 'ผู้ดูแลระบบ', role: 'admin', note: 'Super Admin' },
-          { username: 'user', password: 'user1234', displayname: 'ผู้ใช้ทั่วไป', role: 'user', note: '' }
-        ];
-        saveAuth();
+    // ============================
+    // FIREBASE STATUS INDICATOR
+    // ============================
+    function updateFirebaseStatus() {
+      const el = document.getElementById('fbStatusDot');
+      const txt = document.getElementById('fbStatusText');
+      if (!el) return;
+      if (_fbReady) {
+        el.style.background = '#50c878';
+        txt.textContent = 'Firebase ✅';
+      } else if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
+        el.style.background = '#e8a020';
+        txt.textContent = 'Firebase ⚠️ ยังไม่ได้กรอก Config';
+      } else {
+        el.style.background = '#e05050';
+        txt.textContent = 'Firebase ❌ เชื่อมไม่ได้';
       }
     }
-    function saveAuth() { localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users })); }
+
+    // ============================
+    // FIREBASE AUTH SYNC (Users collection)
+    // ============================
+    async function saveAuthToFirebase() {
+      if (!_fbReady || !_db) return;
+      try {
+        const { collection, doc, setDoc, writeBatch } = window._firestoreLib;
+        const batch = writeBatch(_db);
+        AUTH.users.forEach(u => {
+          const safeId = u.email.replace(/[.@]/g, '_');
+          const ref = doc(collection(_db, 'users'), safeId);
+          batch.set(ref, u);
+        });
+        await batch.commit();
+      } catch (e) { console.warn('saveAuthToFirebase fail:', e); }
+    }
+
+    async function loadAuthFromFirebase() {
+      if (!_fbReady || !_db) return false;
+      try {
+        const { collection, getDocs } = window._firestoreLib;
+        const snap = await getDocs(collection(_db, 'users'));
+        if (snap.docs.length > 0) {
+          AUTH.users = snap.docs.map(d => d.data());
+          saveAuth(); // sync to localStorage
+          return true;
+        }
+      } catch (e) { console.warn('loadAuthFromFirebase fail:', e); }
+      return false;
+    }
+
+    function saveAuth() {
+      localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+      saveAuthToFirebase(); // async sync to Firebase
+    }
+
+    function loadAuth() {
+      try {
+        const s = localStorage.getItem('yb_auth');
+        if (s) {
+          const parsed = JSON.parse(s);
+          if (parsed.users) {
+            const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            parsed.users = parsed.users
+              .map(u => { if (!u.email && u.username) u.email = u.username; return u; })
+              .filter(u => u.email && emailRe.test(u.email));
+          }
+          AUTH = { users: parsed.users || [], current: null };
+        }
+      } catch (e) { console.warn('loadAuth error:', e); }
+      const hasAdmin = AUTH.users.some(u => u.role === 'admin');
+      if (!AUTH.users.length || !hasAdmin) {
+        AUTH.users = AUTH.users.filter(u => u.role !== 'admin');
+        AUTH.users.unshift({ email: 'admin@benzhome.com', password: 'admin1234', displayname: 'ผู้ดูแลระบบ', role: 'admin', note: 'Super Admin', linkedAgentId: null });
+        localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+      }
+    }
+
+    // โหลด auth ทันที จาก localStorage ก่อน
     loadAuth();
+
+    // จากนั้น init Firebase และ sync auth จาก Firebase
+    initFirebase().then(async (ok) => {
+      if (ok) {
+        const synced = await loadAuthFromFirebase();
+        if (synced) console.log('✅ Auth synced from Firebase');
+        // ตรวจ hasAdmin อีกครั้งหลัง sync
+        const hasAdmin = AUTH.users.some(u => u.role === 'admin');
+        if (!hasAdmin) {
+          AUTH.users.unshift({ email: 'admin@benzhome.com', password: 'admin1234', displayname: 'ผู้ดูแลระบบ', role: 'admin', note: 'Super Admin', linkedAgentId: null });
+          saveAuth();
+        }
+      }
+      updateFirebaseStatus();
+    });
+
+    function resetAuthData() {
+      if (!confirm('รีเซ็ตข้อมูล User ทั้งหมด?\n(จะสร้าง admin default ใหม่ email: admin@benzhome.com / admin1234)')) return;
+      localStorage.removeItem('yb_auth');
+      AUTH = { users: [], current: null };
+      loadAuth();
+      document.getElementById('loginError').style.display = 'none';
+      document.getElementById('loginUsername').value = 'admin@benzhome.com';
+      alert('✅ รีเซ็ตแล้ว กรุณา login ใหม่ด้วย admin@benzhome.com / admin1234');
+    }
+
+    // ============================
+    // FIREBASE CONFIG UI
+    // ============================
+    const FB_CONFIG_KEY = 'yb_fb_config';
+
+    function saveFbConfig() {
+      const cfg = {
+        apiKey: document.getElementById('fb_apiKey').value.trim(),
+        authDomain: document.getElementById('fb_authDomain').value.trim(),
+        projectId: document.getElementById('fb_projectId').value.trim(),
+        storageBucket: document.getElementById('fb_storageBucket').value.trim(),
+        messagingSenderId: document.getElementById('fb_messagingSenderId').value.trim(),
+        appId: document.getElementById('fb_appId').value.trim()
+      };
+      if (!cfg.apiKey || !cfg.projectId) { alert('กรุณากรอก API Key และ Project ID อย่างน้อย'); return; }
+      localStorage.setItem(FB_CONFIG_KEY, JSON.stringify(cfg));
+      document.getElementById('fbConfigStatus').textContent = '✅ บันทึกแล้ว — กำลังเชื่อมต่อ...';
+      // Reload page เพื่อ init Firebase ใหม่
+      setTimeout(() => location.reload(), 800);
+    }
+
+    function loadFbConfigUI() {
+      try {
+        const s = localStorage.getItem(FB_CONFIG_KEY);
+        if (!s) { alert('ยังไม่มี Firebase config ที่บันทึกไว้'); return; }
+        const cfg = JSON.parse(s);
+        document.getElementById('fb_apiKey').value = cfg.apiKey || '';
+        document.getElementById('fb_authDomain').value = cfg.authDomain || '';
+        document.getElementById('fb_projectId').value = cfg.projectId || '';
+        document.getElementById('fb_storageBucket').value = cfg.storageBucket || '';
+        document.getElementById('fb_messagingSenderId').value = cfg.messagingSenderId || '';
+        document.getElementById('fb_appId').value = cfg.appId || '';
+        document.getElementById('fbConfigStatus').textContent = '✅ โหลด config แล้ว';
+      } catch (e) { alert('โหลด config ไม่ได้: ' + e.message); }
+    }
+
+    // ============================
+    // BACKUP & RESTORE
+    // ============================
+    function backupAll() {
+      const payload = {
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        DB: DB,
+        users: AUTH.users
+      };
+      downloadJSON(payload, `benzhome_backup_${new Date().toISOString().slice(0, 10)}.json`);
+    }
+
+    function backupUsers() {
+      const payload = { version: 2, exportedAt: new Date().toISOString(), users: AUTH.users };
+      downloadJSON(payload, `benzhome_users_${new Date().toISOString().slice(0, 10)}.json`);
+    }
+
+    function downloadJSON(obj, filename) {
+      const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    async function restoreBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const text = await file.text();
+      try {
+        const data = JSON.parse(text);
+        if (!data.version) { alert('ไฟล์ backup ไม่ถูกต้อง'); return; }
+        if (!confirm(`⚠️ Restore จากไฟล์: ${file.name}\nExported: ${data.exportedAt || 'ไม่ทราบ'}\nข้อมูลปัจจุบันจะถูกแทนที่ ยืนยัน?`)) return;
+        if (data.DB) {
+          DB.assets = data.DB.assets || [];
+          DB.agents = data.DB.agents || [];
+          DB.customers = data.DB.customers || [];
+          await saveDB();
+          // Push assets ด้วย (saveDB ทำ agents+customers แต่ไม่รวม assets)
+          if (_fbReady && _db) {
+            const { collection, doc, setDoc, writeBatch } = window._firestoreLib;
+            const batch = writeBatch(_db);
+            DB.assets.forEach(item => {
+              if (!item.id) item.id = genId();
+              const ref = doc(collection(_db, 'assets'), item.id);
+              batch.set(ref, item);
+            });
+            await batch.commit();
+          }
+          saveTolocalStorage();
+        }
+        if (data.users) {
+          AUTH.users = data.users;
+          saveAuth();
+        }
+        renderAssets(); renderAgents(); renderCustomers(); renderUsers(); renderStats();
+        showToast('✅ Restore สำเร็จ!', '#50c878');
+      } catch (e) { alert('Restore ไม่ได้: ' + e.message); }
+      event.target.value = '';
+    }
+
+    async function forceSyncToFirebase() {
+      if (!_fbReady || !_db) { alert('Firebase ยังไม่ได้เชื่อมต่อ'); return; }
+      if (!confirm('⬆️ Push ข้อมูล local ทั้งหมดไปทับ Firebase?')) return;
+      const { collection, doc, setDoc, writeBatch } = window._firestoreLib;
+      for (const col of ['assets', 'agents', 'customers']) {
+        const batch = writeBatch(_db);
+        DB[col].forEach(item => {
+          if (!item.id) item.id = genId();
+          const ref = doc(collection(_db, col), item.id);
+          batch.set(ref, item);
+        });
+        await batch.commit();
+      }
+      await saveAuthToFirebase();
+      showToast('✅ Push ไป Firebase สำเร็จ!', '#50c878');
+    }
+
+    async function forceSyncFromFirebase() {
+      if (!_fbReady || !_db) { alert('Firebase ยังไม่ได้เชื่อมต่อ'); return; }
+      if (!confirm('⬇️ Pull ข้อมูลจาก Firebase ทับ local?')) return;
+      await loadDB();
+      await loadAuthFromFirebase();
+      renderUsers();
+      showToast('✅ Pull จาก Firebase สำเร็จ!', '#50c878');
+    }
 
     // ============================
     // LOGIN / LOGOUT
@@ -2823,69 +3284,82 @@
         btn.title = 'แสดงรหัสผ่าน';
       }
     }
-    // ฟังก์ชันกลางอัปเดต UI หลัง login สำเร็จ
-    function _applyLoginUI(email, displayName, role) {
-      AUTH.current = { username: email, displayname: displayName, role: role };
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('appShell').style.display = 'block';
-      document.getElementById('headerUserName').textContent = displayName;
-      const roleEl = document.getElementById('headerUserRole');
-      roleEl.textContent = role === 'admin' ? '⭐ Admin' : '👤 User';
-      roleEl.className = 'role ' + (role === 'admin' ? 'role-admin' : 'role-user');
-      const isAdmin = role === 'admin';
-      document.getElementById('tabUsers').style.display = isAdmin ? '' : 'none';
-      document.getElementById('clearDataPanel').style.display = isAdmin ? '' : 'none';
-      const bnavUsers = document.getElementById('bnav-users');
-      if (bnavUsers) bnavUsers.style.display = isAdmin ? '' : 'none';
-      renderAssets(); renderStats(); populateCbSelect();
-    }
-
-    async function doLogin() {
-      const email = document.getElementById('loginUsername').value.trim();
+    function doLogin() {
+      const email = document.getElementById('loginUsername').value.trim().toLowerCase();
       const pw = document.getElementById('loginPassword').value;
       const errEl = document.getElementById('loginError');
-      const loginBtn = document.querySelector('.login-btn');
+      const found = AUTH.users.find(u => u.email === email && u.password === pw);
+      if (!found) {
+        errEl.style.display = 'flex'; return;
+      }
       errEl.style.display = 'none';
-
-      if (!email || !pw) {
-        errEl.textContent = '⚠️ กรุณากรอกอีเมลและรหัสผ่าน';
-        errEl.style.display = 'block'; return;
-      }
-      if (!window._auth || !window._authLib) {
-        errEl.textContent = '⏳ ระบบกำลังโหลด กรุณารอสักครู่แล้วลองใหม่';
-        errEl.style.display = 'block'; return;
-      }
-
-      loginBtn.disabled = true;
-      loginBtn.textContent = '⏳ กำลังเข้าสู่ระบบ...';
-      try {
-        const cred = await window._authLib.signInWithEmailAndPassword(window._auth, email, pw);
-        const user = cred.user;
-        _applyLoginUI(user.email, user.displayName || user.email, 'admin');
-        await loadDB();
-      } catch (e) {
-        let msg = '❌ อีเมลหรือรหัสผ่านไม่ถูกต้อง';
-        if (e.code === 'auth/too-many-requests') msg = '⚠️ ลองใหม่เกินจำนวน กรุณารอสักครู่';
-        if (e.code === 'auth/network-request-failed') msg = '⚠️ ไม่มีการเชื่อมต่ออินเทอร์เน็ต';
-        if (e.code === 'auth/invalid-email') msg = '⚠️ รูปแบบอีเมลไม่ถูกต้อง';
-        errEl.textContent = msg;
-        errEl.style.display = 'block';
-      } finally {
-        loginBtn.disabled = false;
-        loginBtn.textContent = '🔐 เข้าสู่ระบบ';
-      }
+      AUTH.current = found;
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('appShell').style.display = 'block';
+      // Set header user info
+      document.getElementById('headerUserName').textContent = found.displayname || found.email;
+      const roleEl = document.getElementById('headerUserRole');
+      if (found.role === 'admin') { roleEl.textContent = '⭐ Admin'; roleEl.className = 'role role-admin'; }
+      else if (found.role === 'agent') { roleEl.textContent = '🏠 Agent'; roleEl.className = 'role role-agent'; }
+      else { roleEl.textContent = '👁️ Viewer'; roleEl.className = 'role role-viewer'; }
+      // Apply role-based access control
+      applyRoleAccess(found.role);
+      // โหลดข้อมูลจาก Firebase หรือ localStorage
+      loadDB();
     }
 
-    async function doLogout() {
+    function doLogout() {
       if (!confirm('ยืนยันออกจากระบบ?')) return;
-      try {
-        if (window._authLib && window._auth) await window._authLib.signOut(window._auth);
-      } catch (e) { console.warn('signOut:', e); }
       AUTH.current = null;
       document.getElementById('appShell').style.display = 'none';
       document.getElementById('loginScreen').style.display = 'flex';
       document.getElementById('loginUsername').value = '';
       document.getElementById('loginPassword').value = '';
+    }
+
+    // ============================
+    // ROLE-BASED ACCESS CONTROL
+    // ============================
+    function applyRoleAccess(role) {
+      const isAdmin = role === 'admin';
+      const isAgent = role === 'agent';
+      const isViewer = role === 'viewer';
+
+      // Tabs visibility
+      // admin: all tabs
+      // agent: ทรัพย์สิน + Clipboard เท่านั้น
+      // viewer: ทรัพย์สิน เท่านั้น
+      const tabAgents = document.getElementById('tabAgents');
+      const tabCustomers = document.getElementById('tabCustomers');
+      const tabIedata = document.getElementById('tabIedata');
+      const tabUsers = document.getElementById('tabUsers');
+      const tabClipboard = document.getElementById('tabClipboard');
+      if (tabAgents) tabAgents.style.display = isAdmin ? '' : 'none';
+      if (tabCustomers) tabCustomers.style.display = isAdmin ? '' : 'none';
+      if (tabIedata) tabIedata.style.display = isAdmin ? '' : 'none';
+      if (tabUsers) tabUsers.style.display = isAdmin ? '' : 'none';
+      if (tabClipboard) tabClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
+
+      // Bottom nav
+      const bnavAgents = document.getElementById('bnav-agents');
+      const bnavCustomers = document.getElementById('bnav-customers');
+      const bnavIedata = document.getElementById('bnav-iedata');
+      const bnavUsers = document.getElementById('bnav-users');
+      const bnavClipboard = document.getElementById('bnav-clipboard');
+      if (bnavAgents) bnavAgents.style.display = isAdmin ? '' : 'none';
+      if (bnavCustomers) bnavCustomers.style.display = isAdmin ? '' : 'none';
+      if (bnavIedata) bnavIedata.style.display = isAdmin ? '' : 'none';
+      if (bnavUsers) bnavUsers.style.display = isAdmin ? '' : 'none';
+      if (bnavClipboard) bnavClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
+
+      // Admin-only panels
+      const clearDataPanel = document.getElementById('clearDataPanel');
+      if (clearDataPanel) clearDataPanel.style.display = isAdmin ? '' : 'none';
+
+      // Asset add/edit/delete buttons: agent & viewer = read-only
+      window._canEdit = isAdmin; // used in renderAssets to show/hide action buttons
+      const btnAddAsset = document.getElementById('btnAddAsset');
+      if (btnAddAsset) btnAddAsset.style.display = isAdmin ? '' : 'none';
     }
 
     // ============================
@@ -2945,6 +3419,7 @@
       el.innerHTML = list.map(a => {
         const ri = DB.assets.indexOf(a);
         const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
+        const canEdit = window._canEdit !== false;
         return `<div class="card">
       <div class="card-header">
         <div class="card-title">${a.name || '(ไม่มีชื่อ)'}</div>
@@ -2965,8 +3440,8 @@
         ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm">🔗 Link</a>` : ''}
         ${a.map ? `<a href="${a.map}" target="_blank" class="btn btn-outline btn-sm">📍 Map</a>` : ''}
         <button class="btn btn-blue btn-sm" onclick="quickClip(${ri})">📋 Clipboard</button>
-        <button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>
+        ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️</button>` : ''}
+        ${canEdit ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>` : ''}
       </div>
     </div>`;
       }).join('');
@@ -3032,44 +3507,83 @@
     // ============================
     // USER MANAGEMENT
     // ============================
+    function _roleBadge(role) {
+      if (role === 'admin') return '<span class="badge badge-admin">⭐ Admin</span>';
+      if (role === 'agent') return '<span class="badge badge-both">🏠 Agent</span>';
+      return '<span class="badge badge-user2">👁️ Viewer</span>';
+    }
+    function _roleLabel(role) {
+      if (role === 'admin') return '⭐ Admin';
+      if (role === 'agent') return '🏠 Agent';
+      return '👁️ Viewer';
+    }
+
     function renderUsers() {
       const tb = document.getElementById('userTable');
-      if (!AUTH.users.length) { tb.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีผู้ใช้</td></tr>`; return; }
+      if (!AUTH.users.length) {
+        tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีผู้ใช้</td></tr>`;
+        return;
+      }
       tb.innerHTML = AUTH.users.map((u, i) => {
-        const isCurrentUser = AUTH.current && AUTH.current.username === u.username;
+        const isMe = AUTH.current && AUTH.current.username === u.email;
+        const linkedAgent = u.linkedAgentId ? (DB.agents.find(a => a.id === u.linkedAgentId) || null) : null;
         return `<tr>
-      <td style="color:var(--text3)">${i + 1}</td>
-      <td style="font-weight:600">${u.username}${isCurrentUser ? ` <span style="font-size:11px;color:var(--gold)">(คุณ)</span>` : ''}</td>
-      <td>${u.displayname || '-'}</td>
-      <td><span class="badge ${u.role === 'admin' ? 'badge-admin' : 'badge-user2'}">${u.role === 'admin' ? '⭐ Admin' : '👤 User'}</span></td>
-      <td style="font-size:12px;color:var(--text3)">${u.note || '-'}</td>
-      <td><div style="display:flex;gap:5px;flex-wrap:wrap;">
-        <button class="btn btn-outline btn-sm" onclick="editUser(${i})">✏️ แก้ไข</button>
-        ${!isCurrentUser ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">🗑️</button>` : ''}
-        ${isCurrentUser ? `<button class="btn btn-blue btn-sm" onclick="openModal('changePw')">🔑 เปลี่ยน PW</button>` : ''}
-      </div></td>
-    </tr>`;
+          <td style="color:var(--text3)">${i + 1}</td>
+          <td style="font-weight:600;font-size:13px">${u.email || '-'}${isMe ? ` <span style="font-size:11px;color:var(--gold)">(คุณ)</span>` : ''}<br>
+            <span style="font-weight:400;color:var(--text3);font-size:12px">${u.displayname || ''}</span></td>
+          <td>${u.displayname || '-'}</td>
+          <td>${_roleBadge(u.role)}</td>
+          <td style="font-size:12px">${linkedAgent ? `<span style="color:var(--green)">✅ ${linkedAgent.name}</span>` : '<span style="color:var(--text3)">—</span>'}</td>
+          <td style="font-size:12px;color:var(--text3)">${u.note || '-'}</td>
+          <td><div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm" onclick="editUser(${i})">✏️ แก้ไข</button>
+            ${!isMe ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">🗑️</button>` : ''}
+          </div></td>
+        </tr>`;
       }).join('');
     }
 
+    function toggleLinkedAgent() {
+      const role = document.getElementById('u_role').value;
+      const row = document.getElementById('linkedAgentRow');
+      row.style.display = role === 'agent' ? '' : 'none';
+    }
+
+    function populateLinkedAgentSelect(currentId) {
+      const sel = document.getElementById('u_linkedAgent');
+      sel.innerHTML = '<option value="">— ไม่เชื่อมกับ Agent —</option>';
+      DB.agents.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id || a.name;
+        opt.textContent = a.name + (a.company ? ` (${a.company})` : '');
+        if (a.id === currentId || a.name === currentId) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+
     function saveUser() {
-      const uname = document.getElementById('u_username').value.trim();
+      const email = document.getElementById('u_email').value.trim().toLowerCase();
       const pw = document.getElementById('u_password').value;
       const dname = document.getElementById('u_displayname').value.trim();
       const role = document.getElementById('u_role').value;
       const note = document.getElementById('u_note').value.trim();
-      if (!uname) { alert('กรุณาใส่ Username'); return; }
+      const linked = document.getElementById('u_linkedAgent').value;
+
+      if (!email) { alert('กรุณาใส่อีเมล'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('รูปแบบอีเมลไม่ถูกต้อง'); return; }
+
       if (editMode.idx >= 0) {
         const u = AUTH.users[editMode.idx];
-        u.username = uname;
+        u.email = email;
         u.displayname = dname;
         u.role = role;
         u.note = note;
+        u.linkedAgentId = linked || null;
         if (pw) u.password = pw;
       } else {
-        if (!pw) { alert('กรุณาใส่ Password'); return; }
-        if (AUTH.users.find(x => x.username === uname)) { alert('Username นี้มีในระบบแล้ว'); return; }
-        AUTH.users.push({ username: uname, password: pw, displayname: dname, role: role, note: note });
+        if (!pw || pw.length < 6) { alert('Password ต้องมีอย่างน้อย 6 ตัวอักษร'); return; }
+        if (AUTH.users.find(x => x.email === email)) { alert('อีเมลนี้มีในระบบแล้ว'); return; }
+        AUTH.users.push({ email, password: pw, displayname: dname, role, note, linkedAgentId: linked || null });
       }
       saveAuth(); closeModal('user'); renderUsers();
     }
@@ -3077,18 +3591,20 @@
     function editUser(i) {
       const u = AUTH.users[i];
       document.getElementById('modalUserTitle').textContent = '✏️ แก้ไขผู้ใช้';
-      document.getElementById('u_username').value = u.username;
+      document.getElementById('u_email').value = u.email || '';
       document.getElementById('u_password').value = '';
       document.getElementById('u_displayname').value = u.displayname || '';
-      document.getElementById('u_role').value = u.role;
+      document.getElementById('u_role').value = u.role || 'viewer';
       document.getElementById('u_note').value = u.note || '';
       document.getElementById('u_pw_hint').style.display = 'inline';
+      populateLinkedAgentSelect(u.linkedAgentId || '');
+      toggleLinkedAgent();
       editMode = { type: 'user', idx: i };
       document.getElementById('modalUser').classList.add('open');
     }
 
     function deleteUser(i) {
-      if (!confirm(`ยืนยันลบ user "${AUTH.users[i].username}"?`)) return;
+      if (!confirm(`ยืนยันลบ user "${AUTH.users[i].email}"?`)) return;
       AUTH.users.splice(i, 1); saveAuth(); renderUsers();
     }
 
@@ -3102,7 +3618,7 @@
       if (!newPw || newPw.length < 6) { errEl.textContent = 'รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร'; errEl.style.display = 'block'; return; }
       if (newPw !== con) { errEl.textContent = 'รหัสผ่านใหม่ไม่ตรงกัน'; errEl.style.display = 'block'; return; }
       errEl.style.display = 'none';
-      const idx = AUTH.users.findIndex(u => u.username === cur.username);
+      const idx = AUTH.users.findIndex(u => u.email === cur.username);
       if (idx >= 0) { AUTH.users[idx].password = newPw; AUTH.current.password = newPw; }
       saveAuth(); closeModal('changePw');
       alert('✅ เปลี่ยนรหัสผ่านสำเร็จ');
@@ -3138,12 +3654,14 @@
       }
       if (t === 'user') {
         document.getElementById('modalUserTitle').textContent = '👤 เพิ่มผู้ใช้งาน';
-        document.getElementById('u_username').value = '';
+        document.getElementById('u_email').value = '';
         document.getElementById('u_password').value = '';
         document.getElementById('u_displayname').value = '';
-        document.getElementById('u_role').value = 'user';
+        document.getElementById('u_role').value = 'agent';
         document.getElementById('u_note').value = '';
         document.getElementById('u_pw_hint').style.display = 'none';
+        populateLinkedAgentSelect('');
+        toggleLinkedAgent();
         editMode = { type: 'user', idx: -1 };
       }
     }
@@ -3185,12 +3703,19 @@
     // ============================
     // SAVE AGENT
     // ============================
-    function saveAgent() {
+    async function saveAgent() {
       const a = { name: v('ag_name'), company: v('ag_company'), coagent: v('ag_coagent'), tel: v('ag_tel'), fb: v('ag_fb'), email: v('ag_email'), line: v('ag_line'), linelink: v('ag_linelink'), bank: v('ag_bank') };
       if (!a.name) { alert('กรุณาใส่ชื่อ Agent'); return; }
-      if (editMode.idx >= 0) DB.agents[editMode.idx] = a; else DB.agents.push(a);
-      saveDB(); closeModal('agent'); renderAgents(); populateCbAgentSelect();
-      // Refresh poster dropdown if asset modal is open
+      if (editMode.idx >= 0) {
+        const existing = DB.agents[editMode.idx];
+        a.id = existing.id || genId();
+        await saveItem('agents', a, a.id);
+        DB.agents[editMode.idx] = a;
+      } else {
+        const saved = await saveItem('agents', a);
+        DB.agents.push(saved);
+      }
+      closeModal('agent'); renderAgents(); populateCbAgentSelect();
       if (document.getElementById('modalAsset').classList.contains('open')) populatePosterSelect(document.getElementById('a_poster').value);
     }
     function editAgent(i) {
@@ -3206,11 +3731,19 @@
     // ============================
     // SAVE CUSTOMER
     // ============================
-    function saveCustomer() {
+    async function saveCustomer() {
       const a = { name: v('cu_name'), status: v('cu_status'), type: v('cu_type'), budget: v('cu_budget'), area: v('cu_area'), floor: v('cu_floor'), contact: v('cu_contact'), linkpost: v('cu_linkpost'), note: v('cu_note') };
       if (!a.name) { alert('กรุณาใส่ข้อมูล'); return; }
-      if (editMode.idx >= 0) DB.customers[editMode.idx] = a; else DB.customers.push(a);
-      saveDB(); closeModal('customer'); renderCustomers();
+      if (editMode.idx >= 0) {
+        const existing = DB.customers[editMode.idx];
+        a.id = existing.id || genId();
+        await saveItem('customers', a, a.id);
+        DB.customers[editMode.idx] = a;
+      } else {
+        const saved = await saveItem('customers', a);
+        DB.customers.push(saved);
+      }
+      closeModal('customer'); renderCustomers();
     }
     function editCustomer(i) {
       const a = DB.customers[i];
@@ -3528,12 +4061,24 @@
     // ============================
     // CLEAR ALL
     // ============================
-    function clearAllData() {
+    async function clearAllData() {
       if (AUTH.current?.role !== 'admin') { alert('เฉพาะ Admin เท่านั้น'); return; }
       if (!confirm('⚠️ ยืนยันลบข้อมูลทั้งหมด?\nการกระทำนี้ไม่สามารถย้อนกลับได้')) return;
       DB = { assets: [], agents: [], customers: [] };
-      saveDB(); renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); renderStats();
-      alert('ลบข้อมูลทั้งหมดแล้ว');
+      saveTolocalStorage();
+      if (_fbReady && _db) {
+        try {
+          const { collection, getDocs, writeBatch, doc } = window._firestoreLib;
+          for (const col of ['assets', 'agents', 'customers']) {
+            const snap = await getDocs(collection(_db, col));
+            const batch = writeBatch(_db);
+            snap.docs.forEach(d => batch.delete(doc(collection(_db, col), d.id)));
+            if (snap.docs.length > 0) await batch.commit();
+          }
+        } catch (e) { console.warn('clearAllData Firebase fail:', e); }
+      }
+      renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); renderStats();
+      showToast('🗑️ ลบข้อมูลทั้งหมดแล้ว', '#e05050');
     }
 
     // ============================
@@ -3708,48 +4253,6 @@
       saveDB(); renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); renderStats();
       alert(`✅ โหลดข้อมูลตัวอย่างแล้ว!\n🏠 ${sample.assets.length} ทรัพย์สิน\n👤 ${sample.agents.length} Agent\n🤝 ${sample.customers.length} ลูกค้า`);
     }
-  </script>
-
-  <!-- Firebase SDK (ต้องอยู่หลัง script หลัก) -->
-  <script type="module">
-    import { initializeApp }
-      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
-      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc }
-      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBLQmKVknLcmQgIRm-WsNOkHvW44nDz9Lg",
-      authDomain: "benz-home-db.firebaseapp.com",
-      databaseURL: "https://benz-home-db-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "benz-home-db",
-      storageBucket: "benz-home-db.firebasestorage.app",
-      messagingSenderId: "4014891413",
-      appId: "1:4014891413:web:9d0a4435a45f3a4f1bd69c",
-      measurementId: "G-JXF9028SH9"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // expose ให้ script หลักใช้งานได้ผ่าน window
-    window._auth = auth;
-    window._db = db;
-    window._authLib = { signInWithEmailAndPassword, signOut };
-    window._firestoreLib = { collection, doc, getDocs, setDoc, deleteDoc };
-
-    // ตรวจ session อัตโนมัติ
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        _applyLoginUI(user.email, user.displayName || user.email, 'admin');
-        await loadDB();
-      } else {
-        document.getElementById('loginScreen').style.display = 'flex';
-        document.getElementById('appShell').style.display = 'none';
-      }
-    });
   </script>
 </body>
 
