@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>BENZ HOME Agency — ระบบจัดการอสังหาริมทรัพย์</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Kanit:wght@300;400;500;600;700&family=Noto+Serif+Thai:wght@400;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
@@ -281,32 +281,34 @@
       width: 100%;
       background: var(--dark3);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 16px;
+      border-radius: 10px;
+      padding: 14px 16px;
       color: var(--text);
       font-family: inherit;
-      font-size: 15px;
+      font-size: 16px; /* 16px prevents iOS auto-zoom */
       outline: none;
       transition: border-color .2s;
-    }
-
-    .login-field input:focus {
-      border-color: var(--gold);
+      min-height: 52px;
     }
 
     .login-btn {
       width: 100%;
-      padding: 13px;
+      padding: 15px;
       background: linear-gradient(135deg, var(--gold-dark), var(--gold));
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       color: var(--dark);
       font-family: inherit;
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 700;
       cursor: pointer;
       margin-top: 8px;
       transition: opacity .2s;
+      min-height: 54px;
+    }
+
+    .login-field input:focus {
+      border-color: var(--gold);
     }
 
     .login-btn:hover {
@@ -1078,48 +1080,181 @@
       margin: 18px 0;
     }
 
-    @media(max-width:640px) {
-      .form-grid {
-        grid-template-columns: 1fr;
+    /* ===== BOTTOM NAV (mobile only) ===== */
+    .bottom-nav {
+      display: none;
+    }
+
+    /* ===== MOBILE OVERHAUL ===== */
+    @media(max-width:768px) {
+
+      /* -- viewport & body -- */
+      body {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
       }
 
-      .cards-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .header-tabs {
-        gap: 1px;
-      }
-
-      .htab {
-        padding: 5px 9px;
-        font-size: 12px;
-      }
-
-      .cb-options {
-        grid-template-columns: 1fr;
-      }
-
+      /* -- header: compact single row -- */
       .header {
-        height: auto;
-        padding: 8px 12px;
+        height: 52px;
+        padding: 0 14px;
+        flex-wrap: nowrap;
+        gap: 8px;
+      }
+      .logo {
+        font-size: 16px;
+        white-space: nowrap;
+      }
+      .logo span { display: none; }
+      .header-tabs { display: none; } /* replaced by bottom-nav */
+      .header-user { gap: 6px; }
+      .user-badge { padding: 4px 10px; font-size: 12px; }
+      .user-badge .role { font-size: 10px; padding: 1px 5px; }
+      .theme-panel-btn { padding: 5px 10px; font-size: 12px; }
+      .logout-btn { padding: 5px 10px; font-size: 12px; }
+
+      /* -- bottom nav -- */
+      .bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        background: var(--dark2);
+        border-top: 1px solid var(--border);
+        z-index: 200;
+        height: calc(64px + env(safe-area-inset-bottom, 0px));
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        align-items: stretch;
+      }
+      .bnav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        color: var(--text3);
+        font-family: inherit;
+        font-size: 10px;
+        font-weight: 500;
+        padding: 6px 2px;
+        transition: color .2s;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .bnav-item .bnav-icon { font-size: 20px; line-height: 1; }
+      .bnav-item.active { color: var(--gold); }
+      .bnav-item.active .bnav-icon { transform: scale(1.1); }
+
+      /* -- main padding -- */
+      .main { padding: 12px 12px 16px; }
+
+      /* -- stats row: horizontal scroll -- */
+      .stats-row {
+        display: flex;
+        overflow-x: auto;
+        gap: 10px;
+        margin-bottom: 14px;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+        grid-template-columns: unset;
+      }
+      .stats-row::-webkit-scrollbar { display: none; }
+      .stat-box {
+        min-width: 100px;
+        flex-shrink: 0;
+        padding: 12px 14px;
+      }
+      .stat-box .num { font-size: 22px; }
+      .stat-box .lbl { font-size: 11px; }
+
+      /* -- toolbar: search full-width, btn right -- */
+      .toolbar {
         flex-wrap: wrap;
-        gap: 6px;
+        gap: 8px;
+        margin-bottom: 12px;
       }
+      .toolbar .search-box { width: 100%; min-width: unset; flex: unset; }
+      .toolbar .filter-select { flex: 1; min-width: 0; font-size: 13px; padding: 10px 10px; }
+      .toolbar .btn { min-height: 44px; padding: 10px 16px; font-size: 14px; }
 
-      .logo span {
-        display: none;
-      }
+      /* -- cards: single column, touch-friendly -- */
+      .cards-grid { grid-template-columns: 1fr; gap: 10px; }
+      .card { border-radius: 12px; }
+      .card-header { padding: 12px 14px; }
+      .card-body { padding: 10px 14px; }
+      .card-footer { padding: 10px 14px; gap: 8px; }
+      .card-footer .btn { flex: 1; justify-content: center; min-height: 40px; font-size: 13px; }
 
-      .header-tabs {
-        order: 3;
+      /* -- tables: horizontal scroll with sticky columns -- */
+      .table-wrap { border-radius: 10px; }
+      table { font-size: 13px; }
+      thead th { padding: 10px 12px; font-size: 11px; }
+      tbody td { padding: 10px 12px; }
+      .btn-sm { min-height: 36px; min-width: 36px; padding: 6px 10px; }
+
+      /* -- modals: full-screen slide up -- */
+      .modal-bg { padding: 0; align-items: flex-end; }
+      .modal {
+        border-radius: 20px 20px 0 0;
+        max-width: 100%;
+        max-height: 92vh;
         width: 100%;
-        justify-content: flex-start;
       }
+      .modal-sm { max-width: 100%; }
+      .modal-head { padding: 16px 18px; }
+      .modal-head h2 { font-size: 16px; }
+      .modal-body { padding: 14px 18px 8px; }
+      .modal-footer {
+        padding: 12px 18px 24px; /* extra bottom for safe area */
+        gap: 10px;
+      }
+      .modal-footer .btn { flex: 1; justify-content: center; min-height: 48px; font-size: 15px; }
 
-      .header-user {
-        order: 2;
+      /* -- form fields: larger touch targets -- */
+      .form-grid { grid-template-columns: 1fr; gap: 10px; }
+      .form-group { gap: 5px; }
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        padding: 12px 14px;
+        font-size: 16px; /* prevents iOS zoom */
+        border-radius: 10px;
+        min-height: 48px;
       }
+      .form-group textarea { min-height: 80px; }
+      .form-group label { font-size: 13px; }
+
+      /* -- search box -- */
+      .search-box input { padding: 12px 14px 12px 40px; font-size: 15px; min-height: 48px; }
+
+      /* -- filter select -- */
+      .filter-select { font-size: 14px; min-height: 44px; }
+
+      /* -- clipboard section -- */
+      .cb-container { max-width: 100%; }
+      .cb-card { padding: 16px; }
+      .cb-select { padding: 12px 14px; font-size: 15px; min-height: 48px; }
+      .cb-options { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .cb-opt { font-size: 14px; gap: 10px; }
+      .cb-opt input { width: 20px; height: 20px; }
+      .output-box { font-size: 14px; min-height: 120px; max-height: 320px; }
+
+      /* -- IE panel -- */
+      .ie-panel { padding: 16px; }
+
+      /* -- buttons global mobile -- */
+      .btn { min-height: 44px; }
+
+      /* -- theme panel -- */
+      .theme-panel { width: 100% !important; right: 0 !important; max-height: 85vh; border-radius: 20px 20px 0 0; bottom: 0 !important; top: unset !important; }
+    }
+
+    /* Extra small / portrait phones */
+    @media(max-width:390px) {
+      .bnav-item { font-size: 9px; }
+      .bnav-item .bnav-icon { font-size: 18px; }
+      .main { padding: 10px 10px 14px; }
     }
 
     /* ===== THEME BUTTON (header quick-pick) ===== */
@@ -1570,7 +1705,7 @@
       opacity: .88;
     }
 
-    @media(max-width:640px) {
+    @media(max-width:768px) {
       #themePanel {
         width: 100%;
         right: -100%;
@@ -1794,6 +1929,28 @@
         <button class="logout-btn" onclick="doLogout()">ออกระบบ</button>
       </div>
     </div>
+
+    <!-- =================== BOTTOM NAV (mobile) =================== -->
+    <nav class="bottom-nav" id="bottomNav">
+      <button class="bnav-item active" id="bnav-assets" onclick="switchTab('assets',null);updateBnav('assets')">
+        <span class="bnav-icon">🏠</span><span>ทรัพย์สิน</span>
+      </button>
+      <button class="bnav-item" id="bnav-agents" onclick="switchTab('agents',null);updateBnav('agents')">
+        <span class="bnav-icon">👤</span><span>Agent</span>
+      </button>
+      <button class="bnav-item" id="bnav-customers" onclick="switchTab('customers',null);updateBnav('customers')">
+        <span class="bnav-icon">🤝</span><span>ลูกค้า</span>
+      </button>
+      <button class="bnav-item" id="bnav-clipboard" onclick="switchTab('clipboard',null);updateBnav('clipboard')">
+        <span class="bnav-icon">📋</span><span>Clipboard</span>
+      </button>
+      <button class="bnav-item" id="bnav-iedata" onclick="switchTab('iedata',null);updateBnav('iedata')">
+        <span class="bnav-icon">⚙️</span><span>Import/Export</span>
+      </button>
+      <button class="bnav-item" id="bnav-users" onclick="switchTab('users',null);updateBnav('users')" style="display:none">
+        <span class="bnav-icon">👥</span><span>User</span>
+      </button>
+    </nav>
 
     <div class="main">
 
@@ -2431,6 +2588,9 @@
       // Show/hide admin tabs
       document.getElementById('tabUsers').style.display = found.role === 'admin' ? '' : 'none';
       document.getElementById('clearDataPanel').style.display = found.role === 'admin' ? '' : 'none';
+      // bottom nav users item
+      const bnavUsers = document.getElementById('bnav-users');
+      if (bnavUsers) bnavUsers.style.display = found.role === 'admin' ? '' : 'none';
       // Init render
       renderAssets(); renderStats(); populateCbSelect();
     }
@@ -2447,11 +2607,17 @@
     // ============================
     // TABS
     // ============================
+    function updateBnav(t) {
+      document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+      const el = document.getElementById('bnav-' + t);
+      if (el) el.classList.add('active');
+    }
     function switchTab(t, btn) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.htab').forEach(b => b.classList.remove('active'));
       document.getElementById('sec-' + t).classList.add('active');
       if (btn) btn.classList.add('active');
+      updateBnav(t);
       if (t === 'assets') { renderAssets(); renderStats(); }
       if (t === 'agents') renderAgents();
       if (t === 'customers') renderCustomers();
