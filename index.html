@@ -3129,6 +3129,16 @@
 
     function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
+    // Firestore ไม่รับค่า undefined เลย — sanitize ทุก field ให้เป็น string ก่อน write เสมอ
+    function sanitizeForFirestore(obj) {
+      const clean = {};
+      Object.keys(obj).forEach(k => {
+        const v = obj[k];
+        clean[k] = (v === undefined || v === null) ? '' : v;
+      });
+      return clean;
+    }
+
     async function loadDB() {
       if (_fbReady && _db) {
         // ถ้า real-time sync ทำงานอยู่ onSnapshot จะ handle การอัพเดทเอง
@@ -3162,7 +3172,7 @@
         try {
           const { collection, doc, setDoc } = window._firestoreLib;
           const ref = doc(collection(_db, colName), item.id);
-          await setDoc(ref, item);
+          await setDoc(ref, sanitizeForFirestore(item));
         } catch (e) {
           console.warn('saveItem Firebase fail:', e);
           showToast('⚠️ Firebase บันทึกไม่ได้ — บันทึก offline', '#e05050');
@@ -3183,16 +3193,15 @@
     }
 
     async function saveDB() {
-      // สำหรับ agents และ customers ที่ยังใช้ saveDB() อยู่
       if (_fbReady && _db) {
-        for (const col of ['agents', 'customers']) {
+        for (const col of ['assets', 'agents', 'customers']) {
           try {
             const { collection, doc, setDoc, writeBatch } = window._firestoreLib;
             const batch = writeBatch(_db);
             DB[col].forEach(item => {
               if (!item.id) item.id = genId();
               const ref = doc(collection(_db, col), item.id);
-              batch.set(ref, item);
+              batch.set(ref, sanitizeForFirestore(item));
             });
             await batch.commit();
           } catch (e) { console.warn('saveDB Firebase fail:', col, e); }
@@ -3780,9 +3789,9 @@
         ${a.linkpic ? `<a href="${a.linkpic}" target="_blank" class="btn btn-purple btn-sm">🖼️ รูปภาพ</a>` : ''}
         ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm">🔗 Link</a>` : ''}
         ${a.map ? `<a href="${a.map}" target="_blank" class="btn btn-outline btn-sm">📍 Map</a>` : ''}
-        <button class="btn btn-blue btn-sm" onclick="quickClip(${ri})">📋 Clipboard</button>
-        ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️</button>` : ''}
-        ${canEdit ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>` : ''}
+        <button class="btn btn-blue btn-sm" onclick="quickClip('${a.id}')">📋 Clipboard</button>
+        ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editAsset('${a.id}')">✏️</button>` : ''}
+        ${canEdit ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets','${a.id}')">🗑️</button>` : ''}
       </div>
     </div>`;
       }).join('');
@@ -3810,8 +3819,8 @@
       <td>${a.linelink ? `<a href="${a.linelink.startsWith('http') ? a.linelink : 'https://line.me/ti/p/' + a.linelink}" target="_blank" style="color:var(--green)">${a.linelink}</a>` : '-'}</td>
       <td style="font-size:12px">${a.bank || '-'}</td>
       <td><div style="display:flex;gap:5px">
-        <button class="btn btn-outline btn-sm" onclick="editAgent(${ri})">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteItem('agents',${ri})">🗑️</button>
+        <button class="btn btn-outline btn-sm" onclick="editAgent('${a.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('agents','${a.id}')">🗑️</button>
       </div></td>
     </tr>`;
       }).join('');
@@ -3838,8 +3847,8 @@
       <td style="font-size:12px">${a.linkpost ? `<a href="${a.linkpost}" target="_blank" style="color:var(--blue)">🔗 Link</a>` : '-'}</td>
       <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.note || '-'}</td>
       <td><div style="display:flex;gap:5px">
-        <button class="btn btn-outline btn-sm" onclick="editCustomer(${ri})">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${ri})">🗑️</button>
+        <button class="btn btn-outline btn-sm" onclick="editCustomer('${a.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('customers','${a.id}')">🗑️</button>
       </div></td>
     </tr>`;
       }).join('');
@@ -4024,15 +4033,19 @@
       if (!a.name) { alert('กรุณาใส่ชื่อโครงการ'); return; }
       if (editMode.idx >= 0) {
         const existing = DB.assets[editMode.idx];
-        await saveItem('assets', a, existing.id);
+        a.id = existing.id || genId(); // BUG FIX: preserve id
+        await saveItem('assets', a, a.id);
         DB.assets[editMode.idx] = a;
       } else {
         const saved = await saveItem('assets', a);
         DB.assets.push(saved);
       }
+      saveTolocalStorage();
       closeModal('asset'); renderAssets(); populateCbSelect();
     }
-    function editAsset(i) {
+    function editAsset(id) {
+      const i = DB.assets.findIndex(x => x.id === id);
+      if (i < 0) return;
       const a = DB.assets[i];
       document.getElementById('modalAssetTitle').textContent = '✏️ แก้ไขทรัพย์สิน';
       setV('a_name', a.name); setV('a_location', a.location); setV('a_status', a.status); setV('a_type', a.type);
@@ -4040,7 +4053,6 @@
       setV('a_link', a.link); setV('a_map', a.map); setV('a_linkpic', a.linkpic); setV('a_postdate', a.postdate); setV('a_updatedate', a.updatedate);
       setV('a_contact', a.contact); setV('a_note', a.note);
       populatePosterSelect(a.poster || '');
-      // set listing active radio
       const la = a.listingActive || 'available';
       const laEl = document.getElementById('a_active_' + la);
       if (laEl) laEl.checked = true; else document.getElementById('a_active_available').checked = true;
@@ -4066,7 +4078,9 @@
       closeModal('agent'); renderAgents(); populateCbAgentSelect();
       if (document.getElementById('modalAsset').classList.contains('open')) populatePosterSelect(document.getElementById('a_poster').value);
     }
-    function editAgent(i) {
+    function editAgent(id) {
+      const i = DB.agents.findIndex(x => x.id === id);
+      if (i < 0) return;
       const a = DB.agents[i];
       document.getElementById('modalAgentTitle').textContent = '✏️ แก้ไข Agent';
       setV('ag_name', a.name); setV('ag_company', a.company); setV('ag_coagent', a.coagent);
@@ -4093,7 +4107,9 @@
       }
       closeModal('customer'); renderCustomers();
     }
-    function editCustomer(i) {
+    function editCustomer(id) {
+      const i = DB.customers.findIndex(x => x.id === id);
+      if (i < 0) return;
       const a = DB.customers[i];
       document.getElementById('modalCustomerTitle').textContent = '✏️ แก้ไขลูกค้า';
       setV('cu_name', a.name); setV('cu_status', a.status); setV('cu_type', a.type);
@@ -4106,11 +4122,14 @@
     // ============================
     // DELETE
     // ============================
-    async function deleteItem(type, idx) {
+    async function deleteItem(type, id) {
       if (!confirm('ยืนยันลบ?')) return;
-      const item = DB[type][idx];
-      await deleteItemFromDB(type, item.id);
+      // ค้นหาด้วย id เสมอ — ไม่ใช้ index เพราะ onSnapshot อาจเรียง DB ใหม่
+      const idx = DB[type].findIndex(item => item.id === id);
+      if (idx < 0) { console.warn('deleteItem: ไม่พบ id', id); return; }
+      await deleteItemFromDB(type, id);
       DB[type].splice(idx, 1);
+      saveTolocalStorage();
       renderAssets(); renderAgents(); renderCustomers(); renderStats();
     }
 
@@ -4316,8 +4335,9 @@
       if (showLinkPic && a.linkpic) t += `🖼️ ดูรูปภาพ: ${a.linkpic}\n`;
       return t;
     }
-    function quickClip(idx) {
-      const a = DB.assets[idx];
+    function quickClip(id) {
+      const a = DB.assets.find(x => x.id === id);
+      if (!a) return;
       document.getElementById('clipPreviewText').textContent = buildClipText(a, 'full', true, true, true, true, a.contact || '', '', true);
       document.getElementById('modalClipPreview').classList.add('open');
     }
@@ -4339,26 +4359,42 @@
     // CSV HELPERS
     // ============================
     function csvEscape(v) { return '"' + (String(v || '').replace(/"/g, '""')) + '"'; }
-    function parseCSVLine(line) {
-      const result = []; let cur = ''; let inQ = false;
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        if (ch === '"') {
-          if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
-          else inQ = !inQ;
-        } else if (ch === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
-        else cur += ch;
-      }
-      result.push(cur.trim()); return result;
-    }
+
+    // RFC 4180 compliant CSV parser — รองรับ quoted fields ที่มี comma และ newline ข้างใน
     function parseCSV(text) {
       // Handle BOM
       if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-      const lines = text.split(/\r?\n/).filter(l => l.trim());
-      if (!lines.length) return { headers: [], rows: [] };
-      const headers = parseCSVLine(lines[0]);
-      const rows = lines.slice(1).map(l => parseCSVLine(l));
-      return { headers, rows };
+      // normalize line endings
+      text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+      const rows = [];
+      let cur = '';
+      let inQ = false;
+      let fields = [];
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === '"') {
+          if (inQ && text[i + 1] === '"') { cur += '"'; i++; } // escaped quote ""
+          else inQ = !inQ;                                       // toggle quoted mode
+        } else if (ch === ',' && !inQ) {
+          fields.push(cur.trim());
+          cur = '';
+        } else if (ch === '\n' && !inQ) {
+          fields.push(cur.trim());
+          cur = '';
+          if (fields.some(f => f !== '')) rows.push(fields); // skip blank lines
+          fields = [];
+        } else {
+          cur += ch;
+        }
+      }
+      // last field / last row
+      fields.push(cur.trim());
+      if (fields.some(f => f !== '')) rows.push(fields);
+
+      if (!rows.length) return { headers: [], rows: [] };
+      return { headers: rows[0], rows: rows.slice(1) };
     }
     function downloadCSV(content, filename) {
       const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8' });
@@ -4399,63 +4435,101 @@
     // ============================
     // IMPORT CSV
     // ============================
+
     function importCSV(event, type) {
       const file = event.target.files[0]; if (!file) return;
       const reader = new FileReader();
-      reader.onload = e => {
+      reader.onload = async e => {
         try {
           const { headers, rows } = parseCSV(e.target.result);
           if (!headers.length) { alert('ไฟล์ว่างหรือรูปแบบไม่ถูกต้อง'); return; }
-          let imported = 0;
+
+          const today = new Date().toISOString().slice(0, 10);
+          const newItems = [];
+
+          // safe getter: ถ้า index < 0 หรือ r[i] เป็น undefined จะคืน fallback ('') เสมอ
+          const g = (r, i, fallback = '') => {
+            if (i < 0) return fallback;
+            const v = r[i];
+            return (v === undefined || v === null) ? fallback : String(v).trim();
+          };
+
           if (type === 'assets') {
-            // Map by header name, flexible
-            const hi = n => headers.findIndex(h => h === n);
-            const iName = hi('ชื่อโครงการ'), iLoc = hi('ทำเล'), iSt = hi('สถานะ'), iTy = hi('ประเภท'),
-              iPr = hi('ราคา'), iRm = hi('ประเภทห้อง'), iAr = hi('ขนาด'), iFl = hi('ชั้นตึก'),
-              iCt = hi('Contact'), iLk = hi('Link'), iMp = hi('Map'), iPd = hi('วันที่โพสต์'), iUd = hi('วันที่อัปเดต'), iNt = hi('หมายเหตุ'),
-              iLp = hi('Link Pic'), iPo = hi('ผู้โพสต์');
+            const hi = n => headers.findIndex(h => h.trim() === n);
+            const iName=hi('ชื่อโครงการ'), iLoc=hi('ทำเล'), iSt=hi('สถานะ'), iTy=hi('ประเภท'),
+              iPr=hi('ราคา'), iRm=hi('ประเภทห้อง'), iAr=hi('ขนาด'), iFl=hi('ชั้นตึก'),
+              iCt=hi('Contact'), iLk=hi('Link'), iMp=hi('Map'), iPd=hi('วันที่โพสต์'),
+              iUd=hi('วันที่อัปเดต'), iNt=hi('หมายเหตุ'), iLp=hi('Link Pic'), iPo=hi('ผู้โพสต์');
             rows.forEach(r => {
-              if (r.length < 2) return;
-              const a = {
-                name: iName >= 0 ? r[iName] : '', location: iLoc >= 0 ? r[iLoc] : '', status: iSt >= 0 ? r[iSt] : 'ขาย',
-                type: iTy >= 0 ? r[iTy] : 'คอนโด', price: iPr >= 0 ? r[iPr] : '', roomtype: iRm >= 0 ? r[iRm] : '',
-                area: iAr >= 0 ? r[iAr] : '', floor: iFl >= 0 ? r[iFl] : '', contact: iCt >= 0 ? r[iCt] : '',
-                link: iLk >= 0 ? r[iLk] : '', map: iMp >= 0 ? r[iMp] : '', postdate: iPd >= 0 ? r[iPd] : '',
-                updatedate: iUd >= 0 ? r[iUd] : '', note: iNt >= 0 ? r[iNt] : '',
-                linkpic: iLp >= 0 ? r[iLp] : '', poster: iPo >= 0 ? r[iPo] : ''
-              };
-              if (a.name) { DB.assets.push(a); imported++; }
+              const name = g(r, iName);
+              if (!name) return;
+              newItems.push({
+                id: genId(), name,
+                location: g(r, iLoc), status: g(r, iSt, 'ขาย'), type: g(r, iTy, 'คอนโด'),
+                price: g(r, iPr), roomtype: g(r, iRm), area: g(r, iAr), floor: g(r, iFl),
+                contact: g(r, iCt), link: g(r, iLk), map: g(r, iMp),
+                postdate: g(r, iPd, today), updatedate: g(r, iUd, today),
+                note: g(r, iNt), linkpic: g(r, iLp), poster: g(r, iPo),
+                listingActive: 'available'
+              });
             });
           } else if (type === 'agents') {
-            const hi = n => headers.findIndex(h => h === n);
-            const iNm = hi('ชื่อAgent'), iCo = hi('บริษัท'), iCa = hi('Co-Agent'), iTl = hi('เบอร์'),
-              iFb = hi('Facebook'), iEm = hi('E-Mail'), iLn = hi('LineID'), iLl = hi('LinkLine'), iBk = hi('เลขบัญชี');
+            const hi = n => headers.findIndex(h => h.trim() === n);
+            const iNm=hi('ชื่อAgent'), iCo=hi('บริษัท'), iCa=hi('Co-Agent'), iTl=hi('เบอร์'),
+              iFb=hi('Facebook'), iEm=hi('E-Mail'), iLn=hi('LineID'), iLl=hi('LinkLine'), iBk=hi('เลขบัญชี');
             rows.forEach(r => {
-              if (r.length < 2) return;
-              const a = {
-                name: iNm >= 0 ? r[iNm] : '', company: iCo >= 0 ? r[iCo] : '', coagent: iCa >= 0 ? r[iCa] : 'ไม่รับ',
-                tel: iTl >= 0 ? r[iTl] : '', fb: iFb >= 0 ? r[iFb] : '', email: iEm >= 0 ? r[iEm] : '',
-                line: iLn >= 0 ? r[iLn] : '', linelink: iLl >= 0 ? r[iLl] : '', bank: iBk >= 0 ? r[iBk] : ''
-              };
-              if (a.name) { DB.agents.push(a); imported++; }
+              const name = g(r, iNm);
+              if (!name) return;
+              newItems.push({
+                id: genId(), name,
+                company: g(r, iCo), coagent: g(r, iCa, 'ไม่รับ'), tel: g(r, iTl),
+                fb: g(r, iFb), email: g(r, iEm), line: g(r, iLn),
+                linelink: g(r, iLl), bank: g(r, iBk)
+              });
             });
           } else if (type === 'customers') {
-            const hi = n => headers.findIndex(h => h === n);
-            const iNm = hi('ชื่อลูกค้า/โครงการ'), iSt = hi('สถานะ'), iTy = hi('ประเภท'), iBd = hi('งบประมาณ'),
-              iAr = hi('ขนาดห้อง'), iFl = hi('ชั้น'), iCt = hi('Contact'), iNt = hi('Note'), iLk = hi('Link Post');
+            const hi = n => headers.findIndex(h => h.trim() === n);
+            const iNm=hi('ชื่อลูกค้า/โครงการ'), iSt=hi('สถานะ'), iTy=hi('ประเภท'), iBd=hi('งบประมาณ'),
+              iAr=hi('ขนาดห้อง'), iFl=hi('ชั้น'), iCt=hi('Contact'), iNt=hi('Note'), iLk=hi('Link Post');
             rows.forEach(r => {
-              if (r.length < 2) return;
-              const a = {
-                name: iNm >= 0 ? r[iNm] : '', status: iSt >= 0 ? r[iSt] : '', type: iTy >= 0 ? r[iTy] : '',
-                budget: iBd >= 0 ? r[iBd] : '', area: iAr >= 0 ? r[iAr] : '', floor: iFl >= 0 ? r[iFl] : '',
-                contact: iCt >= 0 ? r[iCt] : '', note: iNt >= 0 ? r[iNt] : '', linkpost: iLk >= 0 ? r[iLk] : ''
-              };
-              if (a.name) { DB.customers.push(a); imported++; }
+              const name = g(r, iNm);
+              if (!name) return;
+              newItems.push({
+                id: genId(), name,
+                status: g(r, iSt), type: g(r, iTy), budget: g(r, iBd),
+                area: g(r, iAr), floor: g(r, iFl), contact: g(r, iCt),
+                note: g(r, iNt), linkpost: g(r, iLk)
+              });
             });
           }
-          saveDB();
-          alert(`✅ Import สำเร็จ! นำเข้า ${imported} รายการ`);
-          renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); renderStats();
+
+          if (!newItems.length) { alert('ไม่พบข้อมูลที่นำเข้าได้'); return; }
+
+          if (_fbReady && _db) {
+            try {
+              const { collection, doc, writeBatch } = window._firestoreLib;
+              const BATCH_LIMIT = 500;
+              for (let i = 0; i < newItems.length; i += BATCH_LIMIT) {
+                const chunk = newItems.slice(i, i + BATCH_LIMIT);
+                const batch = writeBatch(_db);
+                chunk.forEach(item => {
+                  const ref = doc(collection(_db, type), item.id);
+                  batch.set(ref, sanitizeForFirestore(item));
+                });
+                await batch.commit();
+              }
+              showToast(`✅ Import สำเร็จ! นำเข้า ${newItems.length} รายการ`, '#50c878');
+            } catch (err) {
+              alert('Firebase write ล้มเหลว: ' + err.message);
+            }
+          } else {
+            // Offline mode
+            DB[type] = [...DB[type], ...newItems];
+            saveTolocalStorage();
+            renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); renderStats();
+            showToast(`✅ Import สำเร็จ! นำเข้า ${newItems.length} รายการ (offline)`, '#50c878');
+          }
+
         } catch (err) { alert('เกิดข้อผิดพลาด: ' + err.message); }
       };
       reader.readAsText(file, 'UTF-8');
