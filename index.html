@@ -2445,10 +2445,12 @@
         <!-- Firebase Config Panel -->
         <div
           style="margin-top:24px;background:var(--dark3);border:1px solid var(--border);border-radius:14px;padding:20px;">
-          <div style="font-size:15px;font-weight:700;color:var(--gold);margin-bottom:4px;">🔥 Firebase Configuration
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+            <div style="font-size:15px;font-weight:700;color:var(--gold);">🔥 Firebase Configuration</div>
+            <span id="realtimeSyncBadge" style="font-size:12px;font-weight:600;">⚫ Real-time Sync ปิด</span>
           </div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">กรอก Firebase config
-            เพื่อเชื่อมต่อฐานข้อมูล — หาได้จาก Firebase Console → Project Settings</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">บันทึกครั้งเดียว —
+            ระบบจะเชื่อมต่ออัตโนมัติทุกครั้ง ไม่ต้องตั้งค่าใหม่</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <div class="form-group"><label style="font-size:12px;">API Key</label><input id="fb_apiKey"
                 placeholder="AIzaSy..." style="font-size:12px;font-family:monospace;"></div>
@@ -2463,10 +2465,9 @@
             <div class="form-group"><label style="font-size:12px;">App ID</label><input id="fb_appId"
                 placeholder="1:123:web:abc" style="font-size:12px;font-family:monospace;"></div>
           </div>
-          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center;">
             <button class="btn btn-primary" onclick="saveFbConfig()">💾 บันทึกและเชื่อมต่อ Firebase</button>
-            <button class="btn btn-outline" onclick="loadFbConfigUI()">↺ โหลด Config ปัจจุบัน</button>
-            <div id="fbConfigStatus" style="display:flex;align-items:center;font-size:13px;color:var(--text3);"></div>
+            <div id="fbConfigStatus" style="display:flex;align-items:center;font-size:13px;color:var(--green);"></div>
           </div>
         </div>
 
@@ -2485,11 +2486,80 @@
             </label>
           </div>
           <div style="margin-top:14px;border-top:1px solid var(--border2);padding-top:14px;">
-            <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px;">🔄 Sync ข้อมูล</div>
+            <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px;">🔄 Real-time Sync</div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:8px;">
+              ข้อมูลอัพเดทอัตโนมัติทันทีเมื่อมีการเปลี่ยนแปลง — ไม่ต้องกด Sync</div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
               <button class="btn btn-outline" onclick="forceSyncToFirebase()">⬆️ Push ข้อมูล local → Firebase</button>
               <button class="btn btn-outline" onclick="forceSyncFromFirebase()">⬇️ Pull ข้อมูล Firebase → local</button>
             </div>
+          </div>
+        </div>
+
+        <!-- Auto Backup Panel -->
+        <div
+          style="margin-top:16px;background:var(--dark3);border:1px solid var(--border);border-radius:14px;padding:20px;">
+          <div style="font-size:15px;font-weight:700;color:var(--gold);margin-bottom:4px;">📅 Auto Backup ตามเวลา</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">ระบบสำรองข้อมูลอัตโนมัติ —
+            ส่งอีเมลหรือดาวน์โหลดไฟล์ตามกำหนดเวลา</div>
+
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;font-weight:600;">
+              <input type="checkbox" id="bs_enabled" style="width:18px;height:18px;accent-color:var(--gold);">
+              เปิดใช้ Auto Backup
+            </label>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="form-group">
+              <label style="font-size:12px;">📧 อีเมลปลายทาง</label>
+              <input id="bs_emailTo" placeholder="backup@gmail.com" type="email" style="font-size:12px;">
+            </div>
+            <div class="form-group">
+              <label style="font-size:12px;">⏱️ Backup ทุก (ชั่วโมง)</label>
+              <select id="bs_interval" style="font-size:12px;">
+                <option value="6">ทุก 6 ชั่วโมง</option>
+                <option value="12">ทุก 12 ชั่วโมง</option>
+                <option value="24" selected>ทุก 24 ชั่วโมง</option>
+                <option value="48">ทุก 2 วัน</option>
+                <option value="168">ทุกสัปดาห์</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;background:var(--dark4);border-radius:10px;padding:12px;font-size:12px;">
+            <div style="font-weight:700;color:var(--gold);margin-bottom:8px;">🔗 ตั้งค่า EmailJS (ส่งอีเมลอัตโนมัติ)
+            </div>
+            <div style="color:var(--text3);margin-bottom:8px;">สมัครฟรีที่ <a href="https://www.emailjs.com"
+                target="_blank" style="color:var(--blue);">emailjs.com</a> → สร้าง Service + Template → กรอก ID ด้านล่าง
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+              <div class="form-group"><label style="font-size:11px;">Service ID</label><input id="bs_ejsService"
+                  placeholder="service_xxx" style="font-size:11px;font-family:monospace;"></div>
+              <div class="form-group"><label style="font-size:11px;">Template ID</label><input id="bs_ejsTemplate"
+                  placeholder="template_xxx" style="font-size:11px;font-family:monospace;"></div>
+              <div class="form-group"><label style="font-size:11px;">Public Key</label><input id="bs_ejsKey"
+                  placeholder="xxxxxxxxxxxx" style="font-size:11px;font-family:monospace;"></div>
+            </div>
+            <div style="color:var(--text3);font-size:11px;margin-top:6px;">💡 Template variables ที่ใช้ได้:
+              {{to_email}}, {{subject}}, {{backup_data}}, {{asset_count}}, {{agent_count}}, {{customer_count}},
+              {{backup_time}}</div>
+          </div>
+
+          <div style="margin-top:12px;background:var(--dark4);border-radius:10px;padding:12px;font-size:12px;">
+            <div style="font-weight:700;color:var(--blue);margin-bottom:6px;">💡 ทางเลือก: Google Drive Backup</div>
+            <div style="color:var(--text3);line-height:1.7;">
+              วิธีง่ายที่สุดสำหรับ Google Drive คือ:<br>
+              1. กด <strong>Backup ทั้งหมด (.json)</strong> → ได้ไฟล์ benzhome_backup_xxxx.json<br>
+              2. อัพโหลดไฟล์ขึ้น Google Drive ด้วยมือ หรือ<br>
+              3. ใช้ Google Drive Desktop App ที่ sync โฟลเดอร์ Downloads อัตโนมัติ
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center;">
+            <button class="btn btn-primary" onclick="saveBackupSettings()">💾 บันทึกการตั้งค่า</button>
+            <button class="btn btn-green" onclick="runAutoBackup(true)">🧪 ทดสอบ Backup ตอนนี้</button>
+            <div id="bs_lastBackup" style="font-size:12px;color:var(--text3);">ยังไม่เคย Backup</div>
           </div>
         </div>
       </div>
@@ -2940,38 +3010,31 @@
     // ============================
     // FIREBASE INIT
     // ============================
+    let _unsubscribeListeners = []; // เก็บ real-time listeners เพื่อ unsubscribe ได้
+
     function initFirebase() {
       return new Promise((resolve) => {
-        // โหลด Firebase SDK แบบ dynamic
         const sdkVer = '10.12.2';
         const base = `https://www.gstatic.com/firebasejs/${sdkVer}`;
-        function loadScript(src) {
-          return new Promise((res, rej) => {
-            const s = document.createElement('script');
-            s.type = 'module'; s.src = src;
-            s.onload = res; s.onerror = rej;
-            document.head.appendChild(s);
-          });
-        }
 
-        // ใช้ import() สำหรับ ES modules
         Promise.all([
           import(`${base}/firebase-app.js`),
           import(`${base}/firebase-firestore.js`)
         ]).then(([appMod, fsMod]) => {
-          const { initializeApp } = appMod;
-          const { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, writeBatch } = fsMod;
+          const { initializeApp, getApps } = appMod;
+          const { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, writeBatch, onSnapshot } = fsMod;
 
-          // ตรวจ config ว่ากรอกแล้วหรือยัง
           if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
             console.warn('⚠️ Firebase config ยังไม่ได้กรอก — ใช้ localStorage แทน');
             resolve(false); return;
           }
 
-          const app = initializeApp(FIREBASE_CONFIG);
+          // ป้องกัน initialize ซ้ำ
+          const existingApps = getApps();
+          const app = existingApps.length > 0 ? existingApps[0] : initializeApp(FIREBASE_CONFIG);
           _db = getFirestore(app);
           window._db = _db;
-          window._firestoreLib = { collection, doc, getDocs, setDoc, deleteDoc, writeBatch };
+          window._firestoreLib = { collection, doc, getDocs, setDoc, deleteDoc, writeBatch, onSnapshot };
           _fbReady = true;
           console.log('✅ Firebase connected');
           resolve(true);
@@ -2980,6 +3043,60 @@
           resolve(false);
         });
       });
+    }
+
+    // ============================
+    // REAL-TIME SYNC (onSnapshot)
+    // ============================
+    let _realtimeSyncActive = false;
+
+    function startRealtimeSync() {
+      if (_realtimeSyncActive || !_fbReady || !_db) return;
+      _realtimeSyncActive = true;
+
+      const { collection, onSnapshot } = window._firestoreLib;
+      const cols = ['assets', 'agents', 'customers'];
+
+      // unsubscribe listeners เก่าก่อน
+      _unsubscribeListeners.forEach(fn => fn());
+      _unsubscribeListeners = [];
+
+      cols.forEach(col => {
+        const unsub = onSnapshot(collection(_db, col), (snap) => {
+          DB[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          saveTolocalStorage();
+          // render ตามที่เปลี่ยน
+          if (col === 'assets') { renderAssets(); renderStats(); populateCbSelect(); }
+          if (col === 'agents') { renderAgents(); populateCbSelect(); }
+          if (col === 'customers') renderCustomers();
+          updateSyncBadge();
+        }, (err) => {
+          console.warn('onSnapshot error:', col, err);
+        });
+        _unsubscribeListeners.push(unsub);
+      });
+
+      updateSyncBadge();
+      console.log('🔄 Real-time sync started');
+    }
+
+    function stopRealtimeSync() {
+      _unsubscribeListeners.forEach(fn => fn());
+      _unsubscribeListeners = [];
+      _realtimeSyncActive = false;
+      updateSyncBadge();
+    }
+
+    function updateSyncBadge() {
+      const el = document.getElementById('realtimeSyncBadge');
+      if (!el) return;
+      if (_realtimeSyncActive) {
+        el.textContent = '🟢 Real-time Sync เปิดอยู่';
+        el.style.color = 'var(--green)';
+      } else {
+        el.textContent = '⚫ Real-time Sync ปิด';
+        el.style.color = 'var(--text3)';
+      }
     }
 
     // ============================
@@ -3014,17 +3131,22 @@
 
     async function loadDB() {
       if (_fbReady && _db) {
-        // โหลดจาก Firebase
-        const { collection, getDocs } = window._firestoreLib;
-        let anyFail = false;
-        for (const col of ['assets', 'agents', 'customers']) {
-          try {
-            const snap = await getDocs(collection(_db, col));
-            DB[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-          } catch (e) { console.warn('loadDB Firebase fail:', col, e); anyFail = true; }
+        // ถ้า real-time sync ทำงานอยู่ onSnapshot จะ handle การอัพเดทเอง
+        // แต่โหลดครั้งแรกเพื่อให้ข้อมูลพร้อมทันที
+        if (!_realtimeSyncActive) {
+          const { collection, getDocs } = window._firestoreLib;
+          let anyFail = false;
+          for (const col of ['assets', 'agents', 'customers']) {
+            try {
+              const snap = await getDocs(collection(_db, col));
+              DB[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            } catch (e) { console.warn('loadDB Firebase fail:', col, e); anyFail = true; }
+          }
+          if (anyFail) showToast('⚠️ Firebase โหลดบางส่วนไม่ได้ — ใช้ cache', '#e05050');
+          saveTolocalStorage();
         }
-        if (anyFail) showToast('⚠️ Firebase โหลดบางส่วนไม่ได้ — ใช้ cache', '#e05050');
-        saveTolocalStorage(); // sync local cache
+        // เปิด real-time sync (ถ้ายังไม่ได้เปิด)
+        startRealtimeSync();
       } else {
         // Fallback: โหลดจาก localStorage
         loadFromlocalStorage();
@@ -3096,6 +3218,18 @@
         el.style.background = '#e05050';
         txt.textContent = 'Firebase ❌ เชื่อมไม่ได้';
       }
+      // อัพเดท config status ใน settings panel
+      const cfgStatus = document.getElementById('fbConfigStatus');
+      if (cfgStatus) {
+        if (_fbReady) {
+          cfgStatus.textContent = '🟢 เชื่อมต่อแล้ว' + (_realtimeSyncActive ? ' + Real-time Sync' : '');
+          cfgStatus.style.color = 'var(--green)';
+        } else if (localStorage.getItem('yb_fb_config')) {
+          cfgStatus.textContent = '⚠️ มี config แต่เชื่อมไม่ได้';
+          cfgStatus.style.color = 'var(--red)';
+        }
+      }
+      updateSyncBadge();
     }
 
     // ============================
@@ -3170,6 +3304,10 @@
           AUTH.users.unshift({ email: 'admin@benzhome.com', password: 'admin1234', displayname: 'ผู้ดูแลระบบ', role: 'admin', note: 'Super Admin', linkedAgentId: null });
           saveAuth();
         }
+        // เริ่ม real-time sync อัตโนมัติ
+        startRealtimeSync();
+        // เริ่มระบบ scheduled backup
+        initScheduledBackup();
       }
       updateFirebaseStatus();
     });
@@ -3205,10 +3343,13 @@
       setTimeout(() => location.reload(), 800);
     }
 
-    function loadFbConfigUI() {
+    function loadFbConfigUI(silent = false) {
       try {
         const s = localStorage.getItem(FB_CONFIG_KEY);
-        if (!s) { alert('ยังไม่มี Firebase config ที่บันทึกไว้'); return; }
+        if (!s) {
+          if (!silent) alert('ยังไม่มี Firebase config ที่บันทึกไว้');
+          return;
+        }
         const cfg = JSON.parse(s);
         document.getElementById('fb_apiKey').value = cfg.apiKey || '';
         document.getElementById('fb_authDomain').value = cfg.authDomain || '';
@@ -3216,8 +3357,152 @@
         document.getElementById('fb_storageBucket').value = cfg.storageBucket || '';
         document.getElementById('fb_messagingSenderId').value = cfg.messagingSenderId || '';
         document.getElementById('fb_appId').value = cfg.appId || '';
-        document.getElementById('fbConfigStatus').textContent = '✅ โหลด config แล้ว';
-      } catch (e) { alert('โหลด config ไม่ได้: ' + e.message); }
+        if (!silent) document.getElementById('fbConfigStatus').textContent = '✅ โหลด config แล้ว';
+      } catch (e) { if (!silent) alert('โหลด config ไม่ได้: ' + e.message); }
+    }
+
+
+    // ============================
+    // SCHEDULED AUTO BACKUP
+    // ============================
+    const BACKUP_CONFIG_KEY = 'yb_backup_config';
+    let _backupTimer = null;
+
+    function getBackupConfig() {
+      try {
+        const s = localStorage.getItem(BACKUP_CONFIG_KEY);
+        if (s) return JSON.parse(s);
+      } catch (e) { }
+      return { enabled: false, emailTo: '', emailjsServiceId: '', emailjsTemplateId: '', emailjsPublicKey: '', intervalHours: 24, lastBackup: null };
+    }
+
+    function saveBackupConfig(cfg) {
+      localStorage.setItem(BACKUP_CONFIG_KEY, JSON.stringify(cfg));
+    }
+
+    function initScheduledBackup() {
+      if (_backupTimer) clearInterval(_backupTimer);
+      const cfg = getBackupConfig();
+      if (!cfg.enabled || !cfg.emailTo) return;
+      // ตรวจว่าถึงเวลา backup หรือยัง
+      checkAndRunBackup();
+      // ตั้ง interval ทุก 30 นาทีเพื่อตรวจสอบ
+      _backupTimer = setInterval(checkAndRunBackup, 30 * 60 * 1000);
+      console.log('📅 Scheduled backup initialized, interval:', cfg.intervalHours, 'hours');
+    }
+
+    function checkAndRunBackup() {
+      const cfg = getBackupConfig();
+      if (!cfg.enabled || !cfg.emailTo) return;
+      const now = Date.now();
+      const lastBackup = cfg.lastBackup || 0;
+      const intervalMs = (cfg.intervalHours || 24) * 60 * 60 * 1000;
+      if (now - lastBackup >= intervalMs) {
+        runAutoBackup();
+      }
+    }
+
+    async function runAutoBackup(manual = false) {
+      const cfg = getBackupConfig();
+      if (!cfg.emailTo) {
+        if (manual) alert('กรุณาตั้งค่าอีเมลปลายทางก่อน');
+        return;
+      }
+      const payload = {
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        DB: DB,
+        users: AUTH.users
+      };
+      const jsonStr = JSON.stringify(payload, null, 2);
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const filename = 'benzhome_backup_' + dateStr + '.json';
+
+      // บันทึกเวลา backup
+      cfg.lastBackup = Date.now();
+      saveBackupConfig(cfg);
+
+      // ถ้ามี EmailJS config ส่งอีเมล
+      if (cfg.emailjsPublicKey && cfg.emailjsServiceId && cfg.emailjsTemplateId) {
+        try {
+          // โหลด EmailJS SDK
+          if (!window.emailjs) {
+            await new Promise((res, rej) => {
+              const s = document.createElement('script');
+              s.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
+              s.onload = res; s.onerror = rej;
+              document.head.appendChild(s);
+            });
+          }
+          window.emailjs.init({ publicKey: cfg.emailjsPublicKey });
+          const truncated = jsonStr.length > 40000 ? jsonStr.slice(0, 40000) + '...[truncated]' : jsonStr;
+          await window.emailjs.send(cfg.emailjsServiceId, cfg.emailjsTemplateId, {
+            to_email: cfg.emailTo,
+            subject: '[BENZ HOME] Auto Backup ' + dateStr,
+            filename: filename,
+            backup_data: truncated,
+            asset_count: DB.assets.length,
+            agent_count: DB.agents.length,
+            customer_count: DB.customers.length,
+            backup_time: new Date().toLocaleString('th-TH')
+          });
+          if (manual) showToast('📧 ส่ง Backup ทางอีเมลแล้ว!', '#50c878');
+          else showToast('📧 Auto Backup ส่งอีเมลแล้ว — ' + dateStr, '#50c878');
+          updateBackupStatus();
+          return;
+        } catch (e) {
+          console.warn('EmailJS send fail:', e);
+        }
+      }
+
+      // Fallback: download file
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      if (manual) showToast('📥 Backup ดาวน์โหลดแล้ว', '#50c878');
+      updateBackupStatus();
+    }
+
+    function saveBackupSettings() {
+      const cfg = {
+        enabled: document.getElementById('bs_enabled').checked,
+        emailTo: document.getElementById('bs_emailTo').value.trim(),
+        emailjsServiceId: document.getElementById('bs_ejsService').value.trim(),
+        emailjsTemplateId: document.getElementById('bs_ejsTemplate').value.trim(),
+        emailjsPublicKey: document.getElementById('bs_ejsKey').value.trim(),
+        intervalHours: parseInt(document.getElementById('bs_interval').value) || 24,
+        lastBackup: getBackupConfig().lastBackup
+      };
+      saveBackupConfig(cfg);
+      initScheduledBackup();
+      showToast('✅ บันทึกการตั้งค่า Backup แล้ว', '#50c878');
+      updateBackupStatus();
+    }
+
+    function loadBackupSettingsUI() {
+      const cfg = getBackupConfig();
+      const el = id => document.getElementById(id);
+      if (el('bs_enabled')) el('bs_enabled').checked = cfg.enabled;
+      if (el('bs_emailTo')) el('bs_emailTo').value = cfg.emailTo || '';
+      if (el('bs_ejsService')) el('bs_ejsService').value = cfg.emailjsServiceId || '';
+      if (el('bs_ejsTemplate')) el('bs_ejsTemplate').value = cfg.emailjsTemplateId || '';
+      if (el('bs_ejsKey')) el('bs_ejsKey').value = cfg.emailjsPublicKey || '';
+      if (el('bs_interval')) el('bs_interval').value = cfg.intervalHours || 24;
+      updateBackupStatus();
+    }
+
+    function updateBackupStatus() {
+      const el = document.getElementById('bs_lastBackup');
+      if (!el) return;
+      const cfg = getBackupConfig();
+      if (cfg.lastBackup) {
+        el.textContent = 'Backup ล่าสุด: ' + new Date(cfg.lastBackup).toLocaleString('th-TH');
+      } else {
+        el.textContent = 'ยังไม่เคย Backup';
+      }
     }
 
     // ============================
@@ -3421,7 +3706,14 @@
       if (t === 'agents') renderAgents();
       if (t === 'customers') renderCustomers();
       if (t === 'clipboard') populateCbSelect();
-      if (t === 'users') renderUsers();
+      if (t === 'users') {
+        renderUsers();
+        // auto-load Firebase config and backup config ทุกครั้งที่เปิด tab
+        loadFbConfigUI(true);
+        loadBackupSettingsUI();
+        updateSyncBadge();
+        updateBackupStatus();
+      }
     }
 
     // ============================
