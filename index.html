@@ -889,6 +889,11 @@
       border: 1px solid var(--border);
     }
 
+    /* Mobile card list - hidden on desktop */
+    .m-list {
+      display: none;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -1105,12 +1110,13 @@
 
       /* -- viewport & body -- */
       body {
-        padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+        font-size: 15px;
       }
 
       /* -- header: compact single row -- */
       .header {
-        height: 52px;
+        height: 56px;
         padding: 0 14px;
         flex-wrap: nowrap;
         gap: 8px;
@@ -1119,6 +1125,7 @@
       .logo {
         font-size: 16px;
         white-space: nowrap;
+        font-weight: 800;
       }
 
       .logo span {
@@ -1135,26 +1142,32 @@
       }
 
       .user-badge {
-        padding: 4px 10px;
+        padding: 5px 10px;
         font-size: 12px;
+        border-radius: 20px;
       }
 
       .user-badge .role {
         font-size: 10px;
-        padding: 1px 5px;
+        padding: 2px 6px;
+        border-radius: 10px;
       }
 
       .theme-panel-btn {
-        padding: 5px 10px;
+        padding: 6px 10px;
         font-size: 12px;
+        border-radius: 20px;
+        min-height: 34px;
       }
 
       .logout-btn {
-        padding: 5px 10px;
+        padding: 6px 10px;
         font-size: 12px;
+        border-radius: 20px;
+        min-height: 34px;
       }
 
-      /* -- bottom nav -- */
+      /* -- bottom nav: native app style -- */
       .bottom-nav {
         display: flex;
         position: fixed;
@@ -1164,9 +1177,10 @@
         background: var(--dark2);
         border-top: 1px solid var(--border);
         z-index: 200;
-        height: calc(64px + env(safe-area-inset-bottom, 0px));
+        height: calc(76px + env(safe-area-inset-bottom, 0px));
         padding-bottom: env(safe-area-inset-bottom, 0px);
         align-items: stretch;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, .18);
       }
 
       .bnav-item {
@@ -1175,7 +1189,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 3px;
+        gap: 4px;
         cursor: pointer;
         border: none;
         background: transparent;
@@ -1183,27 +1197,64 @@
         font-family: inherit;
         font-size: 10px;
         font-weight: 500;
-        padding: 6px 2px;
-        transition: color .2s;
+        padding: 8px 2px;
+        transition: color .2s, transform .15s;
         -webkit-tap-highlight-color: transparent;
+        position: relative;
+      }
+
+      .bnav-item .bnav-icon-wrap {
+        width: 46px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 15px;
+        transition: background .2s, transform .15s;
       }
 
       .bnav-item .bnav-icon {
-        font-size: 20px;
+        font-size: 24px;
         line-height: 1;
+        transition: transform .2s;
+        display: block;
+      }
+
+      .bnav-item .bnav-label {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.01em;
       }
 
       .bnav-item.active {
         color: var(--gold);
       }
 
-      .bnav-item.active .bnav-icon {
-        transform: scale(1.1);
+      .bnav-item.active .bnav-icon-wrap {
+        background: color-mix(in srgb, var(--gold) 15%, transparent);
       }
 
-      /* -- main padding -- */
+      .bnav-item.active .bnav-icon {
+        transform: scale(1.18) translateY(-1px);
+      }
+
+      .bnav-item:active {
+        transform: scale(0.93);
+      }
+
+      /* -- main padding: fill full width -- */
       .main {
         padding: 12px 12px 16px;
+        max-width: 100%;
+      }
+
+      #mobileSectionTitle {
+        display: block;
+      }
+
+      /* Show mobile card lists */
+      .m-list {
+        display: flex;
       }
 
       /* -- stats row: horizontal scroll -- */
@@ -1222,24 +1273,28 @@
       }
 
       .stat-box {
-        min-width: 100px;
+        min-width: 90px;
         flex-shrink: 0;
-        padding: 12px 14px;
+        padding: 13px 16px;
+        border-radius: 14px;
       }
 
       .stat-box .num {
-        font-size: 22px;
+        font-size: 26px;
+        font-weight: 800;
+        line-height: 1.1;
       }
 
       .stat-box .lbl {
         font-size: 11px;
+        margin-top: 2px;
       }
 
       /* -- toolbar: search full-width, btn right -- */
       .toolbar {
         flex-wrap: wrap;
         gap: 8px;
-        margin-bottom: 12px;
+        margin-bottom: 14px;
       }
 
       .toolbar .search-box {
@@ -1248,65 +1303,207 @@
         flex: unset;
       }
 
+      .toolbar .search-box input {
+        border-radius: 14px;
+        font-size: 15px;
+      }
+
       .toolbar .filter-select {
         flex: 1;
         min-width: 0;
         font-size: 13px;
         padding: 10px 10px;
+        border-radius: 12px;
+        min-height: 44px;
       }
 
       .toolbar .btn {
         min-height: 44px;
-        padding: 10px 16px;
+        padding: 10px 18px;
         font-size: 14px;
+        border-radius: 12px;
+        font-weight: 700;
       }
 
-      /* -- cards: single column, touch-friendly -- */
+      /* -- cards: single column, touch-friendly app style -- */
       .cards-grid {
         grid-template-columns: 1fr;
         gap: 10px;
       }
 
       .card {
-        border-radius: 12px;
+        border-radius: 16px;
+        border-width: 1px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, .12);
+        /* remove hover lift on mobile (touch devices) */
+        transition: none;
+      }
+
+      .card:active {
+        transform: scale(0.985);
+        transition: transform .1s;
+      }
+
+      .card:hover {
+        transform: none;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, .12);
       }
 
       .card-header {
-        padding: 12px 14px;
+        padding: 13px 15px 11px;
+      }
+
+      .card-title {
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .badge {
+        font-size: 12px;
+        padding: 4px 11px;
+        border-radius: 20px;
       }
 
       .card-body {
-        padding: 10px 14px;
+        padding: 10px 15px 12px;
       }
 
-      .card-footer {
-        padding: 10px 14px;
+      .card-row {
+        font-size: 13.5px;
+        margin-bottom: 7px;
         gap: 8px;
       }
 
+      .card-row .label {
+        min-width: 72px;
+        font-size: 12.5px;
+      }
+
+      .price-tag {
+        font-size: 16px;
+        font-weight: 800;
+      }
+
+      .card-footer {
+        padding: 10px 14px 12px;
+        gap: 8px;
+        border-top-width: 1px;
+      }
+
+      /* Action buttons: even split, tall tap targets */
       .card-footer .btn {
         flex: 1;
         justify-content: center;
-        min-height: 40px;
+        min-height: 42px;
         font-size: 13px;
+        border-radius: 10px;
+        padding: 8px 4px;
       }
 
-      /* -- tables: horizontal scroll with sticky columns -- */
-      .table-wrap {
+      /* Make edit/delete float right as icon-only pills */
+      .card-footer .btn-icon-only {
+        flex: none;
+        width: 42px;
+        padding: 8px;
         border-radius: 10px;
       }
 
-      table {
+      /* -- tables: HIDDEN on mobile, replaced by card-list -- */
+      .table-wrap {
+        display: none !important;
+      }
+
+      /* Mobile card-list for Agent/Customer/User */
+      .m-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .m-card {
+        background: var(--dark2);
+        border: 1px solid var(--border2);
+        border-radius: 16px;
+        padding: 14px 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, .1);
+        position: relative;
+      }
+
+      .m-card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .m-card-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text);
+        flex: 1;
+        line-height: 1.3;
+      }
+
+      .m-card-sub {
         font-size: 13px;
+        color: var(--text3);
+        margin-top: 2px;
       }
 
-      thead th {
-        padding: 10px 12px;
+      .m-card-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 6px;
+        font-size: 14px;
+        align-items: flex-start;
+      }
+
+      .m-card-label {
+        color: var(--text3);
+        font-size: 13px;
+        min-width: 68px;
+        flex-shrink: 0;
+      }
+
+      .m-card-val {
+        color: var(--text);
+        font-weight: 500;
+        word-break: break-word;
+        flex: 1;
+      }
+
+      .m-card-val.gold {
+        color: var(--gold);
+        font-weight: 700;
+        font-size: 15px;
+      }
+
+      .m-card-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border2);
+      }
+
+      .m-card-actions .btn {
+        flex: 1;
+        justify-content: center;
+        min-height: 42px;
+        font-size: 14px;
+        border-radius: 10px;
+      }
+
+      .m-card-num {
+        position: absolute;
+        top: 14px;
+        right: 14px;
         font-size: 11px;
-      }
-
-      tbody td {
-        padding: 10px 12px;
+        color: var(--text3);
+        background: var(--dark3);
+        border-radius: 8px;
+        padding: 2px 7px;
       }
 
       .btn-sm {
@@ -1462,7 +1659,12 @@
       }
 
       .bnav-item .bnav-icon {
-        font-size: 18px;
+        font-size: 22px;
+      }
+
+      .bnav-item .bnav-icon-wrap {
+        width: 40px;
+        height: 28px;
       }
 
       .main {
@@ -2160,25 +2362,36 @@
     <!-- =================== BOTTOM NAV (mobile) =================== -->
     <nav class="bottom-nav" id="bottomNav">
       <button class="bnav-item active" id="bnav-assets" onclick="switchTab('assets',null);updateBnav('assets')">
-        <span class="bnav-icon">🏠</span><span>ทรัพย์สิน</span>
+        <span class="bnav-icon-wrap"><span class="bnav-icon">🏠</span></span>
+        <span class="bnav-label">ทรัพย์สิน</span>
       </button>
       <button class="bnav-item" id="bnav-agents" onclick="switchTab('agents',null);updateBnav('agents')">
-        <span class="bnav-icon">👤</span><span>Agent</span>
+        <span class="bnav-icon-wrap"><span class="bnav-icon">👤</span></span>
+        <span class="bnav-label">Agent</span>
       </button>
       <button class="bnav-item" id="bnav-customers" onclick="switchTab('customers',null);updateBnav('customers')">
-        <span class="bnav-icon">🤝</span><span>ลูกค้า</span>
+        <span class="bnav-icon-wrap"><span class="bnav-icon">🤝</span></span>
+        <span class="bnav-label">ลูกค้า</span>
       </button>
       <button class="bnav-item" id="bnav-clipboard" onclick="switchTab('clipboard',null);updateBnav('clipboard')">
-        <span class="bnav-icon">📋</span><span>Clipboard</span>
-      </button>
-      <button class="bnav-item" id="bnav-iedata" onclick="switchTab('iedata',null);updateBnav('iedata')">
-        <span class="bnav-icon">⚙️</span><span>Import/Export</span>
+        <span class="bnav-icon-wrap"><span class="bnav-icon">📋</span></span>
+        <span class="bnav-label">Clipboard</span>
       </button>
       <button class="bnav-item" id="bnav-users" onclick="switchTab('users',null);updateBnav('users')"
         style="display:none">
-        <span class="bnav-icon">👥</span><span>User</span>
+        <span class="bnav-icon-wrap"><span class="bnav-icon">👥</span></span>
+        <span class="bnav-label">ผู้ใช้</span>
+      </button>
+      <button class="bnav-item" id="bnav-iedata" onclick="switchTab('iedata',null);updateBnav('iedata')">
+        <span class="bnav-icon-wrap"><span class="bnav-icon">⚙️</span></span>
+        <span class="bnav-label">ตั้งค่า</span>
       </button>
     </nav>
+
+    <!-- Mobile section title bar -->
+    <div id="mobileSectionTitle"
+      style="display:none;position:sticky;top:56px;z-index:99;background:var(--dark1);border-bottom:1px solid var(--border2);padding:10px 16px 8px;font-size:17px;font-weight:800;color:var(--text);letter-spacing:-0.02em;">
+    </div>
 
     <div class="main">
 
@@ -2238,6 +2451,8 @@
             <tbody id="agentTable"></tbody>
           </table>
         </div>
+        <!-- Mobile card list for agents -->
+        <div class="m-list" id="agentMList"></div>
       </div>
 
       <!-- =================== CUSTOMERS =================== -->
@@ -2265,6 +2480,8 @@
             <tbody id="customerTable"></tbody>
           </table>
         </div>
+        <!-- Mobile card list for customers -->
+        <div class="m-list" id="customerMList"></div>
       </div>
 
       <!-- =================== CLIPBOARD =================== -->
@@ -2441,6 +2658,8 @@
             <tbody id="userTable"></tbody>
           </table>
         </div>
+        <!-- Mobile card list for users -->
+        <div class="m-list" id="userMList"></div>
 
         <!-- Firebase Config Panel -->
         <div
@@ -3129,16 +3348,6 @@
 
     function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
-    // Firestore ไม่รับค่า undefined เลย — sanitize ทุก field ให้เป็น string ก่อน write เสมอ
-    function sanitizeForFirestore(obj) {
-      const clean = {};
-      Object.keys(obj).forEach(k => {
-        const v = obj[k];
-        clean[k] = (v === undefined || v === null) ? '' : v;
-      });
-      return clean;
-    }
-
     async function loadDB() {
       if (_fbReady && _db) {
         // ถ้า real-time sync ทำงานอยู่ onSnapshot จะ handle การอัพเดทเอง
@@ -3172,7 +3381,7 @@
         try {
           const { collection, doc, setDoc } = window._firestoreLib;
           const ref = doc(collection(_db, colName), item.id);
-          await setDoc(ref, sanitizeForFirestore(item));
+          await setDoc(ref, item);
         } catch (e) {
           console.warn('saveItem Firebase fail:', e);
           showToast('⚠️ Firebase บันทึกไม่ได้ — บันทึก offline', '#e05050');
@@ -3193,6 +3402,7 @@
     }
 
     async function saveDB() {
+      // BUG FIX: ต้อง save ทุก collection รวม assets ด้วย
       if (_fbReady && _db) {
         for (const col of ['assets', 'agents', 'customers']) {
           try {
@@ -3201,7 +3411,7 @@
             DB[col].forEach(item => {
               if (!item.id) item.id = genId();
               const ref = doc(collection(_db, col), item.id);
-              batch.set(ref, sanitizeForFirestore(item));
+              batch.set(ref, item);
             });
             await batch.commit();
           } catch (e) { console.warn('saveDB Firebase fail:', col, e); }
@@ -3693,6 +3903,11 @@
 
       // Asset add/edit/delete buttons: agent & viewer = read-only
       window._canEdit = isAdmin; // used in renderAssets to show/hide action buttons
+      // show mobile section title
+      if (window.innerWidth <= 768) {
+        const titleEl = document.getElementById('mobileSectionTitle');
+        if (titleEl) { titleEl.textContent = _sectionTitles['assets'] || ''; titleEl.style.display = 'block'; }
+      }
       const btnAddAsset = document.getElementById('btnAddAsset');
       if (btnAddAsset) btnAddAsset.style.display = isAdmin ? '' : 'none';
     }
@@ -3700,10 +3915,25 @@
     // ============================
     // TABS
     // ============================
+    const _sectionTitles = {
+      assets: '🏠 ทรัพย์สิน',
+      agents: '👤 Agent',
+      customers: '🤝 ลูกค้า',
+      clipboard: '📋 Clipboard',
+      iedata: '⚙️ นำเข้า/ส่งออก',
+      users: '👥 จัดการผู้ใช้'
+    };
+
     function updateBnav(t) {
       document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
       const el = document.getElementById('bnav-' + t);
       if (el) el.classList.add('active');
+      // update mobile section title
+      const titleEl = document.getElementById('mobileSectionTitle');
+      if (titleEl) {
+        titleEl.textContent = _sectionTitles[t] || '';
+        titleEl.style.display = window.innerWidth <= 768 ? 'block' : 'none';
+      }
     }
     function switchTab(t, btn) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -3789,9 +4019,9 @@
         ${a.linkpic ? `<a href="${a.linkpic}" target="_blank" class="btn btn-purple btn-sm">🖼️ รูปภาพ</a>` : ''}
         ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm">🔗 Link</a>` : ''}
         ${a.map ? `<a href="${a.map}" target="_blank" class="btn btn-outline btn-sm">📍 Map</a>` : ''}
-        <button class="btn btn-blue btn-sm" onclick="quickClip('${a.id}')">📋 Clipboard</button>
-        ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editAsset('${a.id}')">✏️</button>` : ''}
-        ${canEdit ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets','${a.id}')">🗑️</button>` : ''}
+        <button class="btn btn-blue btn-sm" onclick="quickClip(${ri})">📋 Clipboard</button>
+        ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️</button>` : ''}
+        ${canEdit ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>` : ''}
       </div>
     </div>`;
       }).join('');
@@ -3805,7 +4035,15 @@
       const q = document.getElementById('agentSearch').value.toLowerCase();
       let list = DB.agents.filter(a => !q || (a.name || '').toLowerCase().includes(q) || (a.email || '').toLowerCase().includes(q));
       const tb = document.getElementById('agentTable');
-      if (!list.length) { tb.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีข้อมูล Agent</td></tr>`; return; }
+      const ml = document.getElementById('agentMList');
+
+      if (!list.length) {
+        tb.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีข้อมูล Agent</td></tr>`;
+        if (ml) ml.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีข้อมูล Agent</div>`;
+        return;
+      }
+
+      // Desktop table
       tb.innerHTML = list.map(a => {
         const ri = DB.agents.indexOf(a);
         return `<tr>
@@ -3819,10 +4057,35 @@
       <td>${a.linelink ? `<a href="${a.linelink.startsWith('http') ? a.linelink : 'https://line.me/ti/p/' + a.linelink}" target="_blank" style="color:var(--green)">${a.linelink}</a>` : '-'}</td>
       <td style="font-size:12px">${a.bank || '-'}</td>
       <td><div style="display:flex;gap:5px">
-        <button class="btn btn-outline btn-sm" onclick="editAgent('${a.id}')">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteItem('agents','${a.id}')">🗑️</button>
+        <button class="btn btn-outline btn-sm" onclick="editAgent(${ri})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('agents',${ri})">🗑️</button>
       </div></td>
     </tr>`;
+      }).join('');
+
+      // Mobile card list
+      if (ml) ml.innerHTML = list.map(a => {
+        const ri = DB.agents.indexOf(a);
+        const coB = a.coagent === 'รับ' ? 'badge-both' : 'badge-sale';
+        return `<div class="m-card">
+          <span class="m-card-num">#${ri + 1}</span>
+          <div class="m-card-top">
+            <div>
+              <div class="m-card-name">${a.name || '-'}</div>
+              <div class="m-card-sub">${a.company || ''}</div>
+            </div>
+            <span class="badge ${coB}" style="margin-top:2px">Co-Agent: ${a.coagent || '-'}</span>
+          </div>
+          ${a.tel ? `<div class="m-card-row"><span class="m-card-label">📞 เบอร์</span><span class="m-card-val"><a href="tel:${a.tel}" style="color:var(--text)">${a.tel}</a></span></div>` : ''}
+          ${a.email ? `<div class="m-card-row"><span class="m-card-label">📧 Email</span><span class="m-card-val"><a href="mailto:${a.email}" style="color:var(--blue);font-size:13px">${a.email}</a></span></div>` : ''}
+          ${a.line ? `<div class="m-card-row"><span class="m-card-label">💬 Line ID</span><span class="m-card-val">${a.line}</span></div>` : ''}
+          ${a.linelink ? `<div class="m-card-row"><span class="m-card-label">🔗 Line@</span><span class="m-card-val"><a href="${a.linelink.startsWith('http') ? a.linelink : 'https://line.me/ti/p/' + a.linelink}" target="_blank" style="color:var(--green)">${a.linelink}</a></span></div>` : ''}
+          ${a.bank ? `<div class="m-card-row"><span class="m-card-label">🏦 บัญชี</span><span class="m-card-val">${a.bank}</span></div>` : ''}
+          <div class="m-card-actions">
+            <button class="btn btn-outline" onclick="editAgent(${ri})">✏️ แก้ไข</button>
+            <button class="btn btn-danger" onclick="deleteItem('agents',${ri})">🗑️ ลบ</button>
+          </div>
+        </div>`;
       }).join('');
     }
 
@@ -3833,7 +4096,15 @@
       const q = document.getElementById('customerSearch').value.toLowerCase();
       let list = DB.customers.filter(a => !q || (a.name || '').toLowerCase().includes(q));
       const tb = document.getElementById('customerTable');
-      if (!list.length) { tb.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีข้อมูลลูกค้า</td></tr>`; return; }
+      const ml = document.getElementById('customerMList');
+
+      if (!list.length) {
+        tb.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีข้อมูลลูกค้า</td></tr>`;
+        if (ml) ml.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีข้อมูลลูกค้า</div>`;
+        return;
+      }
+
+      // Desktop table
       tb.innerHTML = list.map(a => {
         const ri = DB.customers.indexOf(a);
         const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
@@ -3847,10 +4118,34 @@
       <td style="font-size:12px">${a.linkpost ? `<a href="${a.linkpost}" target="_blank" style="color:var(--blue)">🔗 Link</a>` : '-'}</td>
       <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.note || '-'}</td>
       <td><div style="display:flex;gap:5px">
-        <button class="btn btn-outline btn-sm" onclick="editCustomer('${a.id}')">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteItem('customers','${a.id}')">🗑️</button>
+        <button class="btn btn-outline btn-sm" onclick="editCustomer(${ri})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${ri})">🗑️</button>
       </div></td>
     </tr>`;
+      }).join('');
+
+      // Mobile card list
+      if (ml) ml.innerHTML = list.map(a => {
+        const ri = DB.customers.indexOf(a);
+        const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
+        return `<div class="m-card">
+          <span class="m-card-num">#${ri + 1}</span>
+          <div class="m-card-top">
+            <div>
+              <div class="m-card-name">${a.name || '-'}</div>
+              <div class="m-card-sub">${a.type || ''}</div>
+            </div>
+            <span class="badge ${badge}">${a.status || '-'}</span>
+          </div>
+          ${a.budget ? `<div class="m-card-row"><span class="m-card-label">💰 งบ</span><span class="m-card-val gold">${a.budget}</span></div>` : ''}
+          ${a.contact ? `<div class="m-card-row"><span class="m-card-label">📞 Contact</span><span class="m-card-val">${a.contact}</span></div>` : ''}
+          ${a.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${a.note}</span></div>` : ''}
+          <div class="m-card-actions">
+            ${a.linkpost ? `<a class="btn btn-outline" href="${a.linkpost}" target="_blank" style="flex:1;justify-content:center;display:flex;align-items:center;min-height:42px;font-size:14px;border-radius:10px;text-decoration:none;">🔗 Post</a>` : ''}
+            <button class="btn btn-outline" onclick="editCustomer(${ri})">✏️ แก้ไข</button>
+            <button class="btn btn-danger" onclick="deleteItem('customers',${ri})">🗑️</button>
+          </div>
+        </div>`;
       }).join('');
     }
 
@@ -3870,10 +4165,15 @@
 
     function renderUsers() {
       const tb = document.getElementById('userTable');
+      const ml = document.getElementById('userMList');
+
       if (!AUTH.users.length) {
         tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีผู้ใช้</td></tr>`;
+        if (ml) ml.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีผู้ใช้</div>`;
         return;
       }
+
+      // Desktop table
       tb.innerHTML = AUTH.users.map((u, i) => {
         const isMe = AUTH.current && AUTH.current.username === u.email;
         const linkedAgent = u.linkedAgentId ? (DB.agents.find(a => a.id === u.linkedAgentId) || null) : null;
@@ -3890,6 +4190,28 @@
             ${!isMe ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">🗑️</button>` : ''}
           </div></td>
         </tr>`;
+      }).join('');
+
+      // Mobile card list
+      if (ml) ml.innerHTML = AUTH.users.map((u, i) => {
+        const isMe = AUTH.current && AUTH.current.username === u.email;
+        const linkedAgent = u.linkedAgentId ? (DB.agents.find(a => a.id === u.linkedAgentId) || null) : null;
+        return `<div class="m-card">
+          <span class="m-card-num">#${i + 1}</span>
+          <div class="m-card-top">
+            <div style="flex:1;padding-right:40px">
+              <div class="m-card-name">${u.displayname || u.email}${isMe ? ' <span style="font-size:12px;color:var(--gold)">(คุณ)</span>' : ''}</div>
+              <div class="m-card-sub" style="font-size:12px">${u.email || ''}</div>
+            </div>
+            ${_roleBadge(u.role)}
+          </div>
+          ${linkedAgent ? `<div class="m-card-row"><span class="m-card-label">🏠 Agent</span><span class="m-card-val" style="color:var(--green)">✅ ${linkedAgent.name}</span></div>` : ''}
+          ${u.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="color:var(--text2);font-size:13px">${u.note}</span></div>` : ''}
+          <div class="m-card-actions">
+            <button class="btn btn-outline" onclick="editUser(${i})">✏️ แก้ไข</button>
+            ${!isMe ? `<button class="btn btn-danger" onclick="deleteUser(${i})">🗑️ ลบ</button>` : ''}
+          </div>
+        </div>`;
       }).join('');
     }
 
@@ -4043,9 +4365,7 @@
       saveTolocalStorage();
       closeModal('asset'); renderAssets(); populateCbSelect();
     }
-    function editAsset(id) {
-      const i = DB.assets.findIndex(x => x.id === id);
-      if (i < 0) return;
+    function editAsset(i) {
       const a = DB.assets[i];
       document.getElementById('modalAssetTitle').textContent = '✏️ แก้ไขทรัพย์สิน';
       setV('a_name', a.name); setV('a_location', a.location); setV('a_status', a.status); setV('a_type', a.type);
@@ -4053,6 +4373,7 @@
       setV('a_link', a.link); setV('a_map', a.map); setV('a_linkpic', a.linkpic); setV('a_postdate', a.postdate); setV('a_updatedate', a.updatedate);
       setV('a_contact', a.contact); setV('a_note', a.note);
       populatePosterSelect(a.poster || '');
+      // set listing active radio
       const la = a.listingActive || 'available';
       const laEl = document.getElementById('a_active_' + la);
       if (laEl) laEl.checked = true; else document.getElementById('a_active_available').checked = true;
@@ -4078,9 +4399,7 @@
       closeModal('agent'); renderAgents(); populateCbAgentSelect();
       if (document.getElementById('modalAsset').classList.contains('open')) populatePosterSelect(document.getElementById('a_poster').value);
     }
-    function editAgent(id) {
-      const i = DB.agents.findIndex(x => x.id === id);
-      if (i < 0) return;
+    function editAgent(i) {
       const a = DB.agents[i];
       document.getElementById('modalAgentTitle').textContent = '✏️ แก้ไข Agent';
       setV('ag_name', a.name); setV('ag_company', a.company); setV('ag_coagent', a.coagent);
@@ -4107,9 +4426,7 @@
       }
       closeModal('customer'); renderCustomers();
     }
-    function editCustomer(id) {
-      const i = DB.customers.findIndex(x => x.id === id);
-      if (i < 0) return;
+    function editCustomer(i) {
       const a = DB.customers[i];
       document.getElementById('modalCustomerTitle').textContent = '✏️ แก้ไขลูกค้า';
       setV('cu_name', a.name); setV('cu_status', a.status); setV('cu_type', a.type);
@@ -4122,12 +4439,12 @@
     // ============================
     // DELETE
     // ============================
-    async function deleteItem(type, id) {
+    async function deleteItem(type, idx) {
       if (!confirm('ยืนยันลบ?')) return;
-      // ค้นหาด้วย id เสมอ — ไม่ใช้ index เพราะ onSnapshot อาจเรียง DB ใหม่
-      const idx = DB[type].findIndex(item => item.id === id);
-      if (idx < 0) { console.warn('deleteItem: ไม่พบ id', id); return; }
-      await deleteItemFromDB(type, id);
+      const item = DB[type][idx];
+      // BUG FIX: ถ้า item ไม่มี id (data เก่าที่ import มาโดยไม่มี id) ให้ assign id ก่อน delete จาก Firebase
+      if (!item.id) item.id = genId();
+      await deleteItemFromDB(type, item.id);
       DB[type].splice(idx, 1);
       saveTolocalStorage();
       renderAssets(); renderAgents(); renderCustomers(); renderStats();
@@ -4335,9 +4652,8 @@
       if (showLinkPic && a.linkpic) t += `🖼️ ดูรูปภาพ: ${a.linkpic}\n`;
       return t;
     }
-    function quickClip(id) {
-      const a = DB.assets.find(x => x.id === id);
-      if (!a) return;
+    function quickClip(idx) {
+      const a = DB.assets[idx];
       document.getElementById('clipPreviewText').textContent = buildClipText(a, 'full', true, true, true, true, a.contact || '', '', true);
       document.getElementById('modalClipPreview').classList.add('open');
     }
@@ -4359,42 +4675,26 @@
     // CSV HELPERS
     // ============================
     function csvEscape(v) { return '"' + (String(v || '').replace(/"/g, '""')) + '"'; }
-
-    // RFC 4180 compliant CSV parser — รองรับ quoted fields ที่มี comma และ newline ข้างใน
+    function parseCSVLine(line) {
+      const result = []; let cur = ''; let inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
+          else inQ = !inQ;
+        } else if (ch === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+        else cur += ch;
+      }
+      result.push(cur.trim()); return result;
+    }
     function parseCSV(text) {
       // Handle BOM
       if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-      // normalize line endings
-      text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-
-      const rows = [];
-      let cur = '';
-      let inQ = false;
-      let fields = [];
-
-      for (let i = 0; i < text.length; i++) {
-        const ch = text[i];
-        if (ch === '"') {
-          if (inQ && text[i + 1] === '"') { cur += '"'; i++; } // escaped quote ""
-          else inQ = !inQ;                                       // toggle quoted mode
-        } else if (ch === ',' && !inQ) {
-          fields.push(cur.trim());
-          cur = '';
-        } else if (ch === '\n' && !inQ) {
-          fields.push(cur.trim());
-          cur = '';
-          if (fields.some(f => f !== '')) rows.push(fields); // skip blank lines
-          fields = [];
-        } else {
-          cur += ch;
-        }
-      }
-      // last field / last row
-      fields.push(cur.trim());
-      if (fields.some(f => f !== '')) rows.push(fields);
-
-      if (!rows.length) return { headers: [], rows: [] };
-      return { headers: rows[0], rows: rows.slice(1) };
+      const lines = text.split(/\r?\n/).filter(l => l.trim());
+      if (!lines.length) return { headers: [], rows: [] };
+      const headers = parseCSVLine(lines[0]);
+      const rows = lines.slice(1).map(l => parseCSVLine(l));
+      return { headers, rows };
     }
     function downloadCSV(content, filename) {
       const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8' });
@@ -4435,7 +4735,6 @@
     // ============================
     // IMPORT CSV
     // ============================
-
     function importCSV(event, type) {
       const file = event.target.files[0]; if (!file) return;
       const reader = new FileReader();
@@ -4444,92 +4743,75 @@
           const { headers, rows } = parseCSV(e.target.result);
           if (!headers.length) { alert('ไฟล์ว่างหรือรูปแบบไม่ถูกต้อง'); return; }
 
-          const today = new Date().toISOString().slice(0, 10);
-          const newItems = [];
+          // BUG FIX: หยุด real-time listener ชั่วคราวระหว่าง import
+          // เพื่อป้องกัน onSnapshot ดึงข้อมูลเก่าจาก Firebase มาทับก่อน push เสร็จ
+          const wasRealtime = _realtimeSyncActive;
+          if (wasRealtime) stopRealtimeSync();
 
-          // safe getter: ถ้า index < 0 หรือ r[i] เป็น undefined จะคืน fallback ('') เสมอ
-          const g = (r, i, fallback = '') => {
-            if (i < 0) return fallback;
-            const v = r[i];
-            return (v === undefined || v === null) ? fallback : String(v).trim();
-          };
+          let imported = 0;
+          const today = new Date().toISOString().slice(0, 10);
 
           if (type === 'assets') {
-            const hi = n => headers.findIndex(h => h.trim() === n);
-            const iName=hi('ชื่อโครงการ'), iLoc=hi('ทำเล'), iSt=hi('สถานะ'), iTy=hi('ประเภท'),
-              iPr=hi('ราคา'), iRm=hi('ประเภทห้อง'), iAr=hi('ขนาด'), iFl=hi('ชั้นตึก'),
-              iCt=hi('Contact'), iLk=hi('Link'), iMp=hi('Map'), iPd=hi('วันที่โพสต์'),
-              iUd=hi('วันที่อัปเดต'), iNt=hi('หมายเหตุ'), iLp=hi('Link Pic'), iPo=hi('ผู้โพสต์');
+            const hi = n => headers.findIndex(h => h === n);
+            const iName = hi('ชื่อโครงการ'), iLoc = hi('ทำเล'), iSt = hi('สถานะ'), iTy = hi('ประเภท'),
+              iPr = hi('ราคา'), iRm = hi('ประเภทห้อง'), iAr = hi('ขนาด'), iFl = hi('ชั้นตึก'),
+              iCt = hi('Contact'), iLk = hi('Link'), iMp = hi('Map'), iPd = hi('วันที่โพสต์'), iUd = hi('วันที่อัปเดต'), iNt = hi('หมายเหตุ'),
+              iLp = hi('Link Pic'), iPo = hi('ผู้โพสต์');
             rows.forEach(r => {
-              const name = g(r, iName);
-              if (!name) return;
-              newItems.push({
-                id: genId(), name,
-                location: g(r, iLoc), status: g(r, iSt, 'ขาย'), type: g(r, iTy, 'คอนโด'),
-                price: g(r, iPr), roomtype: g(r, iRm), area: g(r, iAr), floor: g(r, iFl),
-                contact: g(r, iCt), link: g(r, iLk), map: g(r, iMp),
-                postdate: g(r, iPd, today), updatedate: g(r, iUd, today),
-                note: g(r, iNt), linkpic: g(r, iLp), poster: g(r, iPo),
+              if (r.length < 2) return;
+              const a = {
+                id: genId(), // BUG FIX: assign id ทันที ป้องกัน duplicate
+                name: iName >= 0 ? r[iName] : '', location: iLoc >= 0 ? r[iLoc] : '', status: iSt >= 0 ? r[iSt] : 'ขาย',
+                type: iTy >= 0 ? r[iTy] : 'คอนโด', price: iPr >= 0 ? r[iPr] : '', roomtype: iRm >= 0 ? r[iRm] : '',
+                area: iAr >= 0 ? r[iAr] : '', floor: iFl >= 0 ? r[iFl] : '', contact: iCt >= 0 ? r[iCt] : '',
+                link: iLk >= 0 ? r[iLk] : '', map: iMp >= 0 ? r[iMp] : '', postdate: iPd >= 0 ? r[iPd] : today,
+                updatedate: iUd >= 0 ? r[iUd] : today, note: iNt >= 0 ? r[iNt] : '',
+                linkpic: iLp >= 0 ? r[iLp] : '', poster: iPo >= 0 ? r[iPo] : '',
                 listingActive: 'available'
-              });
+              };
+              if (a.name) { DB.assets.push(a); imported++; }
             });
           } else if (type === 'agents') {
-            const hi = n => headers.findIndex(h => h.trim() === n);
-            const iNm=hi('ชื่อAgent'), iCo=hi('บริษัท'), iCa=hi('Co-Agent'), iTl=hi('เบอร์'),
-              iFb=hi('Facebook'), iEm=hi('E-Mail'), iLn=hi('LineID'), iLl=hi('LinkLine'), iBk=hi('เลขบัญชี');
+            const hi = n => headers.findIndex(h => h === n);
+            const iNm = hi('ชื่อAgent'), iCo = hi('บริษัท'), iCa = hi('Co-Agent'), iTl = hi('เบอร์'),
+              iFb = hi('Facebook'), iEm = hi('E-Mail'), iLn = hi('LineID'), iLl = hi('LinkLine'), iBk = hi('เลขบัญชี');
             rows.forEach(r => {
-              const name = g(r, iNm);
-              if (!name) return;
-              newItems.push({
-                id: genId(), name,
-                company: g(r, iCo), coagent: g(r, iCa, 'ไม่รับ'), tel: g(r, iTl),
-                fb: g(r, iFb), email: g(r, iEm), line: g(r, iLn),
-                linelink: g(r, iLl), bank: g(r, iBk)
-              });
+              if (r.length < 2) return;
+              const a = {
+                id: genId(), // BUG FIX: assign id ทันที
+                name: iNm >= 0 ? r[iNm] : '', company: iCo >= 0 ? r[iCo] : '', coagent: iCa >= 0 ? r[iCa] : 'ไม่รับ',
+                tel: iTl >= 0 ? r[iTl] : '', fb: iFb >= 0 ? r[iFb] : '', email: iEm >= 0 ? r[iEm] : '',
+                line: iLn >= 0 ? r[iLn] : '', linelink: iLl >= 0 ? r[iLl] : '', bank: iBk >= 0 ? r[iBk] : ''
+              };
+              if (a.name) { DB.agents.push(a); imported++; }
             });
           } else if (type === 'customers') {
-            const hi = n => headers.findIndex(h => h.trim() === n);
-            const iNm=hi('ชื่อลูกค้า/โครงการ'), iSt=hi('สถานะ'), iTy=hi('ประเภท'), iBd=hi('งบประมาณ'),
-              iAr=hi('ขนาดห้อง'), iFl=hi('ชั้น'), iCt=hi('Contact'), iNt=hi('Note'), iLk=hi('Link Post');
+            const hi = n => headers.findIndex(h => h === n);
+            const iNm = hi('ชื่อลูกค้า/โครงการ'), iSt = hi('สถานะ'), iTy = hi('ประเภท'), iBd = hi('งบประมาณ'),
+              iAr = hi('ขนาดห้อง'), iFl = hi('ชั้น'), iCt = hi('Contact'), iNt = hi('Note'), iLk = hi('Link Post');
             rows.forEach(r => {
-              const name = g(r, iNm);
-              if (!name) return;
-              newItems.push({
-                id: genId(), name,
-                status: g(r, iSt), type: g(r, iTy), budget: g(r, iBd),
-                area: g(r, iAr), floor: g(r, iFl), contact: g(r, iCt),
-                note: g(r, iNt), linkpost: g(r, iLk)
-              });
+              if (r.length < 2) return;
+              const a = {
+                id: genId(), // BUG FIX: assign id ทันที
+                name: iNm >= 0 ? r[iNm] : '', status: iSt >= 0 ? r[iSt] : '', type: iTy >= 0 ? r[iTy] : '',
+                budget: iBd >= 0 ? r[iBd] : '', area: iAr >= 0 ? r[iAr] : '', floor: iFl >= 0 ? r[iFl] : '',
+                contact: iCt >= 0 ? r[iCt] : '', note: iNt >= 0 ? r[iNt] : '', linkpost: iLk >= 0 ? r[iLk] : ''
+              };
+              if (a.name) { DB.customers.push(a); imported++; }
             });
           }
 
-          if (!newItems.length) { alert('ไม่พบข้อมูลที่นำเข้าได้'); return; }
+          // BUG FIX: save ก่อน แล้วค่อย re-enable realtime sync
+          await saveDB();
+          saveTolocalStorage();
 
-          if (_fbReady && _db) {
-            try {
-              const { collection, doc, writeBatch } = window._firestoreLib;
-              const BATCH_LIMIT = 500;
-              for (let i = 0; i < newItems.length; i += BATCH_LIMIT) {
-                const chunk = newItems.slice(i, i + BATCH_LIMIT);
-                const batch = writeBatch(_db);
-                chunk.forEach(item => {
-                  const ref = doc(collection(_db, type), item.id);
-                  batch.set(ref, sanitizeForFirestore(item));
-                });
-                await batch.commit();
-              }
-              showToast(`✅ Import สำเร็จ! นำเข้า ${newItems.length} รายการ`, '#50c878');
-            } catch (err) {
-              alert('Firebase write ล้มเหลว: ' + err.message);
-            }
-          } else {
-            // Offline mode
-            DB[type] = [...DB[type], ...newItems];
-            saveTolocalStorage();
-            renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); renderStats();
-            showToast(`✅ Import สำเร็จ! นำเข้า ${newItems.length} รายการ (offline)`, '#50c878');
+          // re-enable realtime sync หลัง push เสร็จ
+          if (wasRealtime) {
+            setTimeout(() => startRealtimeSync(), 1500);
           }
 
+          showToast(`✅ Import สำเร็จ! นำเข้า ${imported} รายการ`, '#50c878');
+          renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); renderStats();
         } catch (err) { alert('เกิดข้อผิดพลาด: ' + err.message); }
       };
       reader.readAsText(file, 'UTF-8');
