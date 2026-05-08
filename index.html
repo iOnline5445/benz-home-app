@@ -234,8 +234,8 @@
       inset: 0;
       background: #2B2620;
       background-image:
-        radial-gradient(ellipse 80% 60% at 20% 30%, rgba(201,168,76,0.13) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 80% at 80% 70%, rgba(140,110,50,0.10) 0%, transparent 60%);
+        radial-gradient(ellipse 80% 60% at 20% 30%, rgba(201, 168, 76, 0.13) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 70%, rgba(140, 110, 50, 0.10) 0%, transparent 60%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -254,7 +254,7 @@
       min-height: 520px;
       border-radius: 24px;
       overflow: hidden;
-      box-shadow: 0 32px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(201,168,76,0.18);
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(201, 168, 76, 0.18);
       /* never wider than viewport */
       box-sizing: border-box;
     }
@@ -275,20 +275,24 @@
     .login-brand::before {
       content: '';
       position: absolute;
-      top: -60px; right: -60px;
-      width: 260px; height: 260px;
+      top: -60px;
+      right: -60px;
+      width: 260px;
+      height: 260px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(201,168,76,0.18) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(201, 168, 76, 0.18) 0%, transparent 70%);
       pointer-events: none;
     }
 
     .login-brand::after {
       content: '';
       position: absolute;
-      bottom: -40px; left: -40px;
-      width: 200px; height: 200px;
+      bottom: -40px;
+      left: -40px;
+      width: 200px;
+      height: 200px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(201,168,76,0.10) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(201, 168, 76, 0.10) 0%, transparent 70%);
       pointer-events: none;
     }
 
@@ -298,7 +302,7 @@
       font-size: 56px;
       margin-bottom: 20px;
       display: block;
-      filter: drop-shadow(0 4px 16px rgba(201,168,76,0.3));
+      filter: drop-shadow(0 4px 16px rgba(201, 168, 76, 0.3));
     }
 
     .lb-title {
@@ -312,7 +316,7 @@
 
     .lb-sub {
       font-size: 13.5px;
-      color: rgba(201,168,76,0.55);
+      color: rgba(201, 168, 76, 0.55);
       line-height: 1.6;
     }
 
@@ -329,15 +333,15 @@
       align-items: center;
       gap: 10px;
       font-size: 13px;
-      color: rgba(240,230,210,0.65);
+      color: rgba(240, 230, 210, 0.65);
     }
 
     .lb-features li span.feat-icon {
       width: 28px;
       height: 28px;
       border-radius: 8px;
-      background: rgba(201,168,76,0.14);
-      border: 1px solid rgba(201,168,76,0.22);
+      background: rgba(201, 168, 76, 0.14);
+      border: 1px solid rgba(201, 168, 76, 0.22);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -347,7 +351,7 @@
 
     .lb-bottom {
       font-size: 11px;
-      color: rgba(201,168,76,0.35);
+      color: rgba(201, 168, 76, 0.35);
       letter-spacing: 0.5px;
     }
 
@@ -376,7 +380,8 @@
     }
 
     .login-logo {
-      display: none; /* hidden on desktop — branding is on the left panel */
+      display: none;
+      /* hidden on desktop — branding is on the left panel */
     }
 
     .login-field {
@@ -404,12 +409,12 @@
       outline: none;
       transition: border-color .2s, box-shadow .2s;
       min-height: 50px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .login-field input:focus {
       border-color: #C9A84C;
-      box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
     }
 
     .login-field input::placeholder {
@@ -431,7 +436,7 @@
       transition: opacity .2s, transform .1s;
       min-height: 52px;
       letter-spacing: 0.3px;
-      box-shadow: 0 4px 16px rgba(158,120,42,0.35);
+      box-shadow: 0 4px 16px rgba(158, 120, 42, 0.35);
     }
 
     .login-btn:hover {
@@ -475,7 +480,7 @@
         /* Warm neutral full-screen bg */
         background: #3A2E1A;
         background-image:
-          radial-gradient(ellipse 70% 50% at 50% 0%, rgba(201,168,76,0.18) 0%, transparent 60%);
+          radial-gradient(ellipse 70% 50% at 50% 0%, rgba(201, 168, 76, 0.18) 0%, transparent 60%);
       }
 
       .login-card {
@@ -503,7 +508,9 @@
       }
 
       .login-brand::before,
-      .login-brand::after { display: none; }
+      .login-brand::after {
+        display: none;
+      }
 
       .lb-top {
         display: flex;
@@ -517,7 +524,7 @@
         margin-bottom: 0;
         flex-shrink: 0;
         line-height: 1;
-        filter: drop-shadow(0 2px 8px rgba(201,168,76,0.4));
+        filter: drop-shadow(0 2px 8px rgba(201, 168, 76, 0.4));
       }
 
       .lb-text-block {
@@ -535,20 +542,29 @@
       }
 
       /* Collapse two-line title to one line on mobile */
-      .lb-title br { display: none; }
+      .lb-title br {
+        display: none;
+      }
 
       .lb-sub {
         font-size: 11.5px;
-        color: rgba(201,168,76,0.55);
+        color: rgba(201, 168, 76, 0.55);
         margin-top: 0;
         line-height: 1.3;
       }
 
       /* Show only first line of subtitle */
-      .lb-sub br { display: none; }
+      .lb-sub br {
+        display: none;
+      }
 
-      .lb-features { display: none; }
-      .lb-bottom { display: none; }
+      .lb-features {
+        display: none;
+      }
+
+      .lb-bottom {
+        display: none;
+      }
 
       /* Form panel — large rounded card that dominates the screen */
       .login-box {
@@ -559,7 +575,7 @@
         border-radius: 24px 24px 0 0;
         overflow-y: auto;
         /* Slight lift shadow */
-        box-shadow: 0 -8px 32px rgba(0,0,0,0.25);
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.25);
         margin-top: -4px;
       }
 
@@ -584,14 +600,15 @@
         background: #FFFFFF;
         border: 1.5px solid #CDBF9A;
         border-radius: 12px;
-        font-size: 16px; /* prevents iOS zoom */
+        font-size: 16px;
+        /* prevents iOS zoom */
         min-height: 52px;
         color: #2A1E08;
       }
 
       .login-field input:focus {
         border-color: #C9A84C;
-        box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+        box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
       }
 
       .login-btn {
@@ -600,7 +617,7 @@
         border-radius: 14px;
         margin-top: 14px;
         background: linear-gradient(135deg, #8A6620, #C9A84C);
-        box-shadow: 0 6px 20px rgba(140,100,30,0.4);
+        box-shadow: 0 6px 20px rgba(140, 100, 30, 0.4);
       }
 
       /* No divider / theme section on mobile */
@@ -618,86 +635,128 @@
     .header {
       background: linear-gradient(135deg, var(--header-bg1) 0%, var(--header-bg2) 100%);
       border-bottom: 1px solid var(--border);
-      padding: 0 20px;
+      padding: 0 16px 0 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 60px;
+      height: 56px;
       position: sticky;
       top: 0;
       z-index: 100;
-      gap: 12px;
+      gap: 8px;
+      /* prevent any wrapping */
+      flex-wrap: nowrap;
+      overflow: hidden;
     }
 
     .logo {
       font-family: 'Noto Serif Thai', serif;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 700;
       color: var(--gold);
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .logo span {
-      color: var(--text2);
-      font-weight: 300;
-      font-size: 13px;
+      color: var(--text3);
+      font-weight: 400;
+      font-size: 12px;
       margin-left: 6px;
     }
 
+    /* ---- Tab bar ---- */
     .header-tabs {
       display: flex;
       gap: 2px;
+      align-items: center;
       flex: 1;
       justify-content: center;
-      flex-wrap: wrap;
+      /* single row, no wrap */
+      flex-wrap: nowrap;
+      overflow: hidden;
     }
 
     .htab {
-      padding: 7px 14px;
-      border-radius: 6px;
+      padding: 6px 13px;
+      border-radius: 20px;
       cursor: pointer;
       font-size: 13px;
       font-weight: 500;
-      border: none;
+      border: 1px solid transparent;
       background: transparent;
       color: var(--text2);
-      transition: all .2s;
+      transition: all .18s;
       white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      height: 34px;
+      flex-shrink: 0;
     }
 
-    .htab.active,
     .htab:hover {
-      background: rgba(201, 168, 76, 0.12);
+      background: rgba(201, 168, 76, 0.10);
       color: var(--gold);
     }
 
     .htab.active {
-      border: 1px solid var(--border);
+      background: var(--gold);
+      color: #0D0D0D;
+      border-color: transparent;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(201, 168, 76, 0.35);
     }
 
+    /* Light themes — active tab text readable */
+    [data-theme="light"] .htab.active,
+    [data-theme="vibrant"] .htab.active,
+    [data-theme="ocean"] .htab.active,
+    [data-theme="sakura"] .htab.active,
+    [data-theme="forest"] .htab.active,
+    [data-theme="sunset"] .htab.active {
+      color: #fff;
+    }
+
+    /* ---- Right side ---- */
     .header-user {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-shrink: 0;
+    }
+
+    /* Firebase status */
+    .fb-status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--text3);
+      white-space: nowrap;
+      padding: 4px 8px;
+      background: var(--dark3);
+      border-radius: 20px;
+      border: 1px solid var(--border2);
     }
 
     .user-badge {
       background: var(--dark3);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 20px;
       padding: 5px 12px;
       font-size: 13px;
       display: flex;
       align-items: center;
       gap: 6px;
+      white-space: nowrap;
     }
 
     .user-badge .role {
       font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 4px;
+      padding: 2px 7px;
+      border-radius: 20px;
       font-weight: 700;
     }
 
@@ -726,11 +785,15 @@
       border: 1px solid rgba(224, 80, 80, 0.2);
       color: var(--red);
       padding: 5px 12px;
-      border-radius: 7px;
+      border-radius: 20px;
       font-size: 12px;
       cursor: pointer;
       font-family: inherit;
       transition: all .2s;
+      white-space: nowrap;
+      height: 32px;
+      display: flex;
+      align-items: center;
     }
 
     .logout-btn:hover {
@@ -2597,7 +2660,7 @@
     .login-theme-opt .lto-name {
       font-size: 9px;
       font-weight: 600;
-      color: rgba(255,255,255,0.75);
+      color: rgba(255, 255, 255, 0.75);
       letter-spacing: 0.2px;
       line-height: 1;
     }
@@ -2609,7 +2672,7 @@
 
     .login-theme-opt.active {
       border-color: var(--gold) !important;
-      box-shadow: 0 0 0 3px rgba(201,168,76,.3);
+      box-shadow: 0 0 0 3px rgba(201, 168, 76, .3);
     }
 
     /* Light themes need dark text */
@@ -2619,7 +2682,7 @@
     .theme-btn-sakura .lto-name,
     .theme-btn-forest .lto-name,
     .theme-btn-sunset .lto-name {
-      color: rgba(0,0,0,0.55);
+      color: rgba(0, 0, 0, 0.55);
     }
 
     /* ===== MOBILE SETTINGS BUTTON ===== */
@@ -2703,34 +2766,43 @@
         </div>
 
         <!-- Theme section: mobile only -->
-        <div class="login-theme-section" style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid #E0D5C0;">
-          <div style="font-size:12px;color:#9A8A6A;margin-bottom:12px;letter-spacing:0.5px;text-transform:uppercase;font-weight:600;">เลือกธีม</div>
+        <div class="login-theme-section"
+          style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid #E0D5C0;">
+          <div
+            style="font-size:12px;color:#9A8A6A;margin-bottom:12px;letter-spacing:0.5px;text-transform:uppercase;font-weight:600;">
+            เลือกธีม</div>
           <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;max-width:320px;margin:0 auto;">
             <button class="login-theme-opt theme-btn-dark" id="loginThemeDark" onclick="setTheme('dark')" title="มืด">
               <span class="lto-icon">🌙</span>
               <span class="lto-name">มืด</span>
             </button>
-            <button class="login-theme-opt theme-btn-light" id="loginThemeLight" onclick="setTheme('light')" title="เบจทอง">
+            <button class="login-theme-opt theme-btn-light" id="loginThemeLight" onclick="setTheme('light')"
+              title="เบจทอง">
               <span class="lto-icon">☀️</span>
               <span class="lto-name">สว่าง</span>
             </button>
-            <button class="login-theme-opt theme-btn-vibrant" id="loginThemeVibrant" onclick="setTheme('vibrant')" title="ส้มไฟ">
+            <button class="login-theme-opt theme-btn-vibrant" id="loginThemeVibrant" onclick="setTheme('vibrant')"
+              title="ส้มไฟ">
               <span class="lto-icon">🔥</span>
               <span class="lto-name">ส้ม</span>
             </button>
-            <button class="login-theme-opt theme-btn-ocean" id="loginThemeOcean" onclick="setTheme('ocean')" title="ฟ้าทะเล">
+            <button class="login-theme-opt theme-btn-ocean" id="loginThemeOcean" onclick="setTheme('ocean')"
+              title="ฟ้าทะเล">
               <span class="lto-icon">🌊</span>
               <span class="lto-name">ฟ้า</span>
             </button>
-            <button class="login-theme-opt theme-btn-sakura" id="loginThemeSakura" onclick="setTheme('sakura')" title="ชมพู">
+            <button class="login-theme-opt theme-btn-sakura" id="loginThemeSakura" onclick="setTheme('sakura')"
+              title="ชมพู">
               <span class="lto-icon">🌸</span>
               <span class="lto-name">ชมพู</span>
             </button>
-            <button class="login-theme-opt theme-btn-forest" id="loginThemeForest" onclick="setTheme('forest')" title="เขียวมิ้นต์">
+            <button class="login-theme-opt theme-btn-forest" id="loginThemeForest" onclick="setTheme('forest')"
+              title="เขียวมิ้นต์">
               <span class="lto-icon">🌿</span>
               <span class="lto-name">เขียว</span>
             </button>
-            <button class="login-theme-opt theme-btn-sunset" id="loginThemeSunset" onclick="setTheme('sunset')" title="ม่วง">
+            <button class="login-theme-opt theme-btn-sunset" id="loginThemeSunset" onclick="setTheme('sunset')"
+              title="ม่วง">
               <span class="lto-icon">🌅</span>
               <span class="lto-name">ม่วง</span>
             </button>
@@ -2751,27 +2823,42 @@
         <button class="htab" id="tabAgents" onclick="switchTab('agents',this)">👤 Agent</button>
         <button class="htab" id="tabCustomers" onclick="switchTab('customers',this)">🤝 ลูกค้า</button>
         <button class="htab" id="tabClipboard" onclick="switchTab('clipboard',this)">📋 Clipboard</button>
-        <button class="htab" id="tabIedata" onclick="switchTab('iedata',this)">⚙️ Import/Export</button>
-        <button class="htab" id="tabUsers" onclick="switchTab('users',this)" style="display:none">👥 จัดการ
-          User</button>
+        <button class="htab" id="tabIedata" onclick="switchTab('iedata',this)">⚙️ ตั้งค่า</button>
+        <button class="htab" id="tabUsers" onclick="switchTab('users',this)" style="display:none">👥 ผู้ใช้</button>
       </div>
       <div class="header-user">
         <!-- Firebase Status -->
-        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);white-space:nowrap;">
+        <div class="fb-status">
           <span id="fbStatusDot"
             style="width:8px;height:8px;border-radius:50%;background:#e8a020;display:inline-block;flex-shrink:0;"></span>
-          <span id="fbStatusText">Firebase...</span>
+          <span id="fbStatusText">Firebase</span>
         </div>
         <!-- Theme Panel Button -->
         <button class="theme-panel-btn" onclick="openThemePanel()">🎨 Theme</button>
-        <!-- Mobile Settings shortcut (shown only on mobile) -->
-        <button class="mobile-settings-btn" onclick="switchTab('iedata',null);updateBnav('iedata')" title="ตั้งค่า / Import-Export">⚙️</button>
+        <!-- Mobile Settings shortcut -->
+        <button class="mobile-settings-btn" id="mobileMoreBtn" onclick="toggleMobileMore()"
+          title="เมนูเพิ่มเติม">⋯</button>
         <div class="user-badge">
           <span id="headerUserName">-</span>
           <span class="role" id="headerUserRole">-</span>
         </div>
         <button class="logout-btn" onclick="doLogout()">ออกระบบ</button>
       </div>
+    </div>
+
+    <!-- Mobile "More" dropdown menu -->
+    <div id="mobileMoreMenu"
+      style="display:none;position:fixed;bottom:calc(76px + env(safe-area-inset-bottom,0px) + 8px);right:8px;background:var(--dark2);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);z-index:300;min-width:180px;overflow:hidden;">
+      <button class="more-menu-item" id="moreItemIedata"
+        onclick="switchTab('iedata',null);updateBnav('iedata');closeMobileMore()">
+        <span>⚙️</span><span>ตั้งค่า / Import-Export</span>
+      </button>
+      <button class="more-menu-item" id="moreItemUsers"
+        onclick="switchTab('users',null);updateBnav('users');closeMobileMore()" style="display:none">
+        <span>👥</span><span>จัดการผู้ใช้</span>
+      </button>
+    </div>
+    <div id="mobileMoreOverlay" onclick="closeMobileMore()" style="display:none;position:fixed;inset:0;z-index:299;">
     </div>
 
     <!-- =================== BOTTOM NAV (mobile) =================== -->
@@ -5395,8 +5482,8 @@
     function setTheme(theme) {
       TP.color = theme; applyTP(); saveTP();
       // sync login theme button active states
-      const themes = ['dark','light','vibrant','ocean','sakura','forest','sunset'];
-      const capMap = {dark:'Dark',light:'Light',vibrant:'Vibrant',ocean:'Ocean',sakura:'Sakura',forest:'Forest',sunset:'Sunset'};
+      const themes = ['dark', 'light', 'vibrant', 'ocean', 'sakura', 'forest', 'sunset'];
+      const capMap = { dark: 'Dark', light: 'Light', vibrant: 'Vibrant', ocean: 'Ocean', sakura: 'Sakura', forest: 'Forest', sunset: 'Sunset' };
       themes.forEach(t => {
         const el = document.getElementById('loginTheme' + capMap[t]);
         if (el) el.classList.toggle('active', t === theme);
