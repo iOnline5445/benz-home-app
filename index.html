@@ -2490,11 +2490,11 @@
         <div class="toolbar">
           <div class="search-box"><input type="text" id="customerSearch" placeholder="ค้นหาลูกค้า..."
               oninput="renderCustomers()"></div>
-          <label class="btn btn-outline" style="cursor:pointer;" title="Import ลูกค้าจากไฟล์ CSV">
+          <label id="btnImportCustomerCSV" class="btn btn-outline" style="cursor:pointer;" title="Import ลูกค้าจากไฟล์ CSV">
             📥 Import CSV
             <input type="file" accept=".csv" style="display:none" onchange="importCSV(event,'customers')">
           </label>
-          <button class="btn btn-primary" onclick="openModal('customer')">+ เพิ่มลูกค้า</button>
+          <button id="btnAddCustomer" class="btn btn-primary" onclick="openModal('customer')">+ เพิ่มลูกค้า</button>
         </div>
         <div class="table-wrap">
           <table>
@@ -2586,7 +2586,7 @@
       <div id="sec-iedata" class="section">
 
         <!-- IMPORT -->
-        <div class="ie-panel">
+        <div class="ie-panel" id="importPanel">
           <h3 style="color:var(--gold);font-size:16px;margin-bottom:6px;">📥 Import ข้อมูล (CSV)</h3>
           <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">อัพโหลดไฟล์ CSV เพื่อนำเข้าข้อมูลทรัพย์สิน,
             Agent หรือลูกค้า</p>
@@ -2637,7 +2637,7 @@
         </div>
 
         <!-- EXPORT -->
-        <div class="ie-panel">
+        <div class="ie-panel" id="exportPanel">
           <h3 style="color:var(--gold);font-size:16px;margin-bottom:6px;">📤 Export ข้อมูล (CSV)</h3>
           <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">ดาวน์โหลดข้อมูลเป็นไฟล์ CSV สำหรับเปิดใน
             Excel หรือ Google Sheets</p>
@@ -2668,9 +2668,9 @@
           style="background:var(--dark3);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:16px;font-size:13px;line-height:1.9;">
           <div style="font-weight:700;color:var(--gold);margin-bottom:8px;">💡 ระดับสิทธิ์ในระบบ</div>
           <div><span style="color:var(--gold);font-weight:600;">⭐ admin</span> — เข้าถึงทุกส่วน: ทรัพย์สิน, Agent,
-            ลูกค้า, Clipboard, Import/Export, จัดการ User</div>
-          <div><span style="color:var(--green);font-weight:600;">🏠 agent</span> — เห็นทรัพย์สิน (ดูได้ทั้งหมด ไม่แก้ไข)
-            + ใช้ Clipboard ได้ &nbsp;·&nbsp; สามารถเชื่อมกับ Agent record ได้</div>
+            ลูกค้า, Clipboard, Import/Export, จัดการ User, ลบข้อมูลได้ทุกอย่าง</div>
+          <div><span style="color:var(--green);font-weight:600;">🏠 agent</span> — เพิ่ม/แก้ไขทรัพย์สินและลูกค้า, ใช้ Clipboard ได้
+            <strong style="color:var(--red);">แต่ลบไม่ได้</strong> และ Import/Export ไม่ได้ &nbsp;·&nbsp; สามารถเชื่อมกับ Agent record ได้</div>
           <div><span style="color:var(--blue);font-weight:600;">👁️ viewer</span> — เห็นเฉพาะทรัพย์สิน อ่านอย่างเดียว
           </div>
           <div style="margin-top:6px;color:var(--text3);">📌 User account กับข้อมูล Agent แยกกัน — Agent
@@ -4106,14 +4106,27 @@
       // Admin-only panels
       const clearDataPanel = document.getElementById('clearDataPanel');
       if (clearDataPanel) clearDataPanel.style.display = isAdmin ? '' : 'none';
+      
+      // Import/Export panels - Admin only
+      const importPanel = document.getElementById('importPanel');
+      const exportPanel = document.getElementById('exportPanel');
+      const btnImportCustomerCSV = document.getElementById('btnImportCustomerCSV');
+      if (importPanel) importPanel.style.display = isAdmin ? '' : 'none';
+      if (exportPanel) exportPanel.style.display = isAdmin ? '' : 'none';
+      if (btnImportCustomerCSV) btnImportCustomerCSV.style.display = isAdmin ? '' : 'none';
 
-      window._canEdit = isAdmin;
+      // Agent can edit/add, but cannot delete
+      window._canEdit = (isAdmin || isAgent);
+      window._canDelete = isAdmin; // Only admin can delete
+      
       if (window.innerWidth <= 768) {
         const titleEl = document.getElementById('mobileSectionTitle');
         if (titleEl) { titleEl.textContent = _sectionTitles['assets'] || ''; titleEl.style.display = 'block'; }
       }
       const btnAddAsset = document.getElementById('btnAddAsset');
-      if (btnAddAsset) btnAddAsset.style.display = isAdmin ? '' : 'none';
+      const btnAddCustomer = document.getElementById('btnAddCustomer');
+      if (btnAddAsset) btnAddAsset.style.display = (isAdmin || isAgent) ? '' : 'none';
+      if (btnAddCustomer) btnAddCustomer.style.display = (isAdmin || isAgent) ? '' : 'none';
 
       // Ensure more drawer is hidden (closed) on login
       closeMoreDrawer();
@@ -4286,6 +4299,7 @@
         const la = a.listingActive || 'available';
         const laBadge = la === 'sold' ? `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(224,80,80,0.15);color:var(--red);margin-left:4px;">🔴 ปิดแล้ว</span>` : la === 'reserved' ? `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(201,168,76,0.15);color:var(--gold);margin-left:4px;">⏳ จอง</span>` : '';
         const canEdit = window._canEdit !== false;
+        const canDelete = window._canDelete !== false;
         return `<div class="card"${la === 'sold' ? ' style="opacity:0.6;"' : ''}>
       <div class="card-header">
         <div class="card-title">${a.name || '(ไม่มีชื่อ)'}</div>
@@ -4307,7 +4321,7 @@
         ${a.map ? `<a href="${a.map}" target="_blank" class="btn btn-outline btn-sm">📍 Map</a>` : ''}
         <button class="btn btn-blue btn-sm" onclick="quickClip(${ri})">📋 ClipB</button>
         ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️</button>` : ''}
-        ${canEdit ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>` : ''}
+        ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>` : ''}
       </div>
     </div>`;
       }).join('');
@@ -4391,6 +4405,8 @@
       }
 
       // Desktop table
+      const canEdit = window._canEdit !== false;
+      const canDelete = window._canDelete !== false;
       tb.innerHTML = list.map(a => {
         const ri = DB.customers.indexOf(a);
         const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
@@ -4404,8 +4420,8 @@
       <td style="font-size:12px">${a.linkpost ? `<a href="${a.linkpost}" target="_blank" style="color:var(--blue)">🔗 Link</a>` : '-'}</td>
       <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.note || '-'}</td>
       <td><div style="display:flex;gap:5px">
-        <button class="btn btn-outline btn-sm" onclick="editCustomer(${ri})">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${ri})">🗑️</button>
+        ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editCustomer(${ri})">✏️</button>` : ''}
+        ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${ri})">🗑️</button>` : ''}
       </div></td>
     </tr>`;
       }).join('');
@@ -4428,8 +4444,8 @@
           ${a.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${a.note}</span></div>` : ''}
           <div class="m-card-actions">
             ${a.linkpost ? `<a class="btn btn-outline" href="${a.linkpost}" target="_blank" style="flex:1;justify-content:center;display:flex;align-items:center;min-height:42px;font-size:14px;border-radius:10px;text-decoration:none;">🔗 Post</a>` : ''}
-            <button class="btn btn-outline" onclick="editCustomer(${ri})">✏️ แก้ไข</button>
-            <button class="btn btn-danger" onclick="deleteItem('customers',${ri})">🗑️</button>
+            ${canEdit ? `<button class="btn btn-outline" onclick="editCustomer(${ri})">✏️ แก้ไข</button>` : ''}
+            ${canDelete ? `<button class="btn btn-danger" onclick="deleteItem('customers',${ri})">🗑️</button>` : ''}
           </div>
         </div>`;
       }).join('');
