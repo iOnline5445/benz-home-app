@@ -3518,9 +3518,11 @@
         const { collection, doc, setDoc, writeBatch } = window._firestoreLib;
         const batch = writeBatch(_db);
         AUTH.users.forEach(u => {
-          const safeId = u.email.replace(/[.@]/g, '_');
+          // normalize email lowercase ก่อน save ขึ้น Firebase
+          const email = (u.email || '').toLowerCase().trim();
+          const safeId = email.replace(/[.@]/g, '_');
           const ref = doc(collection(_db, 'users'), safeId);
-          batch.set(ref, u);
+          batch.set(ref, { ...u, email });
         });
         await batch.commit();
       } catch (e) { console.warn('saveAuthToFirebase fail:', e); }
@@ -3532,9 +3534,25 @@
         const { collection, getDocs } = window._firestoreLib;
         const snap = await getDocs(collection(_db, 'users'));
         if (snap.docs.length > 0) {
-          AUTH.users = snap.docs.map(d => d.data());
-          saveAuth(); // sync to localStorage
-          return true;
+          const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          // normalize: lowercase email, กรองเฉพาะ user ที่มี email ถูกต้อง
+          const fbUsers = snap.docs.map(d => {
+            const u = d.data();
+            if (u.email) u.email = u.email.toLowerCase().trim();
+            return u;
+          }).filter(u => u.email && emailRe.test(u.email));
+
+          if (fbUsers.length > 0) {
+            AUTH.users = fbUsers;
+            // ตรวจ hasAdmin หลัง sync
+            const hasAdmin = AUTH.users.some(u => u.role === 'admin');
+            if (!hasAdmin) {
+              AUTH.users.unshift({ email: 'admin@benzhome.com', password: 'admin1234', displayname: 'ผู้ดูแลระบบ', role: 'admin', note: 'Super Admin', linkedAgentId: null });
+            }
+            // บันทึกลง localStorage (ไม่ sync กลับ Firebase เพื่อป้องกัน loop)
+            localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+            return true;
+          }
         }
       } catch (e) { console.warn('loadAuthFromFirebase fail:', e); }
       return false;
@@ -3545,6 +3563,88 @@
       saveAuthToFirebase(); // async sync to Firebase
     }
 
+    // บันทึกเฉพาะ localStorage ไม่ sync Firebase (ป้องกัน overwrite loop)
+    function saveAuthLocal() {
+      localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+    }
+
+    // ============================
+    // SESSION & REMEMBER KEYS — ต้องประกาศก่อน loadAuth() เรียก
+    // ============================
+    const REMEMBER_KEY = 'yb_remember';
+    const SESSION_KEY = 'yb_session';
+
+    function loadRemembered() {
+      try {
+        const s = localStorage.getItem(REMEMBER_KEY);
+        if (!s) return;
+        const { email, pw } = JSON.parse(s);
+        document.getElementById('loginUsername').value = email || '';
+        document.getElementById('loginPassword').value = pw || '';
+        document.getElementById('rememberMe').checked = true;
+      } catch (e) { }
+    }
+
+    function saveSession(user) {
+      try {
+        localStorage.setItem(SESSION_KEY, JSON.stringify({ email: (user.email || '').toLowerCase().trim(), pw: user.password }));
+      } catch (e) { }
+    }
+
+    function clearSession() {
+      localStorage.removeItem(SESSION_KEY);
+    }
+
+    // Helper: ทำ login จริง (ใช้ร่วมกันระหว่าง doLogin และ retry)
+    function performLogin(found, remember) {
+      // normalize email ก่อนทุกอย่าง
+      found = { ...found, email: (found.email || '').toLowerCase().trim() };
+      const email = found.email;
+      const pw = found.password;
+      document.getElementById('loginError').style.display = 'none';
+      if (remember) {
+        localStorage.setItem(REMEMBER_KEY, JSON.stringify({ email, pw }));
+      } else {
+        localStorage.removeItem(REMEMBER_KEY);
+      }
+      AUTH.current = found;
+      saveSession(found);
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('appShell').style.display = 'block';
+      document.getElementById('headerUserName').textContent = found.displayname || found.email;
+      const roleEl = document.getElementById('headerUserRole');
+      if (found.role === 'admin') { roleEl.textContent = '⭐ Admin'; roleEl.className = 'role role-admin'; }
+      else if (found.role === 'agent') { roleEl.textContent = '🏠 Agent'; roleEl.className = 'role role-agent'; }
+      else { roleEl.textContent = '👁️ Viewer'; roleEl.className = 'role role-viewer'; }
+      applyRoleAccess(found.role);
+      loadDB();
+    }
+
+    function tryRestoreSession(fromFirebase) {
+      try {
+        const s = localStorage.getItem(SESSION_KEY);
+        if (!s) return false;
+        const raw = JSON.parse(s);
+        const email = (raw.email || '').toLowerCase().trim();
+        const pw = raw.pw;
+        const found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email && u.password === pw);
+        if (!found) {
+          if (fromFirebase) {
+            // Firebase sync เสร็จแล้ว ยังหา user ไม่เจอ = session ผิดจริง
+            clearSession(); return false;
+          }
+          if (!_fbReady) {
+            // ไม่มี Firebase + หาไม่เจอ = session ผิดจริง
+            clearSession(); return false;
+          }
+          // Firebase กำลังโหลด — รอก่อน อย่าลบ session
+          return false;
+        }
+        performLogin(found, false);
+        return true;
+      } catch (e) { clearSession(); return false; }
+    }
+
     function loadAuth() {
       try {
         const s = localStorage.getItem('yb_auth');
@@ -3553,7 +3653,12 @@
           if (parsed.users) {
             const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             parsed.users = parsed.users
-              .map(u => { if (!u.email && u.username) u.email = u.username; return u; })
+              .map(u => {
+                if (!u.email && u.username) u.email = u.username;
+                // normalize email lowercase
+                if (u.email) u.email = u.email.toLowerCase().trim();
+                return u;
+              })
               .filter(u => u.email && emailRe.test(u.email));
           }
           AUTH = { users: parsed.users || [], current: null };
@@ -3569,6 +3674,24 @@
 
     // โหลด auth ทันที จาก localStorage ก่อน
     loadAuth();
+
+    // One-time migration: normalize email เป็น lowercase ทั้งหมดใน localStorage
+    // แก้ข้อมูลเก่าที่อาจเคย save email ตัวใหญ่/เล็กไม่สม่ำเสมอ
+    (function migrateEmailCase() {
+      try {
+        let changed = false;
+        AUTH.users = AUTH.users.map(u => {
+          const norm = (u.email || '').toLowerCase().trim();
+          if (norm !== u.email) { changed = true; return { ...u, email: norm }; }
+          return u;
+        });
+        if (changed) {
+          localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+          console.log('✅ Email migration done (lowercase)');
+        }
+      } catch (e) { }
+    })();
+
     loadRemembered(); // โหลด remembered credentials (กรอก form)
     // ลอง restore session ทันที (สำหรับ offline/localStorage mode)
     // ถ้า Firebase active จะเรียก tryRestoreSession อีกครั้งหลัง sync
@@ -3591,21 +3714,25 @@
         initScheduledBackup();
       }
       updateFirebaseStatus();
-      // หลัง auth พร้อมแล้ว: ลอง restore session อัตโนมัติ
-      // (ถ้ายังไม่ได้ login จาก localStorage ก่อนหน้านี้)
+      // หลัง auth พร้อมแล้ว: ลอง restore session เสมอ
+      // เพราะ Firebase อาจ sync users ใหม่ ทำให้ tryRestoreSession ครั้งแรกล้มเหลว
       if (!AUTH.current) {
-        tryRestoreSession();
+        tryRestoreSession(true); // true = fromFirebase sync เสร็จแล้ว ลบ session ได้ถ้าหาไม่เจอ
       }
     });
 
     function resetAuthData() {
-      if (!confirm('รีเซ็ตข้อมูล User ทั้งหมด?\n(จะสร้าง admin default ใหม่ email: admin@benzhome.com / admin1234)')) return;
+      // แสดง users ที่มีอยู่ก่อน เพื่อ debug
+      const userList = AUTH.users.map(u => u.email + ' [' + u.role + ']').join('\n') || '(ว่าง)';
+      if (!confirm('รีเซ็ตข้อมูล User ทั้งหมด?\n\nUsers ปัจจุบัน:\n' + userList + '\n\n(จะสร้าง admin default ใหม่ email: admin@benzhome.com / admin1234)')) return;
       localStorage.removeItem('yb_auth');
+      localStorage.removeItem('yb_session');
       AUTH = { users: [], current: null };
       loadAuth();
       document.getElementById('loginError').style.display = 'none';
       document.getElementById('loginUsername').value = 'admin@benzhome.com';
-      alert('✅ รีเซ็ตแล้ว กรุณา login ใหม่ด้วย admin@benzhome.com / admin1234');
+      document.getElementById('loginPassword').value = '';
+      alert('✅ รีเซ็ตแล้ว\nกรุณา login ใหม่ด้วย\nEmail: admin@benzhome.com\nPassword: admin1234');
     }
 
     // ============================
@@ -3896,54 +4023,8 @@
         btn.title = 'แสดงรหัสผ่าน';
       }
     }
-    const REMEMBER_KEY  = 'yb_remember';
-    const SESSION_KEY   = 'yb_session';  // เก็บ session ที่ login อยู่
 
-    function loadRemembered() {
-      try {
-        const s = localStorage.getItem(REMEMBER_KEY);
-        if (!s) return;
-        const { email, pw } = JSON.parse(s);
-        document.getElementById('loginUsername').value = email || '';
-        document.getElementById('loginPassword').value = pw || '';
-        document.getElementById('rememberMe').checked = true;
-      } catch (e) { }
-    }
 
-    // บันทึก session หลัง login
-    function saveSession(user) {
-      try {
-        localStorage.setItem(SESSION_KEY, JSON.stringify({ email: user.email, pw: user.password }));
-      } catch (e) {}
-    }
-
-    // ลบ session ตอน logout
-    function clearSession() {
-      localStorage.removeItem(SESSION_KEY);
-    }
-
-    // ตอน page load: ลอง restore session อัตโนมัติ
-    function tryRestoreSession() {
-      try {
-        const s = localStorage.getItem(SESSION_KEY);
-        if (!s) return false;
-        const { email, pw } = JSON.parse(s);
-        const found = AUTH.users.find(u => u.email === email && u.password === pw);
-        if (!found) { clearSession(); return false; }
-        // restore session โดยไม่ต้องกรอก form
-        AUTH.current = found;
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('appShell').style.display   = 'block';
-        document.getElementById('headerUserName').textContent = found.displayname || found.email;
-        const roleEl = document.getElementById('headerUserRole');
-        if (found.role === 'admin')      { roleEl.textContent = '⭐ Admin';   roleEl.className = 'role role-admin';  }
-        else if (found.role === 'agent') { roleEl.textContent = '🏠 Agent';   roleEl.className = 'role role-agent';  }
-        else                             { roleEl.textContent = '👁️ Viewer'; roleEl.className = 'role role-viewer'; }
-        applyRoleAccess(found.role);
-        loadDB();
-        return true;
-      } catch (e) { clearSession(); return false; }
-    }
 
     function doLogin() {
       const email = document.getElementById('loginUsername').value.trim().toLowerCase();
@@ -3951,33 +4032,26 @@
       const errEl = document.getElementById('loginError');
       const remember = document.getElementById('rememberMe').checked;
 
-      const found = AUTH.users.find(u => u.email === email && u.password === pw);
+      // debug: log users ที่มีอยู่ (ไม่แสดง password)
+      console.log('🔐 Login attempt:', email, '| Users in AUTH:', AUTH.users.map(u => u.email + '[' + u.role + ']'));
+
+      // ตรวจสอบ AUTH.users ปัจจุบัน (case-insensitive email)
+      let found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email && u.password === pw);
+
       if (!found) {
-        errEl.style.display = 'flex'; return;
-      }
-      errEl.style.display = 'none';
-
-      // บันทึก/ลบ remember
-      if (remember) {
-        localStorage.setItem(REMEMBER_KEY, JSON.stringify({ email, pw }));
-      } else {
-        localStorage.removeItem(REMEMBER_KEY);
+        // ลอง reload จาก localStorage อีกครั้ง (กรณี AUTH อาจยังไม่ sync)
+        loadAuth();
+        found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email && u.password === pw);
+        console.log('🔄 After reload, found:', found ? found.email : 'none', '| Total users:', AUTH.users.length);
       }
 
-      AUTH.current = found;
-      saveSession(found); // บันทึก session — reload จะกลับมาได้
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('appShell').style.display = 'block';
-      // Set header user info
-      document.getElementById('headerUserName').textContent = found.displayname || found.email;
-      const roleEl = document.getElementById('headerUserRole');
-      if (found.role === 'admin') { roleEl.textContent = '⭐ Admin'; roleEl.className = 'role role-admin'; }
-      else if (found.role === 'agent') { roleEl.textContent = '🏠 Agent'; roleEl.className = 'role role-agent'; }
-      else { roleEl.textContent = '👁️ Viewer'; roleEl.className = 'role role-viewer'; }
-      // Apply role-based access control
-      applyRoleAccess(found.role);
-      // โหลดข้อมูลจาก Firebase หรือ localStorage
-      loadDB();
+      if (!found) {
+        errEl.style.display = 'flex';
+        console.warn('❌ Login failed. Users available:', AUTH.users.map(u => u.email));
+        return;
+      }
+
+      performLogin(found, remember);
     }
 
     function doLogout() {
