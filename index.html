@@ -4084,21 +4084,17 @@
       const tabIedata = document.getElementById('tabIedata');
       const tabUsers = document.getElementById('tabUsers');
       const tabClipboard = document.getElementById('tabClipboard');
-      if (tabAgents) tabAgents.style.display = isAdmin ? '' : 'none';
-      if (tabCustomers) tabCustomers.style.display = isAdmin ? '' : 'none';
-      if (tabIedata) tabIedata.style.display = isAdmin ? '' : 'none';
-      if (tabUsers) tabUsers.style.display = isAdmin ? '' : 'none';
+      if (tabAgents)    tabAgents.style.display    = isAdmin ? '' : 'none';
+      if (tabCustomers) tabCustomers.style.display = (isAdmin || isAgent) ? '' : 'none'; // agent เห็นลูกค้า
+      if (tabIedata)    tabIedata.style.display    = isAdmin ? '' : 'none';              // agent ไม่เห็น IE
+      if (tabUsers)     tabUsers.style.display     = isAdmin ? '' : 'none';
       if (tabClipboard) tabClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
 
-      // Bottom nav: show/hide based on role
+      // Bottom nav
       const bnavCustomers = document.getElementById('bnav-customers');
       const bnavClipboard = document.getElementById('bnav-clipboard');
-      // ลูกค้า: admin เท่านั้น
-      if (bnavCustomers) bnavCustomers.style.display = isAdmin ? '' : 'none';
-      // ClipB: admin + agent
+      if (bnavCustomers) bnavCustomers.style.display = (isAdmin || isAgent) ? '' : 'none'; // agent เห็นลูกค้า
       if (bnavClipboard) bnavClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
-      // ถ้า viewer — shift nav: ทรัพย์สิน + ••• เพิ่มเติม (ตั้งค่า) เท่านั้น
-      // nav-more always visible (handled in buildMoreDrawer)
 
       // Build "More" drawer items based on role
       buildMoreDrawer(role);
@@ -4146,8 +4142,7 @@
         items.push({ icon: '👥', label: 'จัดการผู้ใช้', sub: 'เพิ่ม/แก้ไข User และสิทธิ์', tab: 'users' });
         items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'นำเข้า/ส่งออก, Firebase, Backup', tab: 'iedata' });
       } else if (isAgent) {
-        // Agent: ตั้งค่าเท่านั้น (ไม่มี Agent/User mgmt)
-        items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'นำเข้า/ส่งออกข้อมูล', tab: 'iedata' });
+        // Agent: ไม่มีเมนูใน drawer (ทรัพย์สิน/ลูกค้า/ClipB อยู่ใน main nav แล้ว)
       } else {
         // Viewer: ตั้งค่าเท่านั้น
         items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'ข้อมูลระบบ', tab: 'iedata' });
@@ -4235,6 +4230,8 @@
       }
     }
     function switchTab(t, btn) {
+      // ป้องกัน agent เข้าถึง Import/Export, Agent mgmt, User mgmt
+      if (window._canDelete === false && (t === 'iedata' || t === 'agents' || t === 'users')) return;
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.htab').forEach(b => b.classList.remove('active'));
       document.getElementById('sec-' + t).classList.add('active');
@@ -4768,6 +4765,7 @@
     // DELETE
     // ============================
     async function deleteItem(type, idx) {
+      if (window._canDelete === false) { alert('⚠️ Agent ไม่มีสิทธิ์ลบข้อมูล'); return; }
       if (!confirm('ยืนยันลบ?')) return;
       const item = DB[type][idx];
       // BUG FIX: ถ้า item ไม่มี id (data เก่าที่ import มาโดยไม่มี id) ให้ assign id ก่อน delete จาก Firebase
@@ -5087,6 +5085,7 @@
     // IMPORT CSV
     // ============================
     function importCSV(event, type) {
+      if (window._canDelete === false) { alert('⚠️ Agent ไม่มีสิทธิ์ Import/Export ข้อมูล'); event.target.value = ''; return; }
       const file = event.target.files[0]; if (!file) return;
       const reader = new FileReader();
       reader.onload = async e => {
