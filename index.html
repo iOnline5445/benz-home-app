@@ -2490,11 +2490,11 @@
         <div class="toolbar">
           <div class="search-box"><input type="text" id="customerSearch" placeholder="ค้นหาลูกค้า..."
               oninput="renderCustomers()"></div>
-          <label id="btnImportCustomerCSV" class="btn btn-outline" style="cursor:pointer;display:none;" title="Import ลูกค้าจากไฟล์ CSV">
+          <label class="btn btn-outline" style="cursor:pointer;" title="Import ลูกค้าจากไฟล์ CSV">
             📥 Import CSV
             <input type="file" accept=".csv" style="display:none" onchange="importCSV(event,'customers')">
           </label>
-          <button id="btnAddCustomer" class="btn btn-primary" onclick="openModal('customer')">+ เพิ่มลูกค้า</button>
+          <button class="btn btn-primary" onclick="openModal('customer')">+ เพิ่มลูกค้า</button>
         </div>
         <div class="table-wrap">
           <table>
@@ -3569,7 +3569,10 @@
 
     // โหลด auth ทันที จาก localStorage ก่อน
     loadAuth();
-    loadRemembered(); // โหลด remembered credentials
+    loadRemembered(); // โหลด remembered credentials (กรอก form)
+    // ลอง restore session ทันที (สำหรับ offline/localStorage mode)
+    // ถ้า Firebase active จะเรียก tryRestoreSession อีกครั้งหลัง sync
+    tryRestoreSession();
 
     // จากนั้น init Firebase และ sync auth จาก Firebase
     initFirebase().then(async (ok) => {
@@ -3588,6 +3591,11 @@
         initScheduledBackup();
       }
       updateFirebaseStatus();
+      // หลัง auth พร้อมแล้ว: ลอง restore session อัตโนมัติ
+      // (ถ้ายังไม่ได้ login จาก localStorage ก่อนหน้านี้)
+      if (!AUTH.current) {
+        tryRestoreSession();
+      }
     });
 
     function resetAuthData() {
@@ -3888,7 +3896,8 @@
         btn.title = 'แสดงรหัสผ่าน';
       }
     }
-    const REMEMBER_KEY = 'yb_remember';
+    const REMEMBER_KEY  = 'yb_remember';
+    const SESSION_KEY   = 'yb_session';  // เก็บ session ที่ login อยู่
 
     function loadRemembered() {
       try {
@@ -3899,6 +3908,41 @@
         document.getElementById('loginPassword').value = pw || '';
         document.getElementById('rememberMe').checked = true;
       } catch (e) { }
+    }
+
+    // บันทึก session หลัง login
+    function saveSession(user) {
+      try {
+        localStorage.setItem(SESSION_KEY, JSON.stringify({ email: user.email, pw: user.password }));
+      } catch (e) {}
+    }
+
+    // ลบ session ตอน logout
+    function clearSession() {
+      localStorage.removeItem(SESSION_KEY);
+    }
+
+    // ตอน page load: ลอง restore session อัตโนมัติ
+    function tryRestoreSession() {
+      try {
+        const s = localStorage.getItem(SESSION_KEY);
+        if (!s) return false;
+        const { email, pw } = JSON.parse(s);
+        const found = AUTH.users.find(u => u.email === email && u.password === pw);
+        if (!found) { clearSession(); return false; }
+        // restore session โดยไม่ต้องกรอก form
+        AUTH.current = found;
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('appShell').style.display   = 'block';
+        document.getElementById('headerUserName').textContent = found.displayname || found.email;
+        const roleEl = document.getElementById('headerUserRole');
+        if (found.role === 'admin')      { roleEl.textContent = '⭐ Admin';   roleEl.className = 'role role-admin';  }
+        else if (found.role === 'agent') { roleEl.textContent = '🏠 Agent';   roleEl.className = 'role role-agent';  }
+        else                             { roleEl.textContent = '👁️ Viewer'; roleEl.className = 'role role-viewer'; }
+        applyRoleAccess(found.role);
+        loadDB();
+        return true;
+      } catch (e) { clearSession(); return false; }
     }
 
     function doLogin() {
@@ -3921,6 +3965,7 @@
       }
 
       AUTH.current = found;
+      saveSession(found); // บันทึก session — reload จะกลับมาได้
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('appShell').style.display = 'block';
       // Set header user info
@@ -3938,6 +3983,7 @@
     function doLogout() {
       if (!confirm('ยืนยันออกจากระบบ?')) return;
       AUTH.current = null;
+      clearSession(); // ลบ session — reload จะไม่ auto-login
       // stop realtime sync
       if (typeof stopRealtimeSync === 'function') stopRealtimeSync();
       document.getElementById('appShell').style.display = 'none';
@@ -3959,52 +4005,43 @@
       const isViewer = role === 'viewer';
 
       // Desktop header tabs
-      const tabAgents    = document.getElementById('tabAgents');
+      const tabAgents = document.getElementById('tabAgents');
       const tabCustomers = document.getElementById('tabCustomers');
-      const tabIedata    = document.getElementById('tabIedata');
-      const tabUsers     = document.getElementById('tabUsers');
+      const tabIedata = document.getElementById('tabIedata');
+      const tabUsers = document.getElementById('tabUsers');
       const tabClipboard = document.getElementById('tabClipboard');
-      // agent เห็น: ทรัพย์สิน, ลูกค้า, ClipB  (ซ่อน Agent tab, Import/Export, Users)
-      if (tabAgents)    tabAgents.style.display    = isAdmin ? '' : 'none';
-      if (tabCustomers) tabCustomers.style.display = (isAdmin || isAgent) ? '' : 'none';
-      if (tabIedata)    tabIedata.style.display    = isAdmin ? '' : 'none';
-      if (tabUsers)     tabUsers.style.display     = isAdmin ? '' : 'none';
+      if (tabAgents) tabAgents.style.display = isAdmin ? '' : 'none';
+      if (tabCustomers) tabCustomers.style.display = isAdmin ? '' : 'none';
+      if (tabIedata) tabIedata.style.display = isAdmin ? '' : 'none';
+      if (tabUsers) tabUsers.style.display = isAdmin ? '' : 'none';
       if (tabClipboard) tabClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
 
-      // Bottom nav
+      // Bottom nav: show/hide based on role
       const bnavCustomers = document.getElementById('bnav-customers');
       const bnavClipboard = document.getElementById('bnav-clipboard');
-      if (bnavCustomers) bnavCustomers.style.display = (isAdmin || isAgent) ? '' : 'none';
+      // ลูกค้า: admin เท่านั้น
+      if (bnavCustomers) bnavCustomers.style.display = isAdmin ? '' : 'none';
+      // ClipB: admin + agent
       if (bnavClipboard) bnavClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
+      // ถ้า viewer — shift nav: ทรัพย์สิน + ••• เพิ่มเติม (ตั้งค่า) เท่านั้น
+      // nav-more always visible (handled in buildMoreDrawer)
 
+      // Build "More" drawer items based on role
       buildMoreDrawer(role);
 
       // Admin-only panels
       const clearDataPanel = document.getElementById('clearDataPanel');
       if (clearDataPanel) clearDataPanel.style.display = isAdmin ? '' : 'none';
 
-      // _canEdit: admin + agent สามารถ เพิ่ม/แก้ไข ได้
-      // _canDelete: admin เท่านั้น
-      window._canEdit   = isAdmin || isAgent;
-      window._canDelete = isAdmin;
-
+      window._canEdit = isAdmin;
       if (window.innerWidth <= 768) {
         const titleEl = document.getElementById('mobileSectionTitle');
         if (titleEl) { titleEl.textContent = _sectionTitles['assets'] || ''; titleEl.style.display = 'block'; }
       }
-
-      // ปุ่ม "+ เพิ่มทรัพย์สิน" — admin + agent เห็น
       const btnAddAsset = document.getElementById('btnAddAsset');
-      if (btnAddAsset) btnAddAsset.style.display = (isAdmin || isAgent) ? '' : 'none';
+      if (btnAddAsset) btnAddAsset.style.display = isAdmin ? '' : 'none';
 
-      // ปุ่ม "+ เพิ่มลูกค้า" — admin + agent เห็น
-      const btnAddCustomer = document.getElementById('btnAddCustomer');
-      if (btnAddCustomer) btnAddCustomer.style.display = (isAdmin || isAgent) ? '' : 'none';
-
-      // ปุ่ม Import CSV ลูกค้า — admin เท่านั้น
-      const btnImportCust = document.getElementById('btnImportCustomerCSV');
-      if (btnImportCust) btnImportCust.style.display = isAdmin ? '' : 'none';
-
+      // Ensure more drawer is hidden (closed) on login
       closeMoreDrawer();
     }
 
@@ -4022,8 +4059,8 @@
         items.push({ icon: '👥', label: 'จัดการผู้ใช้', sub: 'เพิ่ม/แก้ไข User และสิทธิ์', tab: 'users' });
         items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'นำเข้า/ส่งออก, Firebase, Backup', tab: 'iedata' });
       } else if (isAgent) {
-        // Agent: ลูกค้า + ClipB เท่านั้น (ไม่มี Import/Export, ไม่มี Agent/User mgmt)
-        // (ไม่มี iedata ใน drawer สำหรับ agent)
+        // Agent: ตั้งค่าเท่านั้น (ไม่มี Agent/User mgmt)
+        items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'นำเข้า/ส่งออกข้อมูล', tab: 'iedata' });
       } else {
         // Viewer: ตั้งค่าเท่านั้น
         items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'ข้อมูลระบบ', tab: 'iedata' });
@@ -4111,8 +4148,6 @@
       }
     }
     function switchTab(t, btn) {
-      // Block restricted sections for non-admin
-      if (window._canDelete === false && (t === 'iedata' || t === 'agents' || t === 'users')) return;
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.htab').forEach(b => b.classList.remove('active'));
       document.getElementById('sec-' + t).classList.add('active');
@@ -4176,8 +4211,7 @@
         const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
         const la = a.listingActive || 'available';
         const laBadge = la === 'sold' ? `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(224,80,80,0.15);color:var(--red);margin-left:4px;">🔴 ปิดแล้ว</span>` : la === 'reserved' ? `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(201,168,76,0.15);color:var(--gold);margin-left:4px;">⏳ จอง</span>` : '';
-        const canEdit   = window._canEdit   !== false;
-        const canDelete = window._canDelete !== false;
+        const canEdit = window._canEdit !== false;
         return `<div class="card"${la === 'sold' ? ' style="opacity:0.6;"' : ''}>
       <div class="card-header">
         <div class="card-title">${a.name || '(ไม่มีชื่อ)'}</div>
@@ -4198,8 +4232,8 @@
         ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm">🔗 Link</a>` : ''}
         ${a.map ? `<a href="${a.map}" target="_blank" class="btn btn-outline btn-sm">📍 Map</a>` : ''}
         <button class="btn btn-blue btn-sm" onclick="quickClip(${ri})">📋 ClipB</button>
-        ${canEdit   ? `<button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️</button>` : ''}
-        ${canDelete ? `<button class="btn btn-danger  btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>` : ''}
+        ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️</button>` : ''}
+        ${canEdit ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>` : ''}
       </div>
     </div>`;
       }).join('');
@@ -4296,8 +4330,8 @@
       <td style="font-size:12px">${a.linkpost ? `<a href="${a.linkpost}" target="_blank" style="color:var(--blue)">🔗 Link</a>` : '-'}</td>
       <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.note || '-'}</td>
       <td><div style="display:flex;gap:5px">
-        ${window._canEdit   !== false ? `<button class="btn btn-outline btn-sm" onclick="editCustomer(${ri})">✏️</button>` : ''}
-        ${window._canDelete !== false ? `<button class="btn btn-danger  btn-sm" onclick="deleteItem('customers',${ri})">🗑️</button>` : ''}
+        <button class="btn btn-outline btn-sm" onclick="editCustomer(${ri})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${ri})">🗑️</button>
       </div></td>
     </tr>`;
       }).join('');
@@ -4320,8 +4354,8 @@
           ${a.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${a.note}</span></div>` : ''}
           <div class="m-card-actions">
             ${a.linkpost ? `<a class="btn btn-outline" href="${a.linkpost}" target="_blank" style="flex:1;justify-content:center;display:flex;align-items:center;min-height:42px;font-size:14px;border-radius:10px;text-decoration:none;">🔗 Post</a>` : ''}
-            ${window._canEdit   !== false ? `<button class="btn btn-outline" onclick="editCustomer(${ri})">✏️ แก้ไข</button>` : ''}
-            ${window._canDelete !== false ? `<button class="btn btn-danger"  onclick="deleteItem('customers',${ri})">🗑️</button>` : ''}
+            <button class="btn btn-outline" onclick="editCustomer(${ri})">✏️ แก้ไข</button>
+            <button class="btn btn-danger" onclick="deleteItem('customers',${ri})">🗑️</button>
           </div>
         </div>`;
       }).join('');
@@ -4644,7 +4678,6 @@
     // DELETE
     // ============================
     async function deleteItem(type, idx) {
-      if (window._canDelete === false) { alert('⚠️ Agent ไม่มีสิทธิ์ลบข้อมูล'); return; }
       if (!confirm('ยืนยันลบ?')) return;
       const item = DB[type][idx];
       // BUG FIX: ถ้า item ไม่มี id (data เก่าที่ import มาโดยไม่มี id) ให้ assign id ก่อน delete จาก Firebase
@@ -4940,7 +4973,6 @@
     };
 
     function exportCSV(type) {
-      if (window._canDelete === false) { alert('⚠️ Agent ไม่มีสิทธิ์ Import/Export ข้อมูล'); return; }
       if (type === 'all') {
         // Export all 3 separately
         exportCSV('assets'); exportCSV('agents'); exportCSV('customers');
@@ -4965,7 +4997,6 @@
     // IMPORT CSV
     // ============================
     function importCSV(event, type) {
-      if (window._canDelete === false) { alert('⚠️ Agent ไม่มีสิทธิ์ Import/Export ข้อมูล'); event.target.value = ''; return; }
       const file = event.target.files[0]; if (!file) return;
       const reader = new FileReader();
       reader.onload = async e => {
