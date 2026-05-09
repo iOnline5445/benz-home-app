@@ -212,176 +212,57 @@
       padding: 0;
     }
 
-    html {
-      overflow-x: hidden;
-      max-width: 100vw;
-    }
-
     body {
       font-family: 'Sarabun', sans-serif;
       background: var(--dark);
       color: var(--text);
       min-height: 100vh;
       transition: background .3s, color .3s;
-      overflow-x: hidden;
-      max-width: 100vw;
-      width: 100%;
     }
 
     /* ===== LOGIN SCREEN ===== */
     #loginScreen {
       position: fixed;
       inset: 0;
-      background: #2B2620;
-      background-image:
-        radial-gradient(ellipse 80% 60% at 20% 30%, rgba(201, 168, 76, 0.13) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 80% at 80% 70%, rgba(140, 110, 50, 0.10) 0%, transparent 60%);
+      background: linear-gradient(135deg, var(--login-bg1) 0%, var(--login-bg2) 50%, var(--login-bg1) 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 9999;
       padding: 20px;
-      overflow: hidden;
-      /* prevent any child from causing scroll */
-      overflow-y: auto;
     }
 
-    /* ---- Two-column card (desktop) ---- */
-    .login-card {
-      display: flex;
-      width: 100%;
-      max-width: 860px;
-      min-height: 520px;
-      border-radius: 24px;
-      overflow: hidden;
-      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(201, 168, 76, 0.18);
-      /* never wider than viewport */
-      box-sizing: border-box;
-    }
-
-    /* Left panel — brand/hero */
-    .login-brand {
-      flex: 0 0 42%;
-      background: linear-gradient(160deg, #1C180F 0%, #2A220E 40%, #1C180F 100%);
-      padding: 48px 40px;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: space-between;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .login-brand::before {
-      content: '';
-      position: absolute;
-      top: -60px;
-      right: -60px;
-      width: 260px;
-      height: 260px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(201, 168, 76, 0.18) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .login-brand::after {
-      content: '';
-      position: absolute;
-      bottom: -40px;
-      left: -40px;
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(201, 168, 76, 0.10) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .lb-top {}
-
-    .lb-icon {
-      font-size: 56px;
-      margin-bottom: 20px;
-      display: block;
-      filter: drop-shadow(0 4px 16px rgba(201, 168, 76, 0.3));
-    }
-
-    .lb-title {
-      font-family: 'Noto Serif Thai', serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--gold-light);
-      line-height: 1.25;
-      margin-bottom: 10px;
-    }
-
-    .lb-sub {
-      font-size: 13.5px;
-      color: rgba(201, 168, 76, 0.55);
-      line-height: 1.6;
-    }
-
-    .lb-features {
-      list-style: none;
-      margin-top: 32px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .lb-features li {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      color: rgba(240, 230, 210, 0.65);
-    }
-
-    .lb-features li span.feat-icon {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      background: rgba(201, 168, 76, 0.14);
-      border: 1px solid rgba(201, 168, 76, 0.22);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-
-    .lb-bottom {
-      font-size: 11px;
-      color: rgba(201, 168, 76, 0.35);
-      letter-spacing: 0.5px;
-    }
-
-    /* Right panel — form */
     .login-box {
-      flex: 1;
-      background: #F7F3EC;
-      padding: 48px 44px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .login-form-title {
-      font-family: 'Noto Serif Thai', serif;
-      font-size: 22px;
-      font-weight: 700;
-      color: #3A2C10;
-      margin-bottom: 6px;
-    }
-
-    .login-form-sub {
-      font-size: 13px;
-      color: #9A8A6A;
-      margin-bottom: 30px;
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
     }
 
     .login-logo {
-      display: none;
-      /* hidden on desktop — branding is on the left panel */
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-logo .icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .login-logo h1 {
+      font-family: 'Noto Serif Thai', serif;
+      font-size: 26px;
+      color: var(--gold);
+      letter-spacing: 1px;
+    }
+
+    .login-logo p {
+      color: var(--text3);
+      font-size: 13px;
+      margin-top: 4px;
     }
 
     .login-field {
@@ -390,68 +271,55 @@
 
     .login-field label {
       display: block;
-      font-size: 12.5px;
-      color: #6A5A3A;
-      margin-bottom: 7px;
-      font-weight: 600;
-      letter-spacing: 0.2px;
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 6px;
+      font-weight: 500;
     }
 
     .login-field input {
       width: 100%;
-      background: #FFFFFF;
-      border: 1.5px solid #DDD0B8;
+      background: var(--dark3);
+      border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 13px 16px;
-      color: #2A1E08;
+      padding: 14px 16px;
+      color: var(--text);
       font-family: inherit;
-      font-size: 15px;
+      font-size: 16px;
+      /* 16px prevents iOS auto-zoom */
       outline: none;
-      transition: border-color .2s, box-shadow .2s;
-      min-height: 50px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-
-    .login-field input:focus {
-      border-color: #C9A84C;
-      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
-    }
-
-    .login-field input::placeholder {
-      color: #BDB09A;
+      transition: border-color .2s;
+      min-height: 52px;
     }
 
     .login-btn {
       width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, #9A7530, #C9A84C);
+      padding: 15px;
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
       border: none;
-      border-radius: 11px;
-      color: #fff;
+      border-radius: 12px;
+      color: var(--dark);
       font-family: inherit;
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 700;
       cursor: pointer;
-      margin-top: 10px;
-      transition: opacity .2s, transform .1s;
-      min-height: 52px;
-      letter-spacing: 0.3px;
-      box-shadow: 0 4px 16px rgba(158, 120, 42, 0.35);
+      margin-top: 8px;
+      transition: opacity .2s;
+      min-height: 54px;
+    }
+
+    .login-field input:focus {
+      border-color: var(--gold);
     }
 
     .login-btn:hover {
-      opacity: .92;
-      transform: translateY(-1px);
-    }
-
-    .login-btn:active {
-      transform: translateY(0);
+      opacity: .9;
     }
 
     .login-error {
-      background: rgba(224, 80, 80, 0.08);
-      border: 1px solid rgba(224, 80, 80, 0.25);
-      color: #C04040;
+      background: rgba(224, 80, 80, 0.12);
+      border: 1px solid rgba(224, 80, 80, 0.3);
+      color: var(--red);
       border-radius: 8px;
       padding: 10px 14px;
       font-size: 13px;
@@ -461,169 +329,9 @@
 
     .login-hint {
       text-align: center;
-      color: #9A8A6A;
+      color: var(--text3);
       font-size: 12px;
       margin-top: 16px;
-    }
-
-    /* Theme section: ALWAYS hidden on login page — accessible via Theme panel AFTER login */
-    .login-theme-section {
-      display: none !important;
-    }
-
-    /* ---- Responsive: single column on mobile ---- */
-    @media(max-width: 640px) {
-      #loginScreen {
-        padding: 0;
-        align-items: flex-start;
-        overflow-y: auto;
-        /* Warm neutral full-screen bg */
-        background: #3A2E1A;
-        background-image:
-          radial-gradient(ellipse 70% 50% at 50% 0%, rgba(201, 168, 76, 0.18) 0%, transparent 60%);
-      }
-
-      .login-card {
-        flex-direction: column;
-        max-width: 100%;
-        width: 100%;
-        min-height: 100dvh;
-        min-height: 100vh;
-        border-radius: 0;
-        box-shadow: none;
-      }
-
-      /* Brand → slim compact top bar */
-      .login-brand {
-        flex: none;
-        padding: 20px 24px 18px;
-        min-height: unset;
-        flex-direction: row;
-        align-items: center;
-        gap: 14px;
-        background: transparent;
-        justify-content: flex-start;
-        position: relative;
-        z-index: 1;
-      }
-
-      .login-brand::before,
-      .login-brand::after {
-        display: none;
-      }
-
-      .lb-top {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex: 1;
-      }
-
-      .lb-icon {
-        font-size: 34px;
-        margin-bottom: 0;
-        flex-shrink: 0;
-        line-height: 1;
-        filter: drop-shadow(0 2px 8px rgba(201, 168, 76, 0.4));
-      }
-
-      .lb-text-block {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-
-      .lb-title {
-        font-size: 17px;
-        font-weight: 700;
-        white-space: nowrap;
-        line-height: 1.2;
-        color: #E8C97A;
-      }
-
-      /* Collapse two-line title to one line on mobile */
-      .lb-title br {
-        display: none;
-      }
-
-      .lb-sub {
-        font-size: 11.5px;
-        color: rgba(201, 168, 76, 0.55);
-        margin-top: 0;
-        line-height: 1.3;
-      }
-
-      /* Show only first line of subtitle */
-      .lb-sub br {
-        display: none;
-      }
-
-      .lb-features {
-        display: none;
-      }
-
-      .lb-bottom {
-        display: none;
-      }
-
-      /* Form panel — large rounded card that dominates the screen */
-      .login-box {
-        flex: 1;
-        padding: 32px 24px 44px;
-        /* Warm off-white card */
-        background: #F6F0E6;
-        border-radius: 24px 24px 0 0;
-        overflow-y: auto;
-        /* Slight lift shadow */
-        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.25);
-        margin-top: -4px;
-      }
-
-      .login-form-title {
-        font-size: 22px;
-        color: #2A1E08;
-        margin-bottom: 4px;
-      }
-
-      .login-form-sub {
-        font-size: 13.5px;
-        color: #8A7A5A;
-        margin-bottom: 28px;
-      }
-
-      .login-field label {
-        color: #5A4A2A;
-        font-size: 13px;
-      }
-
-      .login-field input {
-        background: #FFFFFF;
-        border: 1.5px solid #CDBF9A;
-        border-radius: 12px;
-        font-size: 16px;
-        /* prevents iOS zoom */
-        min-height: 52px;
-        color: #2A1E08;
-      }
-
-      .login-field input:focus {
-        border-color: #C9A84C;
-        box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
-      }
-
-      .login-btn {
-        font-size: 17px;
-        min-height: 56px;
-        border-radius: 14px;
-        margin-top: 14px;
-        background: linear-gradient(135deg, #8A6620, #C9A84C);
-        box-shadow: 0 6px 20px rgba(140, 100, 30, 0.4);
-      }
-
-      /* No divider / theme section on mobile */
-      .login-theme-section {
-        display: none !important;
-      }
     }
 
     /* ===== APP SHELL ===== */
@@ -635,128 +343,86 @@
     .header {
       background: linear-gradient(135deg, var(--header-bg1) 0%, var(--header-bg2) 100%);
       border-bottom: 1px solid var(--border);
-      padding: 0 16px 0 20px;
+      padding: 0 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 56px;
+      height: 60px;
       position: sticky;
       top: 0;
       z-index: 100;
-      gap: 8px;
-      /* prevent any wrapping */
-      flex-wrap: nowrap;
-      overflow: hidden;
+      gap: 12px;
     }
 
     .logo {
       font-family: 'Noto Serif Thai', serif;
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 700;
       color: var(--gold);
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
       white-space: nowrap;
-      flex-shrink: 0;
     }
 
     .logo span {
-      color: var(--text3);
-      font-weight: 400;
-      font-size: 12px;
+      color: var(--text2);
+      font-weight: 300;
+      font-size: 13px;
       margin-left: 6px;
     }
 
-    /* ---- Tab bar ---- */
     .header-tabs {
       display: flex;
       gap: 2px;
-      align-items: center;
       flex: 1;
       justify-content: center;
-      /* single row, no wrap */
-      flex-wrap: nowrap;
-      overflow: hidden;
+      flex-wrap: wrap;
     }
 
     .htab {
-      padding: 6px 13px;
-      border-radius: 20px;
+      padding: 7px 14px;
+      border-radius: 6px;
       cursor: pointer;
       font-size: 13px;
       font-weight: 500;
-      border: 1px solid transparent;
+      border: none;
       background: transparent;
       color: var(--text2);
-      transition: all .18s;
+      transition: all .2s;
       white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      height: 34px;
-      flex-shrink: 0;
     }
 
+    .htab.active,
     .htab:hover {
-      background: rgba(201, 168, 76, 0.10);
+      background: rgba(201, 168, 76, 0.12);
       color: var(--gold);
     }
 
     .htab.active {
-      background: var(--gold);
-      color: #0D0D0D;
-      border-color: transparent;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(201, 168, 76, 0.35);
+      border: 1px solid var(--border);
     }
 
-    /* Light themes — active tab text readable */
-    [data-theme="light"] .htab.active,
-    [data-theme="vibrant"] .htab.active,
-    [data-theme="ocean"] .htab.active,
-    [data-theme="sakura"] .htab.active,
-    [data-theme="forest"] .htab.active,
-    [data-theme="sunset"] .htab.active {
-      color: #fff;
-    }
-
-    /* ---- Right side ---- */
     .header-user {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       flex-shrink: 0;
-    }
-
-    /* Firebase status */
-    .fb-status {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      color: var(--text3);
-      white-space: nowrap;
-      padding: 4px 8px;
-      background: var(--dark3);
-      border-radius: 20px;
-      border: 1px solid var(--border2);
     }
 
     .user-badge {
       background: var(--dark3);
       border: 1px solid var(--border);
-      border-radius: 20px;
+      border-radius: 8px;
       padding: 5px 12px;
       font-size: 13px;
       display: flex;
       align-items: center;
       gap: 6px;
-      white-space: nowrap;
     }
 
     .user-badge .role {
       font-size: 10px;
-      padding: 2px 7px;
-      border-radius: 20px;
+      padding: 2px 6px;
+      border-radius: 4px;
       font-weight: 700;
     }
 
@@ -785,15 +451,11 @@
       border: 1px solid rgba(224, 80, 80, 0.2);
       color: var(--red);
       padding: 5px 12px;
-      border-radius: 20px;
+      border-radius: 7px;
       font-size: 12px;
       cursor: pointer;
       font-family: inherit;
       transition: all .2s;
-      white-space: nowrap;
-      height: 32px;
-      display: flex;
-      align-items: center;
     }
 
     .logout-btn:hover {
@@ -1458,8 +1120,6 @@
         padding: 0 14px;
         flex-wrap: nowrap;
         gap: 8px;
-        overflow: hidden;
-        max-width: 100vw;
       }
 
       .logo {
@@ -1479,30 +1139,12 @@
       /* replaced by bottom-nav */
       .header-user {
         gap: 6px;
-        flex-shrink: 0;
-        overflow: hidden;
-      }
-
-      /* Hide verbose firebase status text on mobile, keep dot */
-      #fbStatusText {
-        display: none;
       }
 
       .user-badge {
-        padding: 5px 8px;
+        padding: 5px 10px;
         font-size: 12px;
         border-radius: 20px;
-        max-width: 90px;
-        overflow: hidden;
-      }
-
-      /* Hide the username text on very narrow, just show role badge */
-      #headerUserName {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        max-width: 60px;
-        display: inline-block;
       }
 
       .user-badge .role {
@@ -1602,10 +1244,10 @@
 
       /* -- main padding: fill full width -- */
       .main {
-        padding: 12px 12px 16px;
+        padding: 10px 10px 14px;
         max-width: 100%;
         width: 100%;
-        overflow-x: hidden;
+        box-sizing: border-box;
       }
 
       #mobileSectionTitle {
@@ -2634,85 +2276,6 @@
         font-size: 12px;
       }
     }
-
-    /* ===== LOGIN THEME OPTION BUTTONS ===== */
-    .login-theme-opt {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      padding: 8px 4px;
-      border-radius: 12px;
-      border: 2px solid transparent;
-      cursor: pointer;
-      transition: all .2s;
-      -webkit-tap-highlight-color: transparent;
-      aspect-ratio: 1;
-    }
-
-    .login-theme-opt .lto-icon {
-      font-size: 20px;
-      line-height: 1;
-      display: block;
-    }
-
-    .login-theme-opt .lto-name {
-      font-size: 9px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.75);
-      letter-spacing: 0.2px;
-      line-height: 1;
-    }
-
-    .login-theme-opt:hover {
-      transform: translateY(-2px) scale(1.06);
-      border-color: var(--gold);
-    }
-
-    .login-theme-opt.active {
-      border-color: var(--gold) !important;
-      box-shadow: 0 0 0 3px rgba(201, 168, 76, .3);
-    }
-
-    /* Light themes need dark text */
-    .theme-btn-light .lto-name,
-    .theme-btn-vibrant .lto-name,
-    .theme-btn-ocean .lto-name,
-    .theme-btn-sakura .lto-name,
-    .theme-btn-forest .lto-name,
-    .theme-btn-sunset .lto-name {
-      color: rgba(0, 0, 0, 0.55);
-    }
-
-    /* ===== MOBILE SETTINGS BUTTON ===== */
-    .mobile-settings-btn {
-      display: none;
-      background: var(--dark3);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text2);
-      font-size: 18px;
-      width: 34px;
-      height: 34px;
-      cursor: pointer;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      -webkit-tap-highlight-color: transparent;
-      transition: all .2s;
-    }
-
-    .mobile-settings-btn:hover {
-      background: var(--dark4);
-      color: var(--gold);
-    }
-
-    @media(max-width:768px) {
-      .mobile-settings-btn {
-        display: flex;
-      }
-    }
   </style>
 </head>
 
@@ -2720,96 +2283,56 @@
 
   <!-- =================== LOGIN SCREEN =================== -->
   <div id="loginScreen">
-    <div class="login-card">
-
-      <!-- LEFT: Brand panel -->
-      <div class="login-brand">
-        <div class="lb-top">
-          <span class="lb-icon">🏢</span>
-          <div class="lb-text-block">
-            <div class="lb-title">BENZ HOME<br>Agency</div>
-            <div class="lb-sub">ระบบจัดการอสังหาริมทรัพย์<br>สำหรับทีม Agent มืออาชีพ</div>
-          </div>
-          <ul class="lb-features">
-            <li><span class="feat-icon">🏠</span> จัดการทรัพย์สินทุกประเภท</li>
-            <li><span class="feat-icon">📋</span> สร้าง Clipboard โพสต์อัตโนมัติ</li>
-            <li><span class="feat-icon">🤝</span> ติดตามลูกค้าและ Lead</li>
-            <li><span class="feat-icon">☁️</span> ซิงก์ข้อมูล Firebase Real-time</li>
-          </ul>
-        </div>
-        <div class="lb-bottom">© BENZ HOME Agency</div>
+    <div class="login-box">
+      <div class="login-logo">
+        <div class="icon">🏢</div>
+        <h1>BENZ HOME Agency</h1>
+        <p>ระบบจัดการอสังหาริมทรัพย์</p>
       </div>
-
-      <!-- RIGHT: Form panel -->
-      <div class="login-box">
-        <div class="login-form-title">เข้าสู่ระบบ</div>
-        <div class="login-form-sub">กรุณาใส่อีเมลและรหัสผ่านของคุณ</div>
-
-        <div class="login-field">
-          <label>อีเมล (Email)</label>
-          <input type="email" id="loginUsername" placeholder="example@email.com" autocomplete="email"
-            onkeydown="if(event.key==='Enter') doLogin()">
-        </div>
-        <div class="login-field">
-          <label>รหัสผ่าน (Password)</label>
-          <div style="position:relative;">
-            <input type="password" id="loginPassword" placeholder="กรอก password"
-              onkeydown="if(event.key==='Enter') doLogin()" style="width:100%;padding-right:52px;">
-            <button type="button" id="togglePwBtn" onclick="toggleLoginPw()"
-              style="position:absolute;right:0;top:0;bottom:0;width:52px;background:none;border:none;cursor:pointer;font-size:20px;color:#9A8A6A;display:flex;align-items:center;justify-content:center;border-radius:0 10px 10px 0;-webkit-tap-highlight-color:transparent;"
-              title="แสดง/ซ่อนรหัสผ่าน">👁️</button>
-          </div>
-        </div>
-        <button class="login-btn" onclick="doLogin()">🔐 เข้าสู่ระบบ</button>
-        <div class="login-error" id="loginError">❌ อีเมลหรือรหัสผ่านไม่ถูกต้อง <button onclick="resetAuthData()"
-            style="margin-left:10px;background:none;border:1px solid #C04040;color:#C04040;border-radius:5px;padding:2px 8px;cursor:pointer;font-size:12px;">รีเซ็ต</button>
-        </div>
-
-        <!-- Theme section: mobile only -->
-        <div class="login-theme-section"
-          style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid #E0D5C0;">
-          <div
-            style="font-size:12px;color:#9A8A6A;margin-bottom:12px;letter-spacing:0.5px;text-transform:uppercase;font-weight:600;">
-            เลือกธีม</div>
-          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;max-width:320px;margin:0 auto;">
-            <button class="login-theme-opt theme-btn-dark" id="loginThemeDark" onclick="setTheme('dark')" title="มืด">
-              <span class="lto-icon">🌙</span>
-              <span class="lto-name">มืด</span>
-            </button>
-            <button class="login-theme-opt theme-btn-light" id="loginThemeLight" onclick="setTheme('light')"
-              title="เบจทอง">
-              <span class="lto-icon">☀️</span>
-              <span class="lto-name">สว่าง</span>
-            </button>
-            <button class="login-theme-opt theme-btn-vibrant" id="loginThemeVibrant" onclick="setTheme('vibrant')"
-              title="ส้มไฟ">
-              <span class="lto-icon">🔥</span>
-              <span class="lto-name">ส้ม</span>
-            </button>
-            <button class="login-theme-opt theme-btn-ocean" id="loginThemeOcean" onclick="setTheme('ocean')"
-              title="ฟ้าทะเล">
-              <span class="lto-icon">🌊</span>
-              <span class="lto-name">ฟ้า</span>
-            </button>
-            <button class="login-theme-opt theme-btn-sakura" id="loginThemeSakura" onclick="setTheme('sakura')"
-              title="ชมพู">
-              <span class="lto-icon">🌸</span>
-              <span class="lto-name">ชมพู</span>
-            </button>
-            <button class="login-theme-opt theme-btn-forest" id="loginThemeForest" onclick="setTheme('forest')"
-              title="เขียวมิ้นต์">
-              <span class="lto-icon">🌿</span>
-              <span class="lto-name">เขียว</span>
-            </button>
-            <button class="login-theme-opt theme-btn-sunset" id="loginThemeSunset" onclick="setTheme('sunset')"
-              title="ม่วง">
-              <span class="lto-icon">🌅</span>
-              <span class="lto-name">ม่วง</span>
-            </button>
-          </div>
+      <div class="login-field">
+        <label>อีเมล (Email)</label>
+        <input type="email" id="loginUsername" placeholder="example@email.com" autocomplete="email"
+          onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+      <div class="login-field">
+        <label>รหัสผ่าน (Password)</label>
+        <div style="position:relative;">
+          <input type="password" id="loginPassword" placeholder="กรอก password"
+            onkeydown="if(event.key==='Enter') doLogin()" style="width:100%;padding-right:52px;">
+          <button type="button" id="togglePwBtn" onclick="toggleLoginPw()"
+            style="position:absolute;right:0;top:0;bottom:0;width:52px;background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3);display:flex;align-items:center;justify-content:center;border-radius:0 10px 10px 0;-webkit-tap-highlight-color:transparent;"
+            title="แสดง/ซ่อนรหัสผ่าน">👁️</button>
         </div>
       </div>
-
+      <div style="display:flex;align-items:center;gap:10px;margin:12px 0 4px;">
+        <input type="checkbox" id="rememberMe"
+          style="width:20px;height:20px;accent-color:var(--gold);cursor:pointer;border-radius:5px;flex-shrink:0;">
+        <label for="rememberMe"
+          style="font-size:15px;color:var(--text2);cursor:pointer;font-weight:500;">จำรหัสผ่าน</label>
+      </div>
+      <button class="login-btn" onclick="doLogin()">🔐 เข้าสู่ระบบ</button>
+      <div class="login-error" id="loginError">❌ อีเมลหรือรหัสผ่านไม่ถูกต้อง <button onclick="resetAuthData()"
+          style="margin-left:10px;background:none;border:1px solid var(--red);color:var(--red);border-radius:5px;padding:2px 8px;cursor:pointer;font-size:12px;">รีเซ็ต</button>
+      </div>
+      <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">เลือกธีม</div>
+        <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;">
+          <button class="theme-btn theme-btn-dark" id="loginThemeDark" onclick="setTheme('dark')"
+            title="ธีมมืด">🌙</button>
+          <button class="theme-btn theme-btn-light" id="loginThemeLight" onclick="setTheme('light')"
+            title="ธีมสว่าง">☀️</button>
+          <button class="theme-btn theme-btn-vibrant" id="loginThemeVibrant" onclick="setTheme('vibrant')"
+            title="ส้มไฟ">🔥</button>
+          <button class="theme-btn theme-btn-ocean" id="loginThemeOcean" onclick="setTheme('ocean')"
+            title="ทะเล">🌊</button>
+          <button class="theme-btn theme-btn-sakura" id="loginThemeSakura" onclick="setTheme('sakura')"
+            title="ซากุระ">🌸</button>
+          <button class="theme-btn theme-btn-forest" id="loginThemeForest" onclick="setTheme('forest')"
+            title="ป่า">🌿</button>
+          <button class="theme-btn theme-btn-sunset" id="loginThemeSunset" onclick="setTheme('sunset')"
+            title="พระอาทิตย์ตก">🌅</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2823,21 +2346,19 @@
         <button class="htab" id="tabAgents" onclick="switchTab('agents',this)">👤 Agent</button>
         <button class="htab" id="tabCustomers" onclick="switchTab('customers',this)">🤝 ลูกค้า</button>
         <button class="htab" id="tabClipboard" onclick="switchTab('clipboard',this)">📋 Clipboard</button>
-        <button class="htab" id="tabIedata" onclick="switchTab('iedata',this)">⚙️ ตั้งค่า</button>
-        <button class="htab" id="tabUsers" onclick="switchTab('users',this)" style="display:none">👥 ผู้ใช้</button>
+        <button class="htab" id="tabIedata" onclick="switchTab('iedata',this)">⚙️ Import/Export</button>
+        <button class="htab" id="tabUsers" onclick="switchTab('users',this)" style="display:none">👥 จัดการ
+          User</button>
       </div>
       <div class="header-user">
         <!-- Firebase Status -->
-        <div class="fb-status">
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);white-space:nowrap;">
           <span id="fbStatusDot"
             style="width:8px;height:8px;border-radius:50%;background:#e8a020;display:inline-block;flex-shrink:0;"></span>
-          <span id="fbStatusText">Firebase</span>
+          <span id="fbStatusText">Firebase...</span>
         </div>
         <!-- Theme Panel Button -->
         <button class="theme-panel-btn" onclick="openThemePanel()">🎨 Theme</button>
-        <!-- Mobile Settings shortcut -->
-        <button class="mobile-settings-btn" id="mobileMoreBtn" onclick="toggleMobileMore()"
-          title="เมนูเพิ่มเติม">⋯</button>
         <div class="user-badge">
           <span id="headerUserName">-</span>
           <span class="role" id="headerUserRole">-</span>
@@ -2846,50 +2367,51 @@
       </div>
     </div>
 
-    <!-- Mobile "More" dropdown menu -->
-    <div id="mobileMoreMenu"
-      style="display:none;position:fixed;bottom:calc(76px + env(safe-area-inset-bottom,0px) + 8px);right:8px;background:var(--dark2);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);z-index:300;min-width:180px;overflow:hidden;">
-      <button class="more-menu-item" id="moreItemIedata"
-        onclick="switchTab('iedata',null);updateBnav('iedata');closeMobileMore()">
-        <span>⚙️</span><span>ตั้งค่า / Import-Export</span>
-      </button>
-      <button class="more-menu-item" id="moreItemUsers"
-        onclick="switchTab('users',null);updateBnav('users');closeMobileMore()" style="display:none">
-        <span>👥</span><span>จัดการผู้ใช้</span>
-      </button>
-    </div>
-    <div id="mobileMoreOverlay" onclick="closeMobileMore()" style="display:none;position:fixed;inset:0;z-index:299;">
+    <!-- =================== BOTTOM NAV (mobile) =================== -->
+    <!-- More menu drawer (slides up from bottom) -->
+    <div id="moreDrawerOverlay" onclick="closeMoreDrawer()"
+      style="display:none;position:fixed;inset:0;z-index:290;background:rgba(0,0,0,.4);"></div>
+    <div id="moreDrawer" style="display:none;position:fixed;bottom:86px;left:0;right:0;z-index:300;
+             background:var(--dark2);border-radius:20px 20px 0 0;border-top:1px solid var(--border);
+             padding:12px 16px 8px;box-shadow:0 -8px 30px rgba(0,0,0,.25);">
+      <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px;"></div>
+      <div
+        style="font-size:13px;color:var(--text3);margin-bottom:6px;font-weight:700;letter-spacing:.06em;padding:0 4px;">
+        เมนูเพิ่มเติม</div>
+      <div id="moreDrawerItems" style="display:flex;flex-direction:column;gap:4px;"></div>
     </div>
 
-    <!-- =================== BOTTOM NAV (mobile) =================== -->
     <nav class="bottom-nav" id="bottomNav">
-      <button class="bnav-item active" id="bnav-assets" onclick="switchTab('assets',null);updateBnav('assets')">
+      <button class="bnav-item active" id="bnav-assets"
+        onclick="switchTab('assets',null);updateBnav('assets');closeMoreDrawer()">
         <span class="bnav-icon-wrap"><span class="bnav-icon">🏠</span></span>
         <span class="bnav-label">ทรัพย์สิน</span>
       </button>
-      <button class="bnav-item" id="bnav-agents" onclick="switchTab('agents',null);updateBnav('agents')">
-        <span class="bnav-icon-wrap"><span class="bnav-icon">👤</span></span>
-        <span class="bnav-label">Agent</span>
-      </button>
-      <button class="bnav-item" id="bnav-customers" onclick="switchTab('customers',null);updateBnav('customers')">
+      <button class="bnav-item" id="bnav-customers"
+        onclick="switchTab('customers',null);updateBnav('customers');closeMoreDrawer()">
         <span class="bnav-icon-wrap"><span class="bnav-icon">🤝</span></span>
         <span class="bnav-label">ลูกค้า</span>
       </button>
-      <button class="bnav-item" id="bnav-clipboard" onclick="switchTab('clipboard',null);updateBnav('clipboard')">
+      <button class="bnav-item" id="bnav-clipboard"
+        onclick="switchTab('clipboard',null);updateBnav('clipboard');closeMoreDrawer()">
         <span class="bnav-icon-wrap"><span class="bnav-icon">📋</span></span>
-        <span class="bnav-label">Clipboard</span>
+        <span class="bnav-label">ClipB</span>
       </button>
-      <!-- hidden items - accessible from header on mobile -->
-      <button class="bnav-item" id="bnav-users" onclick="switchTab('users',null);updateBnav('users')"
-        style="display:none">
-        <span class="bnav-icon-wrap"><span class="bnav-icon">👥</span></span>
-        <span class="bnav-label">ผู้ใช้</span>
+      <button class="bnav-item" id="bnav-more" onclick="toggleMoreDrawer()">
+        <span class="bnav-icon-wrap">
+          <svg width="26" height="10" viewBox="0 0 26 10" fill="none" xmlns="http://www.w3.org/2000/svg"
+            style="display:block;">
+            <circle cx="3" cy="5" r="3" fill="currentColor" />
+            <circle cx="13" cy="5" r="3" fill="currentColor" />
+            <circle cx="23" cy="5" r="3" fill="currentColor" />
+          </svg>
+        </span>
+        <span class="bnav-label">เพิ่มเติม</span>
       </button>
-      <button class="bnav-item" id="bnav-iedata" style="display:none"
-        onclick="switchTab('iedata',null);updateBnav('iedata')">
-        <span class="bnav-icon-wrap"><span class="bnav-icon">⚙️</span></span>
-        <span class="bnav-label">ตั้งค่า</span>
-      </button>
+      <!-- hidden items used by applyRoleAccess logic only -->
+      <span id="bnav-agents" style="display:none"></span>
+      <span id="bnav-users" style="display:none"></span>
+      <span id="bnav-iedata" style="display:none"></span>
     </nav>
 
     <!-- Mobile section title bar -->
@@ -4015,6 +3537,7 @@
 
     // โหลด auth ทันที จาก localStorage ก่อน
     loadAuth();
+    loadRemembered(); // โหลด remembered credentials
 
     // จากนั้น init Firebase และ sync auth จาก Firebase
     initFirebase().then(async (ok) => {
@@ -4333,15 +3856,38 @@
         btn.title = 'แสดงรหัสผ่าน';
       }
     }
+    const REMEMBER_KEY = 'yb_remember';
+
+    function loadRemembered() {
+      try {
+        const s = localStorage.getItem(REMEMBER_KEY);
+        if (!s) return;
+        const { email, pw } = JSON.parse(s);
+        document.getElementById('loginUsername').value = email || '';
+        document.getElementById('loginPassword').value = pw || '';
+        document.getElementById('rememberMe').checked = true;
+      } catch (e) { }
+    }
+
     function doLogin() {
       const email = document.getElementById('loginUsername').value.trim().toLowerCase();
       const pw = document.getElementById('loginPassword').value;
       const errEl = document.getElementById('loginError');
+      const remember = document.getElementById('rememberMe').checked;
+
       const found = AUTH.users.find(u => u.email === email && u.password === pw);
       if (!found) {
         errEl.style.display = 'flex'; return;
       }
       errEl.style.display = 'none';
+
+      // บันทึก/ลบ remember
+      if (remember) {
+        localStorage.setItem(REMEMBER_KEY, JSON.stringify({ email, pw }));
+      } else {
+        localStorage.removeItem(REMEMBER_KEY);
+      }
+
       AUTH.current = found;
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('appShell').style.display = 'block';
@@ -4360,10 +3906,16 @@
     function doLogout() {
       if (!confirm('ยืนยันออกจากระบบ?')) return;
       AUTH.current = null;
+      // stop realtime sync
+      if (typeof stopRealtimeSync === 'function') stopRealtimeSync();
       document.getElementById('appShell').style.display = 'none';
       document.getElementById('loginScreen').style.display = 'flex';
-      document.getElementById('loginUsername').value = '';
-      document.getElementById('loginPassword').value = '';
+      // restore remembered credentials (or clear if not remembered)
+      loadRemembered();
+      if (!document.getElementById('rememberMe').checked) {
+        document.getElementById('loginUsername').value = '';
+        document.getElementById('loginPassword').value = '';
+      }
     }
 
     // ============================
@@ -4374,10 +3926,7 @@
       const isAgent = role === 'agent';
       const isViewer = role === 'viewer';
 
-      // Tabs visibility
-      // admin: all tabs
-      // agent: ทรัพย์สิน + Clipboard เท่านั้น
-      // viewer: ทรัพย์สิน เท่านั้น
+      // Desktop header tabs
       const tabAgents = document.getElementById('tabAgents');
       const tabCustomers = document.getElementById('tabCustomers');
       const tabIedata = document.getElementById('tabIedata');
@@ -4389,33 +3938,107 @@
       if (tabUsers) tabUsers.style.display = isAdmin ? '' : 'none';
       if (tabClipboard) tabClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
 
-      // Bottom nav — only 4 visible items (iedata & users always hidden here)
-      const bnavAgents = document.getElementById('bnav-agents');
+      // Bottom nav: show/hide based on role
       const bnavCustomers = document.getElementById('bnav-customers');
-      const bnavIedata = document.getElementById('bnav-iedata');
-      const bnavUsers = document.getElementById('bnav-users');
       const bnavClipboard = document.getElementById('bnav-clipboard');
-      // iedata & users are NEVER shown in bottom nav (accessible via ⚙️ header btn)
-      if (bnavIedata) bnavIedata.style.display = 'none';
-      if (bnavUsers) bnavUsers.style.display = 'none';
-      // other items shown based on role
-      if (bnavAgents) bnavAgents.style.display = isAdmin ? '' : 'none';
+      // ลูกค้า: admin เท่านั้น
       if (bnavCustomers) bnavCustomers.style.display = isAdmin ? '' : 'none';
+      // ClipB: admin + agent
       if (bnavClipboard) bnavClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
+      // ถ้า viewer — shift nav: ทรัพย์สิน + ••• เพิ่มเติม (ตั้งค่า) เท่านั้น
+      // nav-more always visible (handled in buildMoreDrawer)
+
+      // Build "More" drawer items based on role
+      buildMoreDrawer(role);
 
       // Admin-only panels
       const clearDataPanel = document.getElementById('clearDataPanel');
       if (clearDataPanel) clearDataPanel.style.display = isAdmin ? '' : 'none';
 
-      // Asset add/edit/delete buttons: agent & viewer = read-only
-      window._canEdit = isAdmin; // used in renderAssets to show/hide action buttons
-      // show mobile section title
+      window._canEdit = isAdmin;
       if (window.innerWidth <= 768) {
         const titleEl = document.getElementById('mobileSectionTitle');
         if (titleEl) { titleEl.textContent = _sectionTitles['assets'] || ''; titleEl.style.display = 'block'; }
       }
       const btnAddAsset = document.getElementById('btnAddAsset');
       if (btnAddAsset) btnAddAsset.style.display = isAdmin ? '' : 'none';
+
+      // Ensure more drawer is hidden (closed) on login
+      closeMoreDrawer();
+    }
+
+    // Build More drawer menu based on role
+    function buildMoreDrawer(role) {
+      const isAdmin = role === 'admin';
+      const isAgent = role === 'agent';
+      const container = document.getElementById('moreDrawerItems');
+      if (!container) return;
+
+      const items = [];
+      // Admin: Agent, จัดการผู้ใช้, ตั้งค่า/Import-Export
+      if (isAdmin) {
+        items.push({ icon: '👤', label: 'Agent', sub: 'จัดการรายชื่อ Agent', tab: 'agents' });
+        items.push({ icon: '👥', label: 'จัดการผู้ใช้', sub: 'เพิ่ม/แก้ไข User และสิทธิ์', tab: 'users' });
+        items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'นำเข้า/ส่งออก, Firebase, Backup', tab: 'iedata' });
+      } else if (isAgent) {
+        // Agent: ตั้งค่าเท่านั้น (ไม่มี Agent/User mgmt)
+        items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'นำเข้า/ส่งออกข้อมูล', tab: 'iedata' });
+      } else {
+        // Viewer: ตั้งค่าเท่านั้น
+        items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'ข้อมูลระบบ', tab: 'iedata' });
+      }
+
+      container.innerHTML = items.map(it => `
+        <button onclick="switchTab('${it.tab}',null);updateBnav('${it.tab}');closeMoreDrawer();"
+          style="display:flex;align-items:center;gap:14px;width:100%;background:transparent;border:none;
+                 padding:14px 12px;border-radius:14px;cursor:pointer;font-family:inherit;
+                 color:var(--text);text-align:left;-webkit-tap-highlight-color:transparent;
+                 transition:background .15s;"
+          onmouseover="this.style.background='var(--dark3)'" onmouseout="this.style.background='transparent'">
+          <span style="font-size:28px;width:40px;text-align:center;flex-shrink:0;">${it.icon}</span>
+          <span style="flex:1;">
+            <span style="display:block;font-size:17px;font-weight:700;">${it.label}</span>
+            <span style="display:block;font-size:12px;color:var(--text3);margin-top:2px;">${it.sub || ''}</span>
+          </span>
+          <span style="color:var(--text3);font-size:20px;font-weight:300;">›</span>
+        </button>
+      `).join('');
+
+      // Always show the More button (even for viewer - for ตั้งค่า)
+      const moreBtn = document.getElementById('bnav-more');
+      if (moreBtn) moreBtn.style.display = '';
+    }
+
+    function toggleMoreDrawer() {
+      const overlay = document.getElementById('moreDrawerOverlay');
+      const drawer = document.getElementById('moreDrawer');
+      const isOpen = drawer.style.display !== 'none';
+      if (isOpen) {
+        closeMoreDrawer();
+      } else {
+        overlay.style.display = 'block';
+        drawer.style.display = 'block';
+        // animate in
+        drawer.style.transform = 'translateY(20px)';
+        drawer.style.opacity = '0';
+        drawer.style.transition = 'transform .22s cubic-bezier(.4,0,.2,1), opacity .2s';
+        requestAnimationFrame(() => {
+          drawer.style.transform = 'translateY(0)';
+          drawer.style.opacity = '1';
+        });
+        // mark more button active
+        const moreBtn = document.getElementById('bnav-more');
+        if (moreBtn) moreBtn.classList.add('active');
+      }
+    }
+
+    function closeMoreDrawer() {
+      const overlay = document.getElementById('moreDrawerOverlay');
+      const drawer = document.getElementById('moreDrawer');
+      drawer.style.display = 'none';
+      overlay.style.display = 'none';
+      const moreBtn = document.getElementById('bnav-more');
+      if (moreBtn) moreBtn.classList.remove('active');
     }
 
     // ============================
@@ -4425,14 +4048,19 @@
       assets: '🏠 ทรัพย์สิน',
       agents: '👤 Agent',
       customers: '🤝 ลูกค้า',
-      clipboard: '📋 Clipboard',
-      iedata: '⚙️ นำเข้า/ส่งออก',
+      clipboard: '📋 ClipB',
+      iedata: '⚙️ ตั้งค่า',
       users: '👥 จัดการผู้ใช้'
     };
 
     function updateBnav(t) {
+      // Reset all bnav buttons (only real buttons, not hidden spans)
       document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
-      const el = document.getElementById('bnav-' + t);
+      // Mark the closest visible button active
+      // For sub-tabs (agents, users, iedata) — mark "more" button active
+      const mainTabs = ['assets', 'customers', 'clipboard'];
+      const targetId = mainTabs.includes(t) ? 'bnav-' + t : 'bnav-more';
+      const el = document.getElementById(targetId);
       if (el) el.classList.add('active');
       // update mobile section title
       const titleEl = document.getElementById('mobileSectionTitle');
@@ -5479,16 +5107,7 @@
     }
 
     // Legacy setTheme kept for login screen buttons
-    function setTheme(theme) {
-      TP.color = theme; applyTP(); saveTP();
-      // sync login theme button active states
-      const themes = ['dark', 'light', 'vibrant', 'ocean', 'sakura', 'forest', 'sunset'];
-      const capMap = { dark: 'Dark', light: 'Light', vibrant: 'Vibrant', ocean: 'Ocean', sakura: 'Sakura', forest: 'Forest', sunset: 'Sunset' };
-      themes.forEach(t => {
-        const el = document.getElementById('loginTheme' + capMap[t]);
-        if (el) el.classList.toggle('active', t === theme);
-      });
-    }
+    function setTheme(theme) { TP.color = theme; applyTP(); saveTP(); }
     function cap2(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
     // Init
@@ -5498,8 +5117,6 @@
       const old = localStorage.getItem('yb_theme');
       if (old && !localStorage.getItem('yb_tp')) TP.color = old;
       applyTP();
-      // Sync login theme button active state
-      setTheme(TP.color);
     })();
 
     function importSampleData() {
