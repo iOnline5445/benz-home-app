@@ -2435,14 +2435,12 @@
         <div class="toolbar">
           <div class="search-box"><input type="text" id="assetSearch" placeholder="ค้นหาโครงการ, ทำเล..."
               oninput="renderAssets()"></div>
-
-          <div class="search-box" style="max-width:140px;"><input type="number" id="filterPriceMin"
-              placeholder="..ราคา ต่ำสุด บาท" oninput="renderAssets()" style="padding:8px 12px;"></div>
-          <div class="search-box" style="max-width:140px;"><input type="number" id="filterPriceMax"
-              placeholder="..ราคา สูงสุด บาท" oninput="renderAssets()" style="padding:8px 12px;"></div>
-
-          <button class="btn btn-outline btn-sm" onclick="clearPriceFilter()" title="ล้างฟิลเตอร์ราคา"
-            style="padding:9px 12px;">🔄</button>
+          <div class="search-box" style="max-width:140px;"><input type="number" id="filterPriceMin" placeholder="฿ ต่ำสุด"
+              oninput="renderAssets()" style="padding:8px 12px;"></div>
+          <div class="search-box" style="max-width:140px;"><input type="number" id="filterPriceMax" placeholder="฿ สูงสุด"
+              oninput="renderAssets()" style="padding:8px 12px;"></div>
+          <button class="btn btn-outline btn-sm" onclick="clearPriceFilter()" title="ล้างฟิลเตอร์ราคา" 
+              style="padding:9px 12px;">🔄</button>
           <select class="filter-select" id="filterStatus" onchange="renderAssets()">
             <option value="">ทุกสถานะ</option>
             <option value="ขาย">ขาย</option>
@@ -2502,8 +2500,7 @@
         <div class="toolbar">
           <div class="search-box"><input type="text" id="customerSearch" placeholder="ค้นหาลูกค้า..."
               oninput="renderCustomers()"></div>
-          <label id="btnImportCustomerCSV" class="btn btn-outline" style="cursor:pointer;"
-            title="Import ลูกค้าจากไฟล์ CSV">
+          <label id="btnImportCustomerCSV" class="btn btn-outline" style="cursor:pointer;" title="Import ลูกค้าจากไฟล์ CSV">
             📥 Import CSV
             <input type="file" accept=".csv" style="display:none" onchange="importCSV(event,'customers')">
           </label>
@@ -2682,11 +2679,8 @@
           <div style="font-weight:700;color:var(--gold);margin-bottom:8px;">💡 ระดับสิทธิ์ในระบบ</div>
           <div><span style="color:var(--gold);font-weight:600;">⭐ admin</span> — เข้าถึงทุกส่วน: ทรัพย์สิน, Agent,
             ลูกค้า, Clipboard, Import/Export, จัดการ User, ลบข้อมูลได้ทุกอย่าง</div>
-          <div><span style="color:var(--green);font-weight:600;">🏠 agent</span> — เพิ่ม/แก้ไขทรัพย์สินและลูกค้า, ใช้
-            Clipboard ได้
-            <strong style="color:var(--red);">แต่ลบไม่ได้</strong> และ Import/Export ไม่ได้ &nbsp;·&nbsp;
-            สามารถเชื่อมกับ Agent record ได้
-          </div>
+          <div><span style="color:var(--green);font-weight:600;">🏠 agent</span> — เพิ่ม/แก้ไขทรัพย์สินและลูกค้า, ใช้ Clipboard ได้
+            <strong style="color:var(--red);">แต่ลบไม่ได้</strong> และ Import/Export ไม่ได้ &nbsp;·&nbsp; สามารถเชื่อมกับ Agent record ได้</div>
           <div><span style="color:var(--blue);font-weight:600;">👁️ viewer</span> — เห็นเฉพาะทรัพย์สิน อ่านอย่างเดียว
           </div>
           <div style="margin-top:6px;color:var(--text3);">📌 User account กับข้อมูล Agent แยกกัน — Agent
@@ -2846,8 +2840,8 @@
         </div>
         <div class="modal-body">
           <div class="form-grid">
-            <div class="form-group full"><label>ชื่อโครงการ <span style="color:var(--red);">*</span></label><input
-                id="a_name" placeholder="เช่น IDEO พระราม 9" required></div>
+            <div class="form-group full"><label>ชื่อโครงการ <span style="color:var(--red);">*</span></label><input id="a_name"
+                placeholder="เช่น IDEO พระราม 9" required></div>
             <div class="form-group"><label>ทำเลที่ตั้ง</label><input id="a_location"
                 placeholder="เช่น พระราม 9, สุขุมวิท"></div>
             <div class="form-group"><label>สถานะ</label>
@@ -2884,25 +2878,18 @@
             </div>
             <!-- Reservation Details (แสดงเฉพาะเมื่อเลือก "จอง/รอปิดดีล") -->
             <div id="reservationFields" style="display:none;" class="form-group full">
-              <div
-                style="background:rgba(201,168,76,0.08);border:1px solid var(--gold);border-radius:12px;padding:16px;margin-top:10px;">
-                <div
-                  style="font-weight:700;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+              <div style="background:rgba(201,168,76,0.08);border:1px solid var(--gold);border-radius:12px;padding:16px;margin-top:10px;">
+                <div style="font-weight:700;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
                   <span>⏳</span> ข้อมูลการจอง
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                   <div>
-                    <label style="display:block;font-size:13px;margin-bottom:6px;color:var(--text2);">📅
-                      วันที่เริ่มจอง</label>
-                    <input type="date" id="a_reservationDate"
-                      style="width:100%;background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:14px;">
+                    <label style="display:block;font-size:13px;margin-bottom:6px;color:var(--text2);">📅 วันที่เริ่มจอง</label>
+                    <input type="date" id="a_reservationDate" style="width:100%;background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:14px;">
                   </div>
                   <div>
-                    <label style="display:block;font-size:13px;margin-bottom:6px;color:var(--text2);">⏱️
-                      ระยะเวลาจอง</label>
-                    <select id="a_reservationPeriod"
-                      style="width:100%;background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:14px;"
-                      onchange="calculateReservationEnd()">
+                    <label style="display:block;font-size:13px;margin-bottom:6px;color:var(--text2);">⏱️ ระยะเวลาจอง</label>
+                    <select id="a_reservationPeriod" style="width:100%;background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:14px;" onchange="calculateReservationEnd()">
                       <option value="">-- เลือกระยะเวลา --</option>
                       <option value="7">7 วัน</option>
                       <option value="15">15 วัน</option>
@@ -2915,10 +2902,8 @@
                   </div>
                 </div>
                 <div style="margin-top:12px;">
-                  <label style="display:block;font-size:13px;margin-bottom:6px;color:var(--text2);">🔔
-                    วันครบรอบการจอง</label>
-                  <input type="date" id="a_reservationEndDate" readonly
-                    style="width:100%;background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--gold);font-size:14px;font-weight:600;">
+                  <label style="display:block;font-size:13px;margin-bottom:6px;color:var(--text2);">🔔 วันครบรอบการจอง</label>
+                  <input type="date" id="a_reservationEndDate" readonly style="width:100%;background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--gold);font-size:14px;font-weight:600;">
                 </div>
                 <div style="font-size:12px;color:var(--text3);margin-top:10px;display:flex;align-items:center;gap:6px;">
                   <span>💡</span>
@@ -2942,8 +2927,7 @@
                 placeholder="เช่น 1 ห้องนอน 1 ห้องน้ำ"></div>
             <div class="form-group"><label>ขนาดพื้นที่</label><input id="a_area" placeholder="เช่น 34 ตร.ม."></div>
             <div class="form-group"><label>ชั้น/ตึก</label><input id="a_floor" placeholder="เช่น ชั้น 22 อาคาร A"></div>
-            <div class="form-group"><label>Link โครงการ/Facebook <span style="color:var(--red);">*</span></label><input
-                id="a_link" placeholder="https://..." required>
+            <div class="form-group"><label>Link โครงการ/Facebook <span style="color:var(--red);">*</span></label><input id="a_link" placeholder="https://..." required>
             </div>
             <div class="form-group"><label>Location Map</label><input id="a_map"
                 placeholder="https://maps.app.goo.gl/..."></div>
@@ -4167,7 +4151,7 @@
       // Admin-only panels
       const clearDataPanel = document.getElementById('clearDataPanel');
       if (clearDataPanel) clearDataPanel.style.display = isAdmin ? '' : 'none';
-
+      
       // Import/Export panels - Admin only
       const importPanel = document.getElementById('importPanel');
       const exportPanel = document.getElementById('exportPanel');
@@ -4179,7 +4163,7 @@
       // Agent can edit/add, but cannot delete
       window._canEdit = (isAdmin || isAgent);
       window._canDelete = isAdmin; // Only admin can delete
-
+      
       if (window.innerWidth <= 768) {
         const titleEl = document.getElementById('mobileSectionTitle');
         if (titleEl) { titleEl.textContent = _sectionTitles['assets'] || ''; titleEl.style.display = 'block'; }
@@ -4201,14 +4185,16 @@
       if (!container) return;
 
       const items = [];
-      // Admin: Agent, จัดการผู้ใช้, ตั้งค่า/Import-Export
+      // Admin: Agent, ลูกค้า, จัดการผู้ใช้, ตั้งค่า/Import-Export
       if (isAdmin) {
         items.push({ icon: '👤', label: 'Agent', sub: 'จัดการรายชื่อ Agent', tab: 'agents' });
+        items.push({ icon: '🤝', label: 'ลูกค้า', sub: 'จัดการข้อมูลลูกค้า', tab: 'customers' });
         items.push({ icon: '👥', label: 'จัดการผู้ใช้', sub: 'เพิ่ม/แก้ไข User และสิทธิ์', tab: 'users' });
         items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'นำเข้า/ส่งออก, Firebase, Backup', tab: 'iedata' });
       } else if (isAgent) {
-        // Agent: ตั้งค่าเท่านั้น (ไม่มี Agent/User mgmt)
-        items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'นำเข้า/ส่งออกข้อมูล', tab: 'iedata' });
+        // Agent: ลูกค้า และ ตั้งค่า
+        items.push({ icon: '🤝', label: 'ลูกค้า', sub: 'จัดการข้อมูลลูกค้า', tab: 'customers' });
+        items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'ข้อมูลระบบ', tab: 'iedata' });
       } else {
         // Viewer: ตั้งค่าเท่านั้น
         items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'ข้อมูลระบบ', tab: 'iedata' });
@@ -4320,10 +4306,10 @@
     // ============================
     function renderStats() {
       const s = DB.assets;
-
+      
       // นับจำนวนทรัพย์สินที่จอง
       const reservedAssets = s.filter(a => a.listingActive === 'reserved');
-
+      
       // นับทรัพย์สินที่ใกล้ครบรอบ (7 วันหรือน้อยกว่า)
       const today = new Date();
       const upcomingExpiry = reservedAssets.filter(a => {
@@ -4332,7 +4318,7 @@
         const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
         return daysLeft >= 0 && daysLeft <= 7;
       });
-
+      
       // นับทรัพย์สินที่ครบรอบแล้ว
       const expiredReservations = reservedAssets.filter(a => {
         if (!a.reservationEndDate) return false;
@@ -4340,7 +4326,7 @@
         const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
         return daysLeft < 0;
       });
-
+      
       document.getElementById('assetStats').innerHTML = `
     <div class="stat-box"><div class="num">${s.length}</div><div class="lbl">ทรัพย์สินทั้งหมด</div></div>
     <div class="stat-box"><div class="num">${s.filter(a => a.status && a.status.includes('ขาย')).length}</div><div class="lbl">ขาย</div></div>
@@ -4357,12 +4343,12 @@
       const s = DB.assets;
       const reservedAssets = s.filter(a => a.listingActive === 'reserved');
       const today = new Date();
-
+      
       const alerts = reservedAssets.map(a => {
         if (!a.reservationEndDate) return null;
         const endDate = new Date(a.reservationEndDate);
         const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-
+        
         if (daysLeft < 0) {
           return { asset: a, daysLeft, status: 'expired', message: '🚨 ครบรอบแล้ว' };
         } else if (daysLeft <= 7) {
@@ -4370,12 +4356,12 @@
         }
         return null;
       }).filter(x => x !== null);
-
+      
       if (alerts.length === 0) {
         alert('ไม่มีการจองที่ใกล้ครบรอบหรือครบรอบแล้ว');
         return;
       }
-
+      
       let message = '🔔 การแจ้งเตือนการจอง\n\n';
       alerts.forEach(alert => {
         const color = alert.status === 'expired' ? '🔴' : '🟡';
@@ -4383,7 +4369,7 @@
         message += `   ${alert.message}\n`;
         message += `   วันครบรอบ: ${new Date(alert.asset.reservationEndDate).toLocaleDateString('th-TH')}\n\n`;
       });
-
+      
       alert(message);
     }
 
@@ -4412,12 +4398,12 @@
       const startDateEl = document.getElementById('a_reservationDate');
       const periodEl = document.getElementById('a_reservationPeriod');
       const endDateEl = document.getElementById('a_reservationEndDate');
-
+      
       if (!startDateEl || !periodEl || !endDateEl) return;
-
+      
       const startDate = startDateEl.value;
       const periodDays = parseInt(periodEl.value);
-
+      
       if (startDate && periodDays) {
         const start = new Date(startDate);
         const end = new Date(start);
@@ -4429,7 +4415,7 @@
     }
 
     // Auto-calculate when start date changes
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
       const startDateEl = document.getElementById('a_reservationDate');
       if (startDateEl) {
         startDateEl.addEventListener('change', calculateReservationEnd);
@@ -4443,7 +4429,7 @@
       const laFilter = document.getElementById('filterListingActive') ? document.getElementById('filterListingActive').value : 'active';
       const priceMin = document.getElementById('filterPriceMin') ? parseFloat(document.getElementById('filterPriceMin').value) : null;
       const priceMax = document.getElementById('filterPriceMax') ? parseFloat(document.getElementById('filterPriceMax').value) : null;
-
+      
       let list = DB.assets.filter(a => {
         const mQ = !q || (a.name || '').toLowerCase().includes(q) || (a.location || '').toLowerCase().includes(q);
         const mS = !st || a.status === st;
@@ -4453,7 +4439,7 @@
         if (laFilter === 'active') mLA = la !== 'sold';
         else if (laFilter === 'sold') mLA = la === 'sold';
         else if (laFilter === 'reserved') mLA = la === 'reserved';
-
+        
         // ฟิลเตอร์ราคา - แปลงราคาเป็นตัวเลข
         let mPrice = true;
         if (priceMin || priceMax) {
@@ -4464,7 +4450,7 @@
             if (priceMax && priceNum > priceMax) mPrice = false;
           }
         }
-
+        
         return mQ && mS && mT && mLA && mPrice;
       });
       const el = document.getElementById('assetCards');
@@ -4477,21 +4463,21 @@
         const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
         const la = a.listingActive || 'available';
         const laBadge = la === 'sold' ? `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(224,80,80,0.15);color:var(--red);margin-left:4px;">🔴 ปิดแล้ว</span>` : la === 'reserved' ? `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(201,168,76,0.15);color:var(--gold);margin-left:4px;">⏳ จอง</span>` : '';
-
+        
         // คำนวณการแจ้งเตือนสำหรับการจอง
         let reservationAlert = '';
         if (la === 'reserved' && a.reservationEndDate) {
           const today = new Date();
           const endDate = new Date(a.reservationEndDate);
           const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-
+          
           if (daysLeft <= 0) {
             reservationAlert = `<div style="background:rgba(224,80,80,0.1);border:1px solid var(--red);border-radius:8px;padding:8px 12px;margin-top:8px;font-size:12px;color:var(--red);font-weight:600;">🚨 ครบรอบการจองแล้ว!</div>`;
           } else if (daysLeft <= 7) {
             reservationAlert = `<div style="background:rgba(201,168,76,0.1);border:1px solid var(--gold);border-radius:8px;padding:8px 12px;margin-top:8px;font-size:12px;color:var(--gold);font-weight:600;">⚠️ ครบรอบในอีก ${daysLeft} วัน</div>`;
           }
         }
-
+        
         const canEdit = window._canEdit !== false;
         const canDelete = window._canDelete !== false;
         return `<div class="card"${la === 'sold' ? ' style="opacity:0.6;"' : ''}>
@@ -4852,14 +4838,14 @@
         contact: v('a_contact'), poster: v('a_poster'), note: v('a_note'),
         listingActive: activeVal ? activeVal.value : 'available'
       };
-
+      
       // เพิ่มข้อมูลการจอง (ถ้าเลือกสถานะ "จอง")
       if (a.listingActive === 'reserved') {
         a.reservationDate = v('a_reservationDate');
         a.reservationPeriod = v('a_reservationPeriod');
         a.reservationEndDate = v('a_reservationEndDate');
       }
-
+      
       if (!a.name) { alert('❌ กรุณาใส่ชื่อโครงการ'); return; }
       if (!a.link) { alert('❌ กรุณาใส่ Link โครงการ/Facebook'); return; }
       if (editMode.idx >= 0) {
@@ -4894,18 +4880,18 @@
       setV('a_link', a.link); setV('a_map', a.map); setV('a_linkpic', a.linkpic); setV('a_postdate', a.postdate); setV('a_updatedate', a.updatedate);
       setV('a_contact', a.contact); setV('a_note', a.note);
       populatePosterSelect(a.poster || '');
-
+      
       // set listing active radio
       const la = a.listingActive || 'available';
       const laEl = document.getElementById('a_active_' + la);
       if (laEl) laEl.checked = true; else document.getElementById('a_active_available').checked = true;
-
+      
       // โหลดข้อมูลการจอง (ถ้ามี)
       if (a.reservationDate) setV('a_reservationDate', a.reservationDate);
       if (a.reservationPeriod) setV('a_reservationPeriod', a.reservationPeriod);
       if (a.reservationEndDate) setV('a_reservationEndDate', a.reservationEndDate);
       toggleReservationFields();
-
+      
       editMode = { type: 'asset', idx: i };
       document.getElementById('modalAsset').classList.add('open');
     }
