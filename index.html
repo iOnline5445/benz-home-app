@@ -2433,14 +2433,26 @@
       <div id="sec-assets" class="section active">
         <div class="stats-row" id="assetStats"></div>
         <div class="toolbar">
-          <div class="search-box"><input type="text" id="assetSearch" placeholder="ค้นหาโครงการ, ทำเล..."
-              oninput="renderAssets()"></div>
-          <div class="search-box" style="max-width:140px;"><input type="number" id="filterPriceMin" placeholder="฿ ต่ำสุด"
-              oninput="renderAssets()" style="padding:8px 12px;"></div>
-          <div class="search-box" style="max-width:140px;"><input type="number" id="filterPriceMax" placeholder="฿ สูงสุด"
-              oninput="renderAssets()" style="padding:8px 12px;"></div>
-          <button class="btn btn-outline btn-sm" onclick="clearPriceFilter()" title="ล้างฟิลเตอร์ราคา" 
-              style="padding:9px 12px;">🔄</button>
+          <div class="search-box" style="flex:2;min-width:160px;position:relative;">
+            <span
+              style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;">🔍</span>
+            <input type="text" id="assetSearch" placeholder="ค้นหาโครงการ, ทำเล..." oninput="renderAssets()"
+              style="padding-left:36px;">
+          </div>
+          <div class="search-box" style="max-width:130px;position:relative;">
+            <span
+              style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↑</span>
+            <input type="number" id="filterPriceMin" placeholder="ราคาต่ำสุด" oninput="renderAssets()"
+              style="padding:9px 10px 9px 32px;">
+          </div>
+          <div class="search-box" style="max-width:130px;position:relative;">
+            <span
+              style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↓</span>
+            <input type="number" id="filterPriceMax" placeholder="ราคาสูงสุด" oninput="renderAssets()"
+              style="padding:9px 10px 9px 32px;">
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="clearPriceFilter()" title="ล้างฟิลเตอร์ราคา"
+            style="padding:9px 12px;">🔄</button>
           <select class="filter-select" id="filterStatus" onchange="renderAssets()">
             <option value="">ทุกสถานะ</option>
             <option value="ขาย">ขาย</option>
@@ -2460,9 +2472,38 @@
             <option value="ทาวน์โฮม">ทาวน์โฮม</option>
             <option value="ที่ดิน">ที่ดิน</option>
           </select>
+          <div style="display:flex;gap:4px;">
+            <button id="btnAssetViewCard" class="btn btn-outline btn-sm" onclick="setAssetView('card')" title="การ์ด"
+              style="padding:9px 13px;font-size:16px;">⊞</button>
+            <button id="btnAssetViewTable" class="btn btn-outline btn-sm" onclick="setAssetView('table')" title="ตาราง"
+              style="padding:9px 13px;font-size:16px;">☰</button>
+          </div>
           <button class="btn btn-primary" id="btnAddAsset" onclick="openModal('asset')">+ เพิ่มทรัพย์สิน</button>
         </div>
+        <div id="assetPaginationTop"
+          style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;min-height:32px;"></div>
         <div class="cards-grid" id="assetCards"></div>
+        <div id="assetTable" style="display:none;" class="table-wrap">
+          <table id="assetTableEl">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ชื่อโครงการ</th>
+                <th>สถานะ</th>
+                <th>ประเภท</th>
+                <th>ราคา</th>
+                <th>ห้อง</th>
+                <th>ทำเล</th>
+                <th>ติดต่อ</th>
+                <th>Agent</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="assetTableBody"></tbody>
+          </table>
+        </div>
+        <div id="assetPaginationBottom"
+          style="display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;min-height:32px;"></div>
       </div>
 
       <!-- =================== AGENTS =================== -->
@@ -2498,14 +2539,41 @@
       <!-- =================== CUSTOMERS =================== -->
       <div id="sec-customers" class="section">
         <div class="toolbar">
-          <div class="search-box"><input type="text" id="customerSearch" placeholder="ค้นหาลูกค้า..."
-              oninput="renderCustomers()"></div>
-          <label id="btnImportCustomerCSV" class="btn btn-outline" style="cursor:pointer;" title="Import ลูกค้าจากไฟล์ CSV">
+          <div class="search-box" style="flex:2;min-width:160px;position:relative;">
+            <span
+              style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;">🔍</span>
+            <input type="text" id="customerSearch" placeholder="ค้นหาลูกค้า, ติดต่อ..." oninput="renderCustomers()"
+              style="padding-left:36px;">
+          </div>
+          <div class="search-box" style="max-width:130px;position:relative;">
+            <span
+              style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↑</span>
+            <input type="number" id="customerPriceMin" placeholder="งบต่ำสุด" oninput="renderCustomers()"
+              style="padding:9px 10px 9px 32px;">
+          </div>
+          <div class="search-box" style="max-width:130px;position:relative;">
+            <span
+              style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↓</span>
+            <input type="number" id="customerPriceMax" placeholder="งบสูงสุด" oninput="renderCustomers()"
+              style="padding:9px 10px 9px 32px;">
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="clearCustomerPriceFilter()" title="ล้างฟิลเตอร์"
+            style="padding:9px 12px;">🔄</button>
+          <div style="display:flex;gap:4px;">
+            <button id="btnCustViewTable" class="btn btn-outline btn-sm" onclick="setCustView('table')" title="ตาราง"
+              style="padding:9px 13px;font-size:16px;">☰</button>
+            <button id="btnCustViewCard" class="btn btn-outline btn-sm" onclick="setCustView('card')" title="การ์ด"
+              style="padding:9px 13px;font-size:16px;">⊞</button>
+          </div>
+          <label id="btnImportCustomerCSV" class="btn btn-outline" style="cursor:pointer;"
+            title="Import ลูกค้าจากไฟล์ CSV">
             📥 Import CSV
             <input type="file" accept=".csv" style="display:none" onchange="importCSV(event,'customers')">
           </label>
           <button id="btnAddCustomer" class="btn btn-primary" onclick="openModal('customer')">+ เพิ่มลูกค้า</button>
         </div>
+        <div id="customerPaginationTop"
+          style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;min-height:32px;"></div>
         <div class="table-wrap">
           <table>
             <thead>
@@ -2679,8 +2747,11 @@
           <div style="font-weight:700;color:var(--gold);margin-bottom:8px;">💡 ระดับสิทธิ์ในระบบ</div>
           <div><span style="color:var(--gold);font-weight:600;">⭐ admin</span> — เข้าถึงทุกส่วน: ทรัพย์สิน, Agent,
             ลูกค้า, Clipboard, Import/Export, จัดการ User, ลบข้อมูลได้ทุกอย่าง</div>
-          <div><span style="color:var(--green);font-weight:600;">🏠 agent</span> — เพิ่ม/แก้ไขทรัพย์สินและลูกค้า, ใช้ Clipboard ได้
-            <strong style="color:var(--red);">แต่ลบไม่ได้</strong> และ Import/Export ไม่ได้ &nbsp;·&nbsp; สามารถเชื่อมกับ Agent record ได้</div>
+          <div><span style="color:var(--green);font-weight:600;">🏠 agent</span> — เพิ่ม/แก้ไขทรัพย์สินและลูกค้า, ใช้
+            Clipboard ได้
+            <strong style="color:var(--red);">แต่ลบไม่ได้</strong> และ Import/Export ไม่ได้ &nbsp;·&nbsp;
+            สามารถเชื่อมกับ Agent record ได้
+          </div>
           <div><span style="color:var(--blue);font-weight:600;">👁️ viewer</span> — เห็นเฉพาะทรัพย์สิน อ่านอย่างเดียว
           </div>
           <div style="margin-top:6px;color:var(--text3);">📌 User account กับข้อมูล Agent แยกกัน — Agent
@@ -2840,8 +2911,8 @@
         </div>
         <div class="modal-body">
           <div class="form-grid">
-            <div class="form-group full"><label>ชื่อโครงการ <span style="color:var(--red);">*</span></label><input id="a_name"
-                placeholder="เช่น IDEO พระราม 9" required></div>
+            <div class="form-group full"><label>ชื่อโครงการ <span style="color:var(--red);">*</span></label><input
+                id="a_name" placeholder="เช่น IDEO พระราม 9" required></div>
             <div class="form-group"><label>ทำเลที่ตั้ง</label><input id="a_location"
                 placeholder="เช่น พระราม 9, สุขุมวิท"></div>
             <div class="form-group"><label>สถานะ</label>
@@ -2878,18 +2949,25 @@
             </div>
             <!-- Reservation Details (แสดงเฉพาะเมื่อเลือก "จอง/รอปิดดีล") -->
             <div id="reservationFields" style="display:none;" class="form-group full">
-              <div style="background:rgba(201,168,76,0.08);border:1px solid var(--gold);border-radius:12px;padding:16px;margin-top:10px;">
-                <div style="font-weight:700;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+              <div
+                style="background:rgba(201,168,76,0.08);border:1px solid var(--gold);border-radius:12px;padding:16px;margin-top:10px;">
+                <div
+                  style="font-weight:700;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
                   <span>⏳</span> ข้อมูลการจอง
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                   <div>
-                    <label style="display:block;font-size:13px;margin-bottom:6px;color:var(--text2);">📅 วันที่เริ่มจอง</label>
-                    <input type="date" id="a_reservationDate" style="width:100%;background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:14px;">
+                    <label style="display:block;font-size:13px;margin-bottom:6px;color:var(--text2);">📅
+                      วันที่เริ่มจอง</label>
+                    <input type="date" id="a_reservationDate"
+                      style="width:100%;background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:14px;">
                   </div>
                   <div>
-                    <label style="display:block;font-size:13px;margin-bottom:6px;color:var(--text2);">⏱️ ระยะเวลาจอง</label>
-                    <select id="a_reservationPeriod" style="width:100%;background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:14px;" onchange="calculateReservationEnd()">
+                    <label style="display:block;font-size:13px;margin-bottom:6px;color:var(--text2);">⏱️
+                      ระยะเวลาจอง</label>
+                    <select id="a_reservationPeriod"
+                      style="width:100%;background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:14px;"
+                      onchange="calculateReservationEnd()">
                       <option value="">-- เลือกระยะเวลา --</option>
                       <option value="7">7 วัน</option>
                       <option value="15">15 วัน</option>
@@ -2902,8 +2980,10 @@
                   </div>
                 </div>
                 <div style="margin-top:12px;">
-                  <label style="display:block;font-size:13px;margin-bottom:6px;color:var(--text2);">🔔 วันครบรอบการจอง</label>
-                  <input type="date" id="a_reservationEndDate" readonly style="width:100%;background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--gold);font-size:14px;font-weight:600;">
+                  <label style="display:block;font-size:13px;margin-bottom:6px;color:var(--text2);">🔔
+                    วันครบรอบการจอง</label>
+                  <input type="date" id="a_reservationEndDate" readonly
+                    style="width:100%;background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--gold);font-size:14px;font-weight:600;">
                 </div>
                 <div style="font-size:12px;color:var(--text3);margin-top:10px;display:flex;align-items:center;gap:6px;">
                   <span>💡</span>
@@ -2927,7 +3007,8 @@
                 placeholder="เช่น 1 ห้องนอน 1 ห้องน้ำ"></div>
             <div class="form-group"><label>ขนาดพื้นที่</label><input id="a_area" placeholder="เช่น 34 ตร.ม."></div>
             <div class="form-group"><label>ชั้น/ตึก</label><input id="a_floor" placeholder="เช่น ชั้น 22 อาคาร A"></div>
-            <div class="form-group"><label>Link โครงการ/Facebook <span style="color:var(--red);">*</span></label><input id="a_link" placeholder="https://..." required>
+            <div class="form-group"><label>Link โครงการ/Facebook <span style="color:var(--red);">*</span></label><input
+                id="a_link" placeholder="https://..." required>
             </div>
             <div class="form-group"><label>Location Map</label><input id="a_map"
                 placeholder="https://maps.app.goo.gl/..."></div>
@@ -4130,7 +4211,7 @@
       const tabUsers = document.getElementById('tabUsers');
       const tabClipboard = document.getElementById('tabClipboard');
       if (tabAgents) tabAgents.style.display = isAdmin ? '' : 'none';
-      if (tabCustomers) tabCustomers.style.display = isAdmin ? '' : 'none';
+      if (tabCustomers) tabCustomers.style.display = (isAdmin || isAgent) ? '' : 'none';
       if (tabIedata) tabIedata.style.display = isAdmin ? '' : 'none';
       if (tabUsers) tabUsers.style.display = isAdmin ? '' : 'none';
       if (tabClipboard) tabClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
@@ -4138,8 +4219,8 @@
       // Bottom nav: show/hide based on role
       const bnavCustomers = document.getElementById('bnav-customers');
       const bnavClipboard = document.getElementById('bnav-clipboard');
-      // ลูกค้า: admin เท่านั้น
-      if (bnavCustomers) bnavCustomers.style.display = isAdmin ? '' : 'none';
+      // ลูกค้า: admin + agent → แสดงใน bottom nav ตรงๆ (ไม่ซ่อน)
+      if (bnavCustomers) bnavCustomers.style.display = (isAdmin || isAgent) ? '' : 'none';
       // ClipB: admin + agent
       if (bnavClipboard) bnavClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
       // ถ้า viewer — shift nav: ทรัพย์สิน + ••• เพิ่มเติม (ตั้งค่า) เท่านั้น
@@ -4151,7 +4232,7 @@
       // Admin-only panels
       const clearDataPanel = document.getElementById('clearDataPanel');
       if (clearDataPanel) clearDataPanel.style.display = isAdmin ? '' : 'none';
-      
+
       // Import/Export panels - Admin only
       const importPanel = document.getElementById('importPanel');
       const exportPanel = document.getElementById('exportPanel');
@@ -4163,7 +4244,7 @@
       // Agent can edit/add, but cannot delete
       window._canEdit = (isAdmin || isAgent);
       window._canDelete = isAdmin; // Only admin can delete
-      
+
       if (window.innerWidth <= 768) {
         const titleEl = document.getElementById('mobileSectionTitle');
         if (titleEl) { titleEl.textContent = _sectionTitles['assets'] || ''; titleEl.style.display = 'block'; }
@@ -4185,18 +4266,13 @@
       if (!container) return;
 
       const items = [];
-      // Admin: Agent, ลูกค้า, จัดการผู้ใช้, ตั้งค่า/Import-Export
+      // Admin: Agent, จัดการผู้ใช้, ตั้งค่า — ลูกค้าอยู่ bottom nav แล้ว ไม่ต้องซ้ำ
       if (isAdmin) {
         items.push({ icon: '👤', label: 'Agent', sub: 'จัดการรายชื่อ Agent', tab: 'agents' });
-        items.push({ icon: '🤝', label: 'ลูกค้า', sub: 'จัดการข้อมูลลูกค้า', tab: 'customers' });
         items.push({ icon: '👥', label: 'จัดการผู้ใช้', sub: 'เพิ่ม/แก้ไข User และสิทธิ์', tab: 'users' });
         items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'นำเข้า/ส่งออก, Firebase, Backup', tab: 'iedata' });
-      } else if (isAgent) {
-        // Agent: ลูกค้า และ ตั้งค่า
-        items.push({ icon: '🤝', label: 'ลูกค้า', sub: 'จัดการข้อมูลลูกค้า', tab: 'customers' });
-        items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'ข้อมูลระบบ', tab: 'iedata' });
       } else {
-        // Viewer: ตั้งค่าเท่านั้น
+        // Agent / Viewer: ตั้งค่าเท่านั้น — ลูกค้าอยู่ bottom nav
         items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'ข้อมูลระบบ', tab: 'iedata' });
       }
 
@@ -4306,10 +4382,10 @@
     // ============================
     function renderStats() {
       const s = DB.assets;
-      
+
       // นับจำนวนทรัพย์สินที่จอง
       const reservedAssets = s.filter(a => a.listingActive === 'reserved');
-      
+
       // นับทรัพย์สินที่ใกล้ครบรอบ (7 วันหรือน้อยกว่า)
       const today = new Date();
       const upcomingExpiry = reservedAssets.filter(a => {
@@ -4318,7 +4394,7 @@
         const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
         return daysLeft >= 0 && daysLeft <= 7;
       });
-      
+
       // นับทรัพย์สินที่ครบรอบแล้ว
       const expiredReservations = reservedAssets.filter(a => {
         if (!a.reservationEndDate) return false;
@@ -4326,7 +4402,7 @@
         const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
         return daysLeft < 0;
       });
-      
+
       document.getElementById('assetStats').innerHTML = `
     <div class="stat-box"><div class="num">${s.length}</div><div class="lbl">ทรัพย์สินทั้งหมด</div></div>
     <div class="stat-box"><div class="num">${s.filter(a => a.status && a.status.includes('ขาย')).length}</div><div class="lbl">ขาย</div></div>
@@ -4343,12 +4419,12 @@
       const s = DB.assets;
       const reservedAssets = s.filter(a => a.listingActive === 'reserved');
       const today = new Date();
-      
+
       const alerts = reservedAssets.map(a => {
         if (!a.reservationEndDate) return null;
         const endDate = new Date(a.reservationEndDate);
         const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-        
+
         if (daysLeft < 0) {
           return { asset: a, daysLeft, status: 'expired', message: '🚨 ครบรอบแล้ว' };
         } else if (daysLeft <= 7) {
@@ -4356,12 +4432,12 @@
         }
         return null;
       }).filter(x => x !== null);
-      
+
       if (alerts.length === 0) {
         alert('ไม่มีการจองที่ใกล้ครบรอบหรือครบรอบแล้ว');
         return;
       }
-      
+
       let message = '🔔 การแจ้งเตือนการจอง\n\n';
       alerts.forEach(alert => {
         const color = alert.status === 'expired' ? '🔴' : '🟡';
@@ -4369,18 +4445,91 @@
         message += `   ${alert.message}\n`;
         message += `   วันครบรอบ: ${new Date(alert.asset.reservationEndDate).toLocaleDateString('th-TH')}\n\n`;
       });
-      
+
       alert(message);
     }
 
     // ============================
     // ASSETS
     // ============================
+    // ---- state ----
+    let _assetPage = 1;
+    const _assetPageSize = 20;
+    let _assetView = 'card'; // 'card' | 'table'
+    let _custPage = 1;
+    const _custPageSize = 20;
+    let _custView = 'table'; // 'table' | 'card'
+
     function clearPriceFilter() {
       document.getElementById('filterPriceMin').value = '';
       document.getElementById('filterPriceMax').value = '';
+      _assetPage = 1;
       renderAssets();
     }
+    function clearCustomerPriceFilter() {
+      const mn = document.getElementById('customerPriceMin');
+      const mx = document.getElementById('customerPriceMax');
+      if (mn) mn.value = '';
+      if (mx) mx.value = '';
+      _custPage = 1;
+      renderCustomers();
+    }
+
+    function setAssetView(v) {
+      _assetView = v;
+      _assetPage = 1;
+      // highlight active btn
+      ['card', 'table'].forEach(x => {
+        const b = document.getElementById('btnAssetView' + x.charAt(0).toUpperCase() + x.slice(1));
+        if (b) b.style.background = (x === v) ? 'var(--gold)' : '';
+        if (b) b.style.color = (x === v) ? '#1a1208' : '';
+      });
+      renderAssets();
+    }
+
+    function setCustView(v) {
+      _custView = v;
+      _custPage = 1;
+      ['table', 'card'].forEach(x => {
+        const b = document.getElementById('btnCustView' + x.charAt(0).toUpperCase() + x.slice(1));
+        if (b) b.style.background = (x === v) ? 'var(--gold)' : '';
+        if (b) b.style.color = (x === v) ? '#1a1208' : '';
+      });
+      renderCustomers();
+    }
+
+    function _buildPager(currentPage, totalPages, onPage, containerId) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      if (totalPages <= 1) { el.innerHTML = ''; return; }
+      const maxBtn = 7;
+      let pages = [];
+      if (totalPages <= maxBtn) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages = [1];
+        let lo = Math.max(2, currentPage - 2);
+        let hi = Math.min(totalPages - 1, currentPage + 2);
+        if (lo > 2) pages.push('…');
+        for (let i = lo; i <= hi; i++) pages.push(i);
+        if (hi < totalPages - 1) pages.push('…');
+        pages.push(totalPages);
+      }
+      const btn = (label, page, active, disabled) =>
+        `<button onclick="${disabled || typeof page !== 'number' ? '' : onPage + '(' + page + ')'}"
+          style="min-width:34px;height:34px;border-radius:8px;border:1px solid ${active ? 'var(--gold)' : 'var(--border)'};
+          background:${active ? 'var(--gold)' : 'var(--dark3)'};color:${active ? '#1a1208' : 'var(--text)'};
+          font-weight:${active ? '700' : '400'};cursor:${disabled ? 'default' : 'pointer'};
+          font-size:13px;padding:0 6px;font-family:inherit;transition:.15s;"
+          ${disabled ? 'disabled' : ''}>${label}</button>`;
+      el.innerHTML =
+        btn('‹', currentPage - 1, false, currentPage === 1) +
+        pages.map(p => typeof p === 'number' ? btn(p, p, p === currentPage, false) : `<span style="padding:0 4px;color:var(--text3)">…</span>`).join('') +
+        btn('›', currentPage + 1, false, currentPage === totalPages) +
+        `<span style="font-size:13px;color:var(--text3);margin-left:6px;">หน้า ${currentPage}/${totalPages} (ทั้งหมด)</span>`;
+    }
+    function _goAssetPage(p) { _assetPage = p; renderAssets(); }
+    function _goCustPage(p) { _custPage = p; renderCustomers(); }
 
     // Toggle reservation fields visibility
     function toggleReservationFields() {
@@ -4398,12 +4547,12 @@
       const startDateEl = document.getElementById('a_reservationDate');
       const periodEl = document.getElementById('a_reservationPeriod');
       const endDateEl = document.getElementById('a_reservationEndDate');
-      
+
       if (!startDateEl || !periodEl || !endDateEl) return;
-      
+
       const startDate = startDateEl.value;
       const periodDays = parseInt(periodEl.value);
-      
+
       if (startDate && periodDays) {
         const start = new Date(startDate);
         const end = new Date(start);
@@ -4415,7 +4564,7 @@
     }
 
     // Auto-calculate when start date changes
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const startDateEl = document.getElementById('a_reservationDate');
       if (startDateEl) {
         startDateEl.addEventListener('change', calculateReservationEnd);
@@ -4423,13 +4572,13 @@
     });
 
     function renderAssets() {
-      const q = document.getElementById('assetSearch').value.toLowerCase();
-      const st = document.getElementById('filterStatus').value;
-      const ty = document.getElementById('filterType').value;
-      const laFilter = document.getElementById('filterListingActive') ? document.getElementById('filterListingActive').value : 'active';
-      const priceMin = document.getElementById('filterPriceMin') ? parseFloat(document.getElementById('filterPriceMin').value) : null;
-      const priceMax = document.getElementById('filterPriceMax') ? parseFloat(document.getElementById('filterPriceMax').value) : null;
-      
+      const q = (document.getElementById('assetSearch')?.value || '').toLowerCase();
+      const st = document.getElementById('filterStatus')?.value || '';
+      const ty = document.getElementById('filterType')?.value || '';
+      const laFilter = document.getElementById('filterListingActive')?.value ?? 'active';
+      const priceMin = parseFloat(document.getElementById('filterPriceMin')?.value) || null;
+      const priceMax = parseFloat(document.getElementById('filterPriceMax')?.value) || null;
+
       let list = DB.assets.filter(a => {
         const mQ = !q || (a.name || '').toLowerCase().includes(q) || (a.location || '').toLowerCase().includes(q);
         const mS = !st || a.status === st;
@@ -4439,76 +4588,119 @@
         if (laFilter === 'active') mLA = la !== 'sold';
         else if (laFilter === 'sold') mLA = la === 'sold';
         else if (laFilter === 'reserved') mLA = la === 'reserved';
-        
-        // ฟิลเตอร์ราคา - แปลงราคาเป็นตัวเลข
         let mPrice = true;
         if (priceMin || priceMax) {
-          const priceStr = (a.price || '').replace(/[^\d.]/g, ''); // ลบตัวอักษรที่ไม่ใช่ตัวเลข
-          const priceNum = parseFloat(priceStr);
-          if (!isNaN(priceNum)) {
-            if (priceMin && priceNum < priceMin) mPrice = false;
-            if (priceMax && priceNum > priceMax) mPrice = false;
+          const pNum = parseFloat((a.price || '').replace(/[^\d.]/g, ''));
+          if (!isNaN(pNum)) {
+            if (priceMin && pNum < priceMin) mPrice = false;
+            if (priceMax && pNum > priceMax) mPrice = false;
           }
         }
-        
         return mQ && mS && mT && mLA && mPrice;
       });
-      const el = document.getElementById('assetCards');
-      if (!list.length) {
-        el.innerHTML = '<div class="empty"><div class="ico">🏚️</div><div>ยังไม่มีข้อมูลทรัพย์สิน</div><div style="font-size:13px;margin-top:6px;color:var(--text3)">กด "+ เพิ่มทรัพย์สิน" เพื่อเริ่มต้น</div></div>';
-        renderStats(); return;
-      }
-      el.innerHTML = list.map(a => {
-        const ri = DB.assets.indexOf(a);
-        const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
-        const la = a.listingActive || 'available';
-        const laBadge = la === 'sold' ? `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(224,80,80,0.15);color:var(--red);margin-left:4px;">🔴 ปิดแล้ว</span>` : la === 'reserved' ? `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(201,168,76,0.15);color:var(--gold);margin-left:4px;">⏳ จอง</span>` : '';
-        
-        // คำนวณการแจ้งเตือนสำหรับการจอง
-        let reservationAlert = '';
-        if (la === 'reserved' && a.reservationEndDate) {
-          const today = new Date();
-          const endDate = new Date(a.reservationEndDate);
-          const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-          
-          if (daysLeft <= 0) {
-            reservationAlert = `<div style="background:rgba(224,80,80,0.1);border:1px solid var(--red);border-radius:8px;padding:8px 12px;margin-top:8px;font-size:12px;color:var(--red);font-weight:600;">🚨 ครบรอบการจองแล้ว!</div>`;
-          } else if (daysLeft <= 7) {
-            reservationAlert = `<div style="background:rgba(201,168,76,0.1);border:1px solid var(--gold);border-radius:8px;padding:8px 12px;margin-top:8px;font-size:12px;color:var(--gold);font-weight:600;">⚠️ ครบรอบในอีก ${daysLeft} วัน</div>`;
-          }
+
+      const totalPages = Math.max(1, Math.ceil(list.length / _assetPageSize));
+      if (_assetPage > totalPages) _assetPage = totalPages;
+      const paged = list.slice((_assetPage - 1) * _assetPageSize, _assetPage * _assetPageSize);
+
+      // pagination bar
+      _buildPager(_assetPage, totalPages, '_goAssetPage', 'assetPaginationTop');
+      _buildPager(_assetPage, totalPages, '_goAssetPage', 'assetPaginationBottom');
+
+      const cardEl = document.getElementById('assetCards');
+      const tableEl = document.getElementById('assetTable');
+      const tableBody = document.getElementById('assetTableBody');
+
+      // view toggle: card vs table
+      if (_assetView === 'table' && tableEl && tableBody) {
+        if (cardEl) cardEl.style.display = 'none';
+        tableEl.style.display = '';
+        if (!paged.length) {
+          tableBody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text3)">ไม่พบทรัพย์สินที่ตรงกับเงื่อนไข</td></tr>';
+          renderStats(); return;
         }
-        
         const canEdit = window._canEdit !== false;
         const canDelete = window._canDelete !== false;
-        return `<div class="card"${la === 'sold' ? ' style="opacity:0.6;"' : ''}>
-      <div class="card-header">
-        <div class="card-title">${a.name || '(ไม่มีชื่อ)'}</div>
-        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;"><span class="badge ${badge}">${a.status || ''}</span>${laBadge}</div>
-      </div>
-      <div class="card-body">
-        <div class="card-row"><span class="label">💰 ราคา</span><span class="price-tag">${a.price || '-'}</span></div>
-        ${a.type ? `<div class="card-row"><span class="label">🏢 ประเภท</span><span class="value">${a.type}</span></div>` : ''}
-        ${a.roomtype ? `<div class="card-row"><span class="label">🛏️ ห้อง</span><span class="value">${a.roomtype}</span></div>` : ''}
-        ${a.area ? `<div class="card-row"><span class="label">📐 ขนาด</span><span class="value">${a.area}</span></div>` : ''}
-        ${a.floor ? `<div class="card-row"><span class="label">🏗️ ชั้น</span><span class="value">${a.floor}</span></div>` : ''}
-        ${a.location ? `<div class="card-row"><span class="label">📍 ทำเล</span><span class="value">${a.location}</span></div>` : ''}
-        ${a.contact ? `<div class="card-row"><span class="label">📞 ติดต่อ</span><span class="value">${a.contact}</span></div>` : ''}
-        ${a.poster ? `<div class="card-row"><span class="label">👤 โพสต์โดย</span><span class="value">${a.poster}</span></div>` : ''}
-        ${la === 'reserved' && a.reservationEndDate ? `<div class="card-row"><span class="label">🔔 ครบรอบ</span><span class="value" style="color:var(--gold);font-weight:600;">${new Date(a.reservationEndDate).toLocaleDateString('th-TH')}</span></div>` : ''}
-        ${reservationAlert}
-      </div>
-      <div class="card-footer">
-        ${a.linkpic ? `<a href="${a.linkpic}" target="_blank" class="btn btn-purple btn-sm">🖼️ รูปภาพ</a>` : ''}
-        ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm">🔗 Link</a>` : ''}
-        ${a.map ? `<a href="${a.map}" target="_blank" class="btn btn-outline btn-sm">📍 Map</a>` : ''}
-        <button class="btn btn-blue btn-sm" onclick="quickClip(${ri})">📋 ClipB</button>
-        ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️</button>` : ''}
-        ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>` : ''}
-      </div>
-    </div>`;
-      }).join('');
+        tableBody.innerHTML = paged.map(a => {
+          const ri = DB.assets.indexOf(a);
+          const la = a.listingActive || 'available';
+          const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
+          const laBadge = la === 'sold' ? '🔴' : la === 'reserved' ? '⏳' : '✅';
+          let daysAlert = '';
+          if (la === 'reserved' && a.reservationEndDate) {
+            const dl = Math.ceil((new Date(a.reservationEndDate) - new Date()) / (864e5));
+            if (dl <= 0) daysAlert = '<span style="color:var(--red);font-size:11px;font-weight:700;">🚨ครบรอบ</span>';
+            else if (dl <= 7) daysAlert = `<span style="color:var(--gold);font-size:11px;font-weight:700;">⚠️${dl}วัน</span>`;
+          }
+          return `<tr${la === 'sold' ? ' style="opacity:0.6;"' : ''}>
+            <td style="color:var(--text3)">${ri + 1}</td>
+            <td style="font-weight:600">${a.name || '-'} ${daysAlert}</td>
+            <td><span class="badge ${badge}">${a.status || '-'}</span> ${laBadge}</td>
+            <td>${a.type || '-'}</td>
+            <td style="color:var(--gold);white-space:nowrap">${a.price || '-'}</td>
+            <td>${a.roomtype || '-'}</td>
+            <td>${a.location || '-'}</td>
+            <td style="font-size:12px">${a.contact || '-'}</td>
+            <td>${a.poster || '-'}</td>
+            <td><div style="display:flex;gap:4px">
+              ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm" style="padding:4px 8px">🔗</a>` : ''}
+              ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️</button>` : ''}
+              ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>` : ''}
+            </div></td>
+          </tr>`;
+        }).join('');
+      } else {
+        // CARD VIEW
+        if (tableEl) tableEl.style.display = 'none';
+        if (cardEl) cardEl.style.display = '';
+        if (!paged.length) {
+          cardEl.innerHTML = '<div class="empty"><div class="ico">🏚️</div><div>ยังไม่มีข้อมูลทรัพย์สิน</div><div style="font-size:13px;margin-top:6px;color:var(--text3)">กด "+ เพิ่มทรัพย์สิน" เพื่อเริ่มต้น</div></div>';
+          renderStats(); return;
+        }
+        const canEdit = window._canEdit !== false;
+        const canDelete = window._canDelete !== false;
+        cardEl.innerHTML = paged.map(a => {
+          const ri = DB.assets.indexOf(a);
+          const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
+          const la = a.listingActive || 'available';
+          const laBadge = la === 'sold' ? '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(224,80,80,0.15);color:var(--red);margin-left:4px;">🔴 ปิดแล้ว</span>' : la === 'reserved' ? '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(201,168,76,0.15);color:var(--gold);margin-left:4px;">⏳ จอง</span>' : '';
+          let reservationAlert = '';
+          if (la === 'reserved' && a.reservationEndDate) {
+            const dl = Math.ceil((new Date(a.reservationEndDate) - new Date()) / (864e5));
+            if (dl <= 0) reservationAlert = '<div style="background:rgba(224,80,80,0.1);border:1px solid var(--red);border-radius:8px;padding:8px 12px;margin-top:8px;font-size:12px;color:var(--red);font-weight:600;">🚨 ครบรอบการจองแล้ว!</div>';
+            else if (dl <= 7) reservationAlert = `<div style="background:rgba(201,168,76,0.1);border:1px solid var(--gold);border-radius:8px;padding:8px 12px;margin-top:8px;font-size:12px;color:var(--gold);font-weight:600;">⚠️ ครบรอบในอีก ${dl} วัน</div>`;
+          }
+          return `<div class="card"${la === 'sold' ? ' style="opacity:0.6;"' : ''}>
+            <div class="card-header">
+              <div class="card-title">${a.name || '(ไม่มีชื่อ)'}</div>
+              <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;"><span class="badge ${badge}">${a.status || ''}</span>${laBadge}</div>
+            </div>
+            <div class="card-body">
+              <div class="card-row"><span class="label">💰 ราคา</span><span class="price-tag">${a.price || '-'}</span></div>
+              ${a.type ? `<div class="card-row"><span class="label">🏢 ประเภท</span><span class="value">${a.type}</span></div>` : ''}
+              ${a.roomtype ? `<div class="card-row"><span class="label">🛏️ ห้อง</span><span class="value">${a.roomtype}</span></div>` : ''}
+              ${a.area ? `<div class="card-row"><span class="label">📐 ขนาด</span><span class="value">${a.area}</span></div>` : ''}
+              ${a.floor ? `<div class="card-row"><span class="label">🏗️ ชั้น</span><span class="value">${a.floor}</span></div>` : ''}
+              ${a.location ? `<div class="card-row"><span class="label">📍 ทำเล</span><span class="value">${a.location}</span></div>` : ''}
+              ${a.contact ? `<div class="card-row"><span class="label">📞 ติดต่อ</span><span class="value">${a.contact}</span></div>` : ''}
+              ${a.poster ? `<div class="card-row"><span class="label">👤 โพสต์โดย</span><span class="value">${a.poster}</span></div>` : ''}
+              ${la === 'reserved' && a.reservationEndDate ? `<div class="card-row"><span class="label">🔔 ครบรอบ</span><span class="value" style="color:var(--gold);font-weight:600;">${new Date(a.reservationEndDate).toLocaleDateString('th-TH')}</span></div>` : ''}
+              ${reservationAlert}
+            </div>
+            <div class="card-footer">
+              ${a.linkpic ? `<a href="${a.linkpic}" target="_blank" class="btn btn-purple btn-sm">🖼️ รูป</a>` : ''}
+              ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm">🔗 Link</a>` : ''}
+              ${a.map ? `<a href="${a.map}" target="_blank" class="btn btn-outline btn-sm">📍 Map</a>` : ''}
+              <button class="btn btn-blue btn-sm" onclick="quickClip(${ri})">📋 ClipB</button>
+              ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️</button>` : ''}
+              ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>` : ''}
+            </div>
+          </div>`;
+        }).join('');
+      }
       renderStats();
     }
+
 
     // ============================
     // AGENTS
@@ -4575,63 +4767,118 @@
     // CUSTOMERS
     // ============================
     function renderCustomers() {
-      const q = document.getElementById('customerSearch').value.toLowerCase();
-      let list = DB.customers.filter(a => !q || (a.name || '').toLowerCase().includes(q));
+      const q = (document.getElementById('customerSearch')?.value || '').toLowerCase();
+      const priceMin = parseFloat(document.getElementById('customerPriceMin')?.value) || null;
+      const priceMax = parseFloat(document.getElementById('customerPriceMax')?.value) || null;
+
+      let list = DB.customers.filter(a => {
+        const mQ = !q || (a.name || '').toLowerCase().includes(q) || (a.contact || '').toLowerCase().includes(q) || (a.type || '').toLowerCase().includes(q);
+        let mPrice = true;
+        if (priceMin || priceMax) {
+          const pNum = parseFloat((a.budget || '').replace(/[^\d.]/g, ''));
+          if (!isNaN(pNum)) {
+            if (priceMin && pNum < priceMin) mPrice = false;
+            if (priceMax && pNum > priceMax) mPrice = false;
+          }
+        }
+        return mQ && mPrice;
+      });
+
+      const totalPages = Math.max(1, Math.ceil(list.length / _custPageSize));
+      if (_custPage > totalPages) _custPage = totalPages;
+      const paged = list.slice((_custPage - 1) * _custPageSize, _custPage * _custPageSize);
+
+      _buildPager(_custPage, totalPages, '_goCustPage', 'customerPaginationTop');
+
       const tb = document.getElementById('customerTable');
       const ml = document.getElementById('customerMList');
-
-      if (!list.length) {
-        tb.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีข้อมูลลูกค้า</td></tr>`;
-        if (ml) ml.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีข้อมูลลูกค้า</div>`;
-        return;
-      }
-
-      // Desktop table
       const canEdit = window._canEdit !== false;
       const canDelete = window._canDelete !== false;
-      tb.innerHTML = list.map(a => {
-        const ri = DB.customers.indexOf(a);
-        const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
-        return `<tr>
-      <td style="color:var(--text3)">${ri + 1}</td>
-      <td style="font-weight:600">${a.name || '-'}</td>
-      <td><span class="badge ${badge}">${a.status || '-'}</span></td>
-      <td>${a.type || '-'}</td>
-      <td style="color:var(--gold)">${a.budget || '-'}</td>
-      <td>${a.contact || '-'}</td>
-      <td style="font-size:12px">${a.linkpost ? `<a href="${a.linkpost}" target="_blank" style="color:var(--blue)">🔗 Link</a>` : '-'}</td>
-      <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.note || '-'}</td>
-      <td><div style="display:flex;gap:5px">
-        ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editCustomer(${ri})">✏️</button>` : ''}
-        ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${ri})">🗑️</button>` : ''}
-      </div></td>
-    </tr>`;
-      }).join('');
 
-      // Mobile card list
-      if (ml) ml.innerHTML = list.map(a => {
-        const ri = DB.customers.indexOf(a);
-        const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
-        return `<div class="m-card">
-          <span class="m-card-num">#${ri + 1}</span>
-          <div class="m-card-top">
-            <div>
-              <div class="m-card-name">${a.name || '-'}</div>
-              <div class="m-card-sub">${a.type || ''}</div>
+      if (_custView === 'card') {
+        // CARD VIEW (mobile-style)
+        if (tb) tb.innerHTML = '';
+        if (ml) {
+          if (!paged.length) {
+            ml.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">ไม่พบลูกค้าที่ตรงกับเงื่อนไข</div>';
+            return;
+          }
+          ml.innerHTML = paged.map(a => {
+            const ri = DB.customers.indexOf(a);
+            const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
+            return `<div class="m-card">
+              <span class="m-card-num">#${ri + 1}</span>
+              <div class="m-card-top">
+                <div>
+                  <div class="m-card-name">${a.name || '-'}</div>
+                  <div class="m-card-sub">${a.type || ''}</div>
+                </div>
+                <span class="badge ${badge}">${a.status || '-'}</span>
+              </div>
+              ${a.budget ? `<div class="m-card-row"><span class="m-card-label">💰 งบ</span><span class="m-card-val gold">${a.budget}</span></div>` : ''}
+              ${a.contact ? `<div class="m-card-row"><span class="m-card-label">📞 Contact</span><span class="m-card-val">${a.contact}</span></div>` : ''}
+              ${a.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${a.note}</span></div>` : ''}
+              <div class="m-card-actions">
+                ${a.linkpost ? `<a class="btn btn-outline" href="${a.linkpost}" target="_blank" style="flex:1;justify-content:center;display:flex;align-items:center;min-height:42px;font-size:14px;border-radius:10px;text-decoration:none;">🔗 Post</a>` : ''}
+                ${canEdit ? `<button class="btn btn-outline" onclick="editCustomer(${ri})">✏️ แก้ไข</button>` : ''}
+                ${canDelete ? `<button class="btn btn-danger" onclick="deleteItem('customers',${ri})">🗑️</button>` : ''}
+              </div>
+            </div>`;
+          }).join('');
+        }
+      } else {
+        // TABLE VIEW
+        if (ml) ml.innerHTML = '';
+        if (!tb) return;
+        if (!paged.length) {
+          tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">ไม่พบลูกค้าที่ตรงกับเงื่อนไข</td></tr>';
+          return;
+        }
+        tb.innerHTML = paged.map(a => {
+          const ri = DB.customers.indexOf(a);
+          const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
+          return `<tr>
+            <td style="color:var(--text3)">${ri + 1}</td>
+            <td style="font-weight:600">${a.name || '-'}</td>
+            <td><span class="badge ${badge}">${a.status || '-'}</span></td>
+            <td>${a.type || '-'}</td>
+            <td style="color:var(--gold)">${a.budget || '-'}</td>
+            <td>${a.contact || '-'}</td>
+            <td style="font-size:12px">${a.linkpost ? `<a href="${a.linkpost}" target="_blank" style="color:var(--blue)">🔗 Link</a>` : '-'}</td>
+            <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.note || '-'}</td>
+            <td><div style="display:flex;gap:5px">
+              ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editCustomer(${ri})">✏️</button>` : ''}
+              ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${ri})">🗑️</button>` : ''}
+            </div></td>
+          </tr>`;
+        }).join('');
+
+        // Mobile cards alongside table (for small screens, show cards instead)
+        if (ml) ml.innerHTML = paged.map(a => {
+          const ri = DB.customers.indexOf(a);
+          const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
+          return `<div class="m-card">
+            <span class="m-card-num">#${ri + 1}</span>
+            <div class="m-card-top">
+              <div>
+                <div class="m-card-name">${a.name || '-'}</div>
+                <div class="m-card-sub">${a.type || ''}</div>
+              </div>
+              <span class="badge ${badge}">${a.status || '-'}</span>
             </div>
-            <span class="badge ${badge}">${a.status || '-'}</span>
-          </div>
-          ${a.budget ? `<div class="m-card-row"><span class="m-card-label">💰 งบ</span><span class="m-card-val gold">${a.budget}</span></div>` : ''}
-          ${a.contact ? `<div class="m-card-row"><span class="m-card-label">📞 Contact</span><span class="m-card-val">${a.contact}</span></div>` : ''}
-          ${a.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${a.note}</span></div>` : ''}
-          <div class="m-card-actions">
-            ${a.linkpost ? `<a class="btn btn-outline" href="${a.linkpost}" target="_blank" style="flex:1;justify-content:center;display:flex;align-items:center;min-height:42px;font-size:14px;border-radius:10px;text-decoration:none;">🔗 Post</a>` : ''}
-            ${canEdit ? `<button class="btn btn-outline" onclick="editCustomer(${ri})">✏️ แก้ไข</button>` : ''}
-            ${canDelete ? `<button class="btn btn-danger" onclick="deleteItem('customers',${ri})">🗑️</button>` : ''}
-          </div>
-        </div>`;
-      }).join('');
+            ${a.budget ? `<div class="m-card-row"><span class="m-card-label">💰 งบ</span><span class="m-card-val gold">${a.budget}</span></div>` : ''}
+            ${a.contact ? `<div class="m-card-row"><span class="m-card-label">📞 Contact</span><span class="m-card-val">${a.contact}</span></div>` : ''}
+            ${a.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${a.note}</span></div>` : ''}
+            <div class="m-card-actions">
+              ${a.linkpost ? `<a class="btn btn-outline" href="${a.linkpost}" target="_blank" style="flex:1;justify-content:center;display:flex;align-items:center;min-height:42px;font-size:14px;border-radius:10px;text-decoration:none;">🔗 Post</a>` : ''}
+              ${canEdit ? `<button class="btn btn-outline" onclick="editCustomer(${ri})">✏️ แก้ไข</button>` : ''}
+              ${canDelete ? `<button class="btn btn-danger" onclick="deleteItem('customers',${ri})">🗑️</button>` : ''}
+            </div>
+          </div>`;
+        }).join('');
+      }
     }
+
 
     // ============================
     // USER MANAGEMENT
@@ -4838,14 +5085,14 @@
         contact: v('a_contact'), poster: v('a_poster'), note: v('a_note'),
         listingActive: activeVal ? activeVal.value : 'available'
       };
-      
+
       // เพิ่มข้อมูลการจอง (ถ้าเลือกสถานะ "จอง")
       if (a.listingActive === 'reserved') {
         a.reservationDate = v('a_reservationDate');
         a.reservationPeriod = v('a_reservationPeriod');
         a.reservationEndDate = v('a_reservationEndDate');
       }
-      
+
       if (!a.name) { alert('❌ กรุณาใส่ชื่อโครงการ'); return; }
       if (!a.link) { alert('❌ กรุณาใส่ Link โครงการ/Facebook'); return; }
       if (editMode.idx >= 0) {
@@ -4880,18 +5127,18 @@
       setV('a_link', a.link); setV('a_map', a.map); setV('a_linkpic', a.linkpic); setV('a_postdate', a.postdate); setV('a_updatedate', a.updatedate);
       setV('a_contact', a.contact); setV('a_note', a.note);
       populatePosterSelect(a.poster || '');
-      
+
       // set listing active radio
       const la = a.listingActive || 'available';
       const laEl = document.getElementById('a_active_' + la);
       if (laEl) laEl.checked = true; else document.getElementById('a_active_available').checked = true;
-      
+
       // โหลดข้อมูลการจอง (ถ้ามี)
       if (a.reservationDate) setV('a_reservationDate', a.reservationDate);
       if (a.reservationPeriod) setV('a_reservationPeriod', a.reservationPeriod);
       if (a.reservationEndDate) setV('a_reservationEndDate', a.reservationEndDate);
       toggleReservationFields();
-      
+
       editMode = { type: 'asset', idx: i };
       document.getElementById('modalAsset').classList.add('open');
     }
