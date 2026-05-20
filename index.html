@@ -2280,6 +2280,120 @@
         font-size: 12px;
       }
     }
+
+    /* ======================================================== */
+    /* UNIFIED SETTINGS LAYOUT */
+    /* ======================================================== */
+    .settings-container {
+      display: flex;
+      gap: 24px;
+      margin-top: 16px;
+      min-height: 500px;
+    }
+    .settings-nav {
+      width: 240px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .snav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      background: var(--dark3);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: left;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    }
+    .snav-item:hover {
+      background: var(--dark4);
+      border-color: var(--border);
+    }
+    .snav-item.active {
+      background: var(--gold);
+      color: #1a1208;
+      border-color: var(--gold);
+      box-shadow: 0 4px 12px rgba(192, 120, 0, 0.2);
+    }
+    .snav-item:active {
+      transform: scale(0.98);
+    }
+    .settings-content {
+      flex: 1;
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .settings-section {
+      display: none;
+      animation: settingsFadeIn 0.25s ease-out;
+    }
+    .settings-section.active {
+      display: block;
+    }
+    .settings-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--gold);
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--border2);
+      padding-bottom: 8px;
+    }
+    .settings-panel {
+      background: var(--dark3);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .settings-panel h4 {
+      font-size: 14px;
+      color: var(--gold);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+    @keyframes settingsFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 768px) {
+      .settings-container {
+        flex-direction: column;
+        gap: 16px;
+      }
+      .settings-nav {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+      }
+      .snav-item {
+        white-space: nowrap;
+        width: auto;
+        padding: 10px 14px;
+        font-size: 13px;
+        scroll-snap-align: start;
+      }
+      .settings-content {
+        padding: 16px;
+      }
+    }
   </style>
 </head>
 
@@ -2354,9 +2468,7 @@
         <button class="htab" id="tabCustomers" onclick="switchTab('customers',this)">🤝 ลูกค้า</button>
         <button class="htab" id="tabClipboard" onclick="switchTab('clipboard',this)">📋 ClipB</button>
         <button class="htab" id="tabAgents" onclick="switchTab('agents',this)">👤 Agent</button>
-        <button class="htab" id="tabIedata" onclick="switchTab('iedata',this)">⚙️ Import/Export</button>
-        <button class="htab" id="tabUsers" onclick="switchTab('users',this)" style="display:none">👥 จัดการ
-          User</button>
+        <button class="htab" id="tabSettings" onclick="switchTab('settings',this)">⚙️ ตั้งค่า</button>
       </div>
       <div class="header-user">
         <!-- Firebase Status -->
@@ -2418,8 +2530,7 @@
       </button>
       <!-- hidden items used by applyRoleAccess logic only -->
       <span id="bnav-agents" style="display:none"></span>
-      <span id="bnav-users" style="display:none"></span>
-      <span id="bnav-iedata" style="display:none"></span>
+      <span id="bnav-settings" style="display:none"></span>
     </nav>
 
     <!-- Mobile section title bar -->
@@ -2660,245 +2771,251 @@
         </div>
       </div>
 
-      <!-- =================== IMPORT / EXPORT (CSV) =================== -->
-      <div id="sec-iedata" class="section">
-
-        <!-- IMPORT -->
-        <div class="ie-panel" id="importPanel">
-          <h3 style="color:var(--gold);font-size:16px;margin-bottom:6px;">📥 Import ข้อมูล (CSV)</h3>
-          <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">อัพโหลดไฟล์ CSV เพื่อนำเข้าข้อมูลทรัพย์สิน,
-            Agent หรือลูกค้า</p>
-          <div class="alert alert-info" style="margin-bottom:16px;display:flex;align-items:center;gap:8px;">
-            <span style="font-size:15px;">💡</span>
-            <span>ไฟล์ CSV ต้องมี header row ตรงกับรูปแบบที่ Export ออกมา</span>
+      <!-- =================== UNIFIED SETTINGS =================== -->
+      <div id="sec-settings" class="section">
+        <div class="settings-container">
+          <div class="settings-nav">
+            <button class="snav-item active" onclick="switchSettingsTab('profile', this)">👤 บัญชีของฉัน</button>
+            <button class="snav-item admin-only" id="snav-users" onclick="switchSettingsTab('users', this)">👥 จัดการผู้ใช้</button>
+            <button class="snav-item admin-only" id="snav-firebase" onclick="switchSettingsTab('firebase', this)">🔥 เชื่อมต่อ Firebase</button>
+            <button class="snav-item admin-only" id="snav-backup" onclick="switchSettingsTab('backup', this)">💾 สำรองข้อมูล</button>
+            <button class="snav-item admin-only" id="snav-csv" onclick="switchSettingsTab('csv', this)">📥 นำเข้า/ส่งออก (CSV)</button>
+            <button class="snav-item admin-only" id="snav-reset" onclick="switchSettingsTab('reset', this)">🗑️ ล้างข้อมูลระบบ</button>
           </div>
-          <div
-            style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:18px;">
-            <!-- ทรัพย์สิน -->
-            <div style="background:var(--dark3);border:1px solid var(--border);border-radius:12px;padding:16px;">
-              <div style="font-size:20px;margin-bottom:6px;">🏠</div>
-              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">ทรัพย์สิน</div>
-              <input type="file" id="importAssetsCSV" accept=".csv" style="display:none"
-                onchange="importCSV(event,'assets')">
-              <button class="btn btn-outline btn-sm" onclick="document.getElementById('importAssetsCSV').click()"
-                style="width:100%;justify-content:center;">
-                <span style="font-size:15px;">📁</span> เลือกไฟล์ CSV
-              </button>
-            </div>
-            <!-- Agent -->
-            <div style="background:var(--dark3);border:1px solid var(--border);border-radius:12px;padding:16px;">
-              <div style="font-size:20px;margin-bottom:6px;">👤</div>
-              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">Agent</div>
-              <input type="file" id="importAgentsCSV" accept=".csv" style="display:none"
-                onchange="importCSV(event,'agents')">
-              <button class="btn btn-outline btn-sm" onclick="document.getElementById('importAgentsCSV').click()"
-                style="width:100%;justify-content:center;">
-                <span style="font-size:15px;">📁</span> เลือกไฟล์ CSV
-              </button>
-            </div>
-            <!-- ลูกค้า -->
-            <div style="background:var(--dark3);border:1px solid var(--border);border-radius:12px;padding:16px;">
-              <div style="font-size:20px;margin-bottom:6px;">🤝</div>
-              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">ลูกค้า</div>
-              <input type="file" id="importCustomersCSV" accept=".csv" style="display:none"
-                onchange="importCSV(event,'customers')">
-              <button class="btn btn-outline btn-sm" onclick="document.getElementById('importCustomersCSV').click()"
-                style="width:100%;justify-content:center;">
-                <span style="font-size:15px;">📁</span> เลือกไฟล์ CSV
-              </button>
-            </div>
-          </div>
-          <div style="font-size:13px;color:var(--text2);margin-bottom:10px;">หรือโหลดข้อมูลตัวอย่าง:</div>
-          <button class="btn btn-outline" onclick="importSampleData()" style="font-weight:700;">
-            ⚡ โหลดข้อมูลตัวอย่าง
-          </button>
-        </div>
 
-        <!-- EXPORT -->
-        <div class="ie-panel" id="exportPanel">
-          <h3 style="color:var(--gold);font-size:16px;margin-bottom:6px;">📤 Export ข้อมูล (CSV)</h3>
-          <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">ดาวน์โหลดข้อมูลเป็นไฟล์ CSV สำหรับเปิดใน
-            Excel หรือ Google Sheets</p>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <button class="btn btn-green" onclick="exportCSV('assets')">📊 Export ทรัพย์สิน</button>
-            <button class="btn btn-blue" onclick="exportCSV('agents')">📊 Export Agent</button>
-            <button class="btn btn-purple" onclick="exportCSV('customers')">📊 Export ลูกค้า</button>
-            <button class="btn btn-outline" onclick="exportCSV('all')">📦 Export ทั้งหมด (ZIP 3 ไฟล์)</button>
-          </div>
-        </div>
+          <div class="settings-content">
+            <!-- บัญชีของฉัน -->
+            <div id="ssec-profile" class="settings-section active">
+              <h3 class="settings-title">👤 บัญชีของฉัน</h3>
+              <div class="settings-panel">
+                <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+                  <div id="profileAvatar" style="width:52px;height:52px;border-radius:50%;background:var(--gold);color:#1a1208;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;box-shadow:0 4px 10px rgba(192,120,0,0.15);"></div>
+                  <div>
+                    <div id="profileName" style="font-size:17px;font-weight:800;color:var(--text);">ผู้ใช้งาน</div>
+                    <div id="profileEmail" style="font-size:13px;color:var(--text3);">email@example.com</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                  <button class="btn btn-primary btn-sm" onclick="openModal('changePw')">🔑 เปลี่ยนรหัสผ่าน</button>
+                  <button class="btn btn-danger btn-sm" onclick="doLogout()">ออกระบบ</button>
+                </div>
+              </div>
 
-        <!-- CLEAR DATA (Admin only) -->
-        <div class="ie-panel" id="clearDataPanel">
-          <h3>🗑️ จัดการข้อมูล</h3>
-          <p style="color:rgba(224,80,80,0.8);">⚠️ เฉพาะ Admin เท่านั้น</p>
-          <button class="btn btn-danger" onclick="clearAllData()">ลบข้อมูลทั้งหมด</button>
+              <!-- โหมดจัดเก็บข้อมูล -->
+              <div class="settings-panel">
+                <h4>💾 โหมดจัดเก็บข้อมูล (Storage Mode)</h4>
+                <p style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.6;">
+                  เลือกว่าจะจัดเก็บข้อมูลในเครื่องนี้เท่านั้น (Offline) หรือเชื่อมโยงซิงก์ข้อมูลกับ Cloud Firestore เพื่อใช้งานร่วมกันหลายเครื่อง
+                </p>
+                <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+                  <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;background:var(--dark4);padding:14px;border-radius:12px;border:1px solid var(--border2);transition:border-color 0.2s;">
+                    <input type="radio" name="yb_storage_mode" value="local" style="margin-top:4px;accent-color:var(--gold);" onchange="toggleStorageMode(this.value)">
+                    <div>
+                      <span style="font-weight:700;font-size:13px;color:var(--text);">📴 Offline Local Mode (เก็บข้อมูลในเครื่องนี้เท่านั้น)</span>
+                      <span style="display:block;font-size:11px;color:var(--text3);margin-top:4px;line-height:1.5;">เก็บข้อมูลในเบราว์เซอร์ของเครื่องนี้โดยตรง โหลดเร็วที่สุด ทำงานได้ทันทีหลังล็อกอินโดยไม่ต้องต่ออินเทอร์เน็ต</span>
+                    </div>
+                  </label>
+                  <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;background:var(--dark4);padding:14px;border-radius:12px;border:1px solid var(--border2);transition:border-color 0.2s;">
+                    <input type="radio" name="yb_storage_mode" value="firebase" checked style="margin-top:4px;accent-color:var(--gold);" onchange="toggleStorageMode(this.value)">
+                    <div>
+                      <span style="font-weight:700;font-size:13px;color:var(--text);">🌐 Firebase Cloud Mode (ซิงก์ข้อมูลผ่านคลาวด์)</span>
+                      <span style="display:block;font-size:11px;color:var(--text3);margin-top:4px;line-height:1.5;">เชื่อมต่อกับ Firebase Firestore อัปเดตและเข้าถึงข้อมูลชุดเดียวกันแบบเรียลไทม์ผ่านคอมพิวเตอร์และมือถือหลายเครื่อง (ต้องกรอก Firebase Config)</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- จัดการผู้ใช้ -->
+            <div id="ssec-users" class="settings-section">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                <h3 class="settings-title" style="margin:0;border:none;padding:0;flex:1;">👥 จัดการผู้ใช้งาน</h3>
+                <button class="btn btn-primary btn-sm" onclick="openModal('user')">+ เพิ่ม User</button>
+              </div>
+              <div style="background:var(--dark3);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:16px;font-size:13px;line-height:1.8;">
+                <div style="font-weight:700;color:var(--gold);margin-bottom:8px;">💡 ระดับสิทธิ์ในระบบ</div>
+                <div><span style="color:var(--gold);font-weight:600;">⭐ admin</span> — เข้าถึงทุกส่วน: ทรัพย์สิน, Agent, ลูกค้า, Clipboard, และจัดการระบบทั้งหมด</div>
+                <div><span style="color:var(--green);font-weight:600;">🏠 agent</span> — เพิ่ม/แก้ไขทรัพย์สินและลูกค้าได้ <strong style="color:var(--red);">แต่ลบข้อมูลไม่ได้</strong> และเข้าถึงการตั้งค่าระบบไม่ได้</div>
+                <div><span style="color:var(--blue);font-weight:600;">👁️ viewer</span> — ดูข้อมูลทรัพย์สินได้อย่างเดียว อ่านอย่างเดียว</div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>อีเมล (Login)</th>
+                      <th>ชื่อ-นามสกุล</th>
+                      <th>Role</th>
+                      <th>เชื่อม Agent</th>
+                      <th>หมายเหตุ</th>
+                      <th>จัดการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="userTable"></tbody>
+                </table>
+              </div>
+              <div class="m-list" id="userMList"></div>
+            </div>
+
+            <!-- เชื่อมต่อ Firebase -->
+            <div id="ssec-firebase" class="settings-section">
+              <h3 class="settings-title">🔥 เชื่อมต่อ Firebase</h3>
+              <div class="settings-panel">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                  <div style="font-size:15px;font-weight:700;color:var(--gold);">ข้อมูลการเชื่อมต่อ Firebase Cloud</div>
+                  <span id="realtimeSyncBadge" style="font-size:12px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--dark4);">⚫ Real-time Sync ปิด</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:12px;margin-bottom:16px;">
+                  <div class="form-group"><label style="font-size:12px;">API Key</label><input id="fb_apiKey" placeholder="AIzaSy..." style="font-size:12px;font-family:monospace;"></div>
+                  <div class="form-group"><label style="font-size:12px;">Auth Domain</label><input id="fb_authDomain" placeholder="project.firebaseapp.com" style="font-size:12px;font-family:monospace;"></div>
+                  <div class="form-group"><label style="font-size:12px;">Project ID</label><input id="fb_projectId" placeholder="your-project-id" style="font-size:12px;font-family:monospace;"></div>
+                  <div class="form-group"><label style="font-size:12px;">Storage Bucket</label><input id="fb_storageBucket" placeholder="project.appspot.com" style="font-size:12px;font-family:monospace;"></div>
+                  <div class="form-group"><label style="font-size:12px;">Messaging Sender ID</label><input id="fb_messagingSenderId" placeholder="123456789" style="font-size:12px;font-family:monospace;"></div>
+                  <div class="form-group"><label style="font-size:12px;">App ID</label><input id="fb_appId" placeholder="1:123:web:abc" style="font-size:12px;font-family:monospace;"></div>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                  <button class="btn btn-primary" onclick="saveFbConfig()">💾 บันทึกและเชื่อมต่อ Firebase</button>
+                  <div id="fbConfigStatus" style="display:flex;align-items:center;font-size:13px;color:var(--green);font-weight:600;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- สำรองข้อมูล -->
+            <div id="ssec-backup" class="settings-section">
+              <h3 class="settings-title">💾 สำรองข้อมูล (Backup & Restore)</h3>
+              
+              <!-- Manual Backup -->
+              <div class="settings-panel">
+                <h4 style="font-size:14px;color:var(--gold);margin-bottom:8px;">📥 สำรองและกู้คืนข้อมูลด้วยตนเอง</h4>
+                <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">ดาวน์โหลดข้อมูลทั้งหมดหรือกู้คืนข้อมูลผ่านไฟล์ JSON</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+                  <button class="btn btn-green btn-sm" onclick="backupAll()">📥 Backup ทั้งหมด (.json)</button>
+                  <button class="btn btn-blue btn-sm" onclick="backupUsers()">👥 Backup Users (.json)</button>
+                  <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+                    📤 Restore จาก Backup
+                    <input type="file" accept=".json" onchange="restoreBackup(event)" style="display:none;">
+                  </label>
+                </div>
+                <div style="border-top:1px solid var(--border2);padding-top:14px;">
+                  <h4 style="font-size:14px;color:var(--gold);margin-bottom:8px;">🔄 ซิงก์ข้อมูล Firebase แมนนวล</h4>
+                  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button class="btn btn-outline btn-sm" onclick="forceSyncToFirebase()">⬆️ Push ข้อมูล local → Firebase</button>
+                    <button class="btn btn-outline btn-sm" onclick="forceSyncFromFirebase()">⬇️ Pull ข้อมูล Firebase → local</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Auto Backup -->
+              <div class="settings-panel">
+                <h4>📅 Auto Backup ตามกำหนดเวลา</h4>
+                <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">ส่งไฟล์สำรองข้อมูลไปยังอีเมลของคุณผ่านระบบ EmailJS อัตโนมัติ</p>
+                <div style="display:align-items:center;gap:10px;margin-bottom:14px;">
+                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;font-weight:600;">
+                    <input type="checkbox" id="bs_enabled" style="width:18px;height:18px;accent-color:var(--gold);">
+                    เปิดใช้งาน Auto Backup
+                  </label>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:14px;">
+                  <div class="form-group">
+                    <label style="font-size:12px;">📧 อีเมลปลายทาง</label>
+                    <input id="bs_emailTo" placeholder="backup@gmail.com" type="email" style="font-size:12px;">
+                  </div>
+                  <div class="form-group">
+                    <label style="font-size:12px;">⏱️ รอบการสำรองข้อมูล</label>
+                    <select id="bs_interval" style="font-size:12px;">
+                      <option value="6">ทุก 6 ชั่วโมง</option>
+                      <option value="12">ทุก 12 ชั่วโมง</option>
+                      <option value="24" selected>ทุก 24 ชั่วโมง</option>
+                      <option value="48">ทุก 2 วัน</option>
+                      <option value="168">ทุกสัปดาห์</option>
+                    </select>
+                  </div>
+                </div>
+                <div style="background:var(--dark4);border-radius:12px;padding:14px;font-size:12px;border:1px solid var(--border2);margin-bottom:14px;">
+                  <div style="font-weight:700;color:var(--gold);margin-bottom:8px;">🔗 ตั้งค่าบัญชี EmailJS</div>
+                  <div style="color:var(--text3);margin-bottom:10px;">สร้าง Service + Template ใน <a href="https://www.emailjs.com" target="_blank" style="color:var(--blue);text-decoration:underline;">emailjs.com</a> แล้วระบุไอดีด้านล่าง:</div>
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));gap:8px;">
+                    <div class="form-group"><label style="font-size:11px;">Service ID</label><input id="bs_ejsService" placeholder="service_xxx" style="font-size:11px;font-family:monospace;"></div>
+                    <div class="form-group"><label style="font-size:11px;">Template ID</label><input id="bs_ejsTemplate" placeholder="template_xxx" style="font-size:11px;font-family:monospace;"></div>
+                    <div class="form-group"><label style="font-size:11px;">Public Key</label><input id="bs_ejsKey" placeholder="xxxxxxxxxxxx" style="font-size:11px;font-family:monospace;"></div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                  <button class="btn btn-primary btn-sm" onclick="saveBackupSettings()">💾 บันทึกการตั้งค่า Backup</button>
+                  <button class="btn btn-green btn-sm" onclick="runAutoBackup(true)">🧪 ทดสอบส่ง Backup ตอนนี้</button>
+                  <div id="bs_lastBackup" style="font-size:12px;color:var(--text3);font-weight:600;">ยังไม่เคย Backup</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- นำเข้า/ส่งออก -->
+            <div id="ssec-csv" class="settings-section">
+              <h3 class="settings-title">📥 นำเข้าและส่งออกข้อมูล (CSV)</h3>
+              
+              <!-- Import -->
+              <div class="settings-panel" id="importPanel">
+                <h4>📥 นำเข้าข้อมูลผ่านไฟล์ CSV</h4>
+                <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">เลือกอัปโหลดไฟล์ CSV เพื่อนำเข้าข้อมูล ทรัพย์สิน, Agent หรือลูกค้า</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;margin-bottom:16px;">
+                  <div style="background:var(--dark4);border:1px solid var(--border2);border-radius:12px;padding:16px;text-align:center;">
+                    <div style="font-size:24px;margin-bottom:8px;">🏠</div>
+                    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">ทรัพย์สิน</div>
+                    <input type="file" id="importAssetsCSV" accept=".csv" style="display:none" onchange="importCSV(event,'assets')">
+                    <button class="btn btn-outline btn-sm" onclick="document.getElementById('importAssetsCSV').click()" style="width:100%;justify-content:center;">📁 เลือกไฟล์</button>
+                  </div>
+                  <div style="background:var(--dark4);border:1px solid var(--border2);border-radius:12px;padding:16px;text-align:center;">
+                    <div style="font-size:24px;margin-bottom:8px;">👤</div>
+                    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">Agent</div>
+                    <input type="file" id="importAgentsCSV" accept=".csv" style="display:none" onchange="importCSV(event,'agents')">
+                    <button class="btn btn-outline btn-sm" onclick="document.getElementById('importAgentsCSV').click()" style="width:100%;justify-content:center;">📁 เลือกไฟล์</button>
+                  </div>
+                  <div style="background:var(--dark4);border:1px solid var(--border2);border-radius:12px;padding:16px;text-align:center;">
+                    <div style="font-size:24px;margin-bottom:8px;">🤝</div>
+                    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">ลูกค้า</div>
+                    <input type="file" id="importCustomersCSV" accept=".csv" style="display:none" onchange="importCSV(event,'customers')">
+                    <button class="btn btn-outline btn-sm" onclick="document.getElementById('importCustomersCSV').click()" style="width:100%;justify-content:center;">📁 เลือกไฟล์</button>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="font-size:12px;color:var(--text3);">ต้องการข้อมูลสำหรับทดลองระบบหรือไม่?</span>
+                  <button class="btn btn-outline btn-sm" onclick="importSampleData()" style="font-weight:700;">⚡ โหลดข้อมูลตัวอย่าง</button>
+                </div>
+              </div>
+
+              <!-- Export -->
+              <div class="settings-panel" id="exportPanel">
+                <h4>📤 ส่งออกข้อมูลเป็น CSV</h4>
+                <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">ดาวน์โหลดข้อมูลอสังหาริมทรัพย์และลูกค้าของคุณเพื่อใช้ใน Excel หรือ Google Sheets</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                  <button class="btn btn-green btn-sm" onclick="exportCSV('assets')">📊 Export ทรัพย์สิน</button>
+                  <button class="btn btn-blue btn-sm" onclick="exportCSV('agents')">📊 Export Agent</button>
+                  <button class="btn btn-purple btn-sm" onclick="exportCSV('customers')">📊 Export ลูกค้า</button>
+                  <button class="btn btn-outline btn-sm" onclick="exportCSV('all')">📦 Export ทั้งหมด (ZIP)</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ล้างข้อมูลระบบ -->
+            <div id="ssec-reset" class="settings-section">
+              <h3 class="settings-title">🗑️ ล้างข้อมูลระบบ (Reset Database)</h3>
+              <div class="settings-panel" style="border:1px solid rgba(224,80,80,0.3);background:rgba(224,80,80,0.03);">
+                <h4 style="color:var(--red);">⚠️ การกระทำนี้ไม่สามารถย้อนกลับได้</h4>
+                <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6;">
+                  ข้อมูลทรัพย์สิน, ลูกค้า, Agent และไฟล์แนบทั้งหมดที่อยู่ในเครื่องนี้ (หรือใน Firebase ของคุณ) จะถูกลบออกอย่างถาวร กรุณาสำรองข้อมูลก่อนดำเนินการ
+                </p>
+                <div style="max-width:320px;margin-bottom:16px;">
+                  <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;font-weight:700;">พิมพ์คำว่า <span style="color:var(--red);font-family:monospace;font-size:13px;background:rgba(224,80,80,0.1);padding:2px 6px;border-radius:4px;">CONFIRM</span> เพื่อยืนยันการลบ:</label>
+                  <input type="text" id="resetConfirmInput" placeholder="กรอกคำยืนยันที่นี่" style="width:100%;font-size:13px;border-color:var(--border);">
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="confirmSystemReset()">🗑️ ยืนยันลบข้อมูลทั้งหมด</button>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
 
-      <!-- =================== USER MANAGEMENT (Admin only) =================== -->
-      <div id="sec-users" class="section">
-        <div class="toolbar">
-          <div style="font-size:18px;font-weight:700;color:var(--gold);">👥 จัดการผู้ใช้งาน</div>
-          <button class="btn btn-primary" onclick="openModal('user')" style="margin-left:auto;">+ เพิ่ม User</button>
-        </div>
-        <!-- Role info card -->
-        <div
-          style="background:var(--dark3);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:16px;font-size:13px;line-height:1.9;">
-          <div style="font-weight:700;color:var(--gold);margin-bottom:8px;">💡 ระดับสิทธิ์ในระบบ</div>
-          <div><span style="color:var(--gold);font-weight:600;">⭐ admin</span> — เข้าถึงทุกส่วน: ทรัพย์สิน, Agent,
-            ลูกค้า, Clipboard, Import/Export, จัดการ User, ลบข้อมูลได้ทุกอย่าง</div>
-          <div><span style="color:var(--green);font-weight:600;">🏠 agent</span> — เพิ่ม/แก้ไขทรัพย์สินและลูกค้า, ใช้
-            Clipboard ได้
-            <strong style="color:var(--red);">แต่ลบไม่ได้</strong> และ Import/Export ไม่ได้ &nbsp;·&nbsp;
-            สามารถเชื่อมกับ Agent record ได้
-          </div>
-          <div><span style="color:var(--blue);font-weight:600;">👁️ viewer</span> — เห็นเฉพาะทรัพย์สิน อ่านอย่างเดียว
-          </div>
-          <div style="margin-top:6px;color:var(--text3);">📌 User account กับข้อมูล Agent แยกกัน — Agent
-            คือข้อมูลนายหน้า, User คือบัญชี login ที่อาจเชื่อมกับ Agent หรือไม่ก็ได้</div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>อีเมล (Login)</th>
-                <th>ชื่อ-นามสกุล</th>
-                <th>Role</th>
-                <th>เชื่อม Agent</th>
-                <th>หมายเหตุ</th>
-                <th>จัดการ</th>
-              </tr>
-            </thead>
-            <tbody id="userTable"></tbody>
-          </table>
-        </div>
-        <!-- Mobile card list for users -->
-        <div class="m-list" id="userMList"></div>
-
-        <!-- Firebase Config Panel -->
-        <div
-          style="margin-top:24px;background:var(--dark3);border:1px solid var(--border);border-radius:14px;padding:20px;">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
-            <div style="font-size:15px;font-weight:700;color:var(--gold);">🔥 Firebase Configuration</div>
-            <span id="realtimeSyncBadge" style="font-size:12px;font-weight:600;">⚫ Real-time Sync ปิด</span>
-          </div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">บันทึกครั้งเดียว —
-            ระบบจะเชื่อมต่ออัตโนมัติทุกครั้ง ไม่ต้องตั้งค่าใหม่</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div class="form-group"><label style="font-size:12px;">API Key</label><input id="fb_apiKey"
-                placeholder="AIzaSy..." style="font-size:12px;font-family:monospace;"></div>
-            <div class="form-group"><label style="font-size:12px;">Auth Domain</label><input id="fb_authDomain"
-                placeholder="project.firebaseapp.com" style="font-size:12px;font-family:monospace;"></div>
-            <div class="form-group"><label style="font-size:12px;">Project ID</label><input id="fb_projectId"
-                placeholder="your-project-id" style="font-size:12px;font-family:monospace;"></div>
-            <div class="form-group"><label style="font-size:12px;">Storage Bucket</label><input id="fb_storageBucket"
-                placeholder="project.appspot.com" style="font-size:12px;font-family:monospace;"></div>
-            <div class="form-group"><label style="font-size:12px;">Messaging Sender ID</label><input
-                id="fb_messagingSenderId" placeholder="123456789" style="font-size:12px;font-family:monospace;"></div>
-            <div class="form-group"><label style="font-size:12px;">App ID</label><input id="fb_appId"
-                placeholder="1:123:web:abc" style="font-size:12px;font-family:monospace;"></div>
-          </div>
-          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center;">
-            <button class="btn btn-primary" onclick="saveFbConfig()">💾 บันทึกและเชื่อมต่อ Firebase</button>
-            <div id="fbConfigStatus" style="display:flex;align-items:center;font-size:13px;color:var(--green);"></div>
-          </div>
-        </div>
-
-        <!-- Backup Panel -->
-        <div
-          style="margin-top:16px;background:var(--dark3);border:1px solid var(--border);border-radius:14px;padding:20px;">
-          <div style="font-size:15px;font-weight:700;color:var(--gold);margin-bottom:4px;">💾 Backup & Restore</div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">Export ข้อมูลทั้งหมด (ทรัพย์สิน + Agent +
-            ลูกค้า + Users) เป็นไฟล์ JSON เพื่อสำรองข้อมูล</div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <button class="btn btn-green" onclick="backupAll()">📥 Backup ทั้งหมด (.json)</button>
-            <button class="btn btn-blue" onclick="backupUsers()">👥 Backup Users (.json)</button>
-            <label class="btn btn-outline" style="cursor:pointer;">
-              📤 Restore จาก Backup
-              <input type="file" accept=".json" onchange="restoreBackup(event)" style="display:none;">
-            </label>
-          </div>
-          <div style="margin-top:14px;border-top:1px solid var(--border2);padding-top:14px;">
-            <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px;">🔄 Real-time Sync</div>
-            <div style="font-size:12px;color:var(--text3);margin-bottom:8px;">
-              ข้อมูลอัพเดทอัตโนมัติทันทีเมื่อมีการเปลี่ยนแปลง — ไม่ต้องกด Sync</div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-              <button class="btn btn-outline" onclick="forceSyncToFirebase()">⬆️ Push ข้อมูล local → Firebase</button>
-              <button class="btn btn-outline" onclick="forceSyncFromFirebase()">⬇️ Pull ข้อมูล Firebase → local</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Auto Backup Panel -->
-        <div
-          style="margin-top:16px;background:var(--dark3);border:1px solid var(--border);border-radius:14px;padding:20px;">
-          <div style="font-size:15px;font-weight:700;color:var(--gold);margin-bottom:4px;">📅 Auto Backup ตามเวลา</div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">ระบบสำรองข้อมูลอัตโนมัติ —
-            ส่งอีเมลหรือดาวน์โหลดไฟล์ตามกำหนดเวลา</div>
-
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;font-weight:600;">
-              <input type="checkbox" id="bs_enabled" style="width:18px;height:18px;accent-color:var(--gold);">
-              เปิดใช้ Auto Backup
-            </label>
-          </div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div class="form-group">
-              <label style="font-size:12px;">📧 อีเมลปลายทาง</label>
-              <input id="bs_emailTo" placeholder="backup@gmail.com" type="email" style="font-size:12px;">
-            </div>
-            <div class="form-group">
-              <label style="font-size:12px;">⏱️ Backup ทุก (ชั่วโมง)</label>
-              <select id="bs_interval" style="font-size:12px;">
-                <option value="6">ทุก 6 ชั่วโมง</option>
-                <option value="12">ทุก 12 ชั่วโมง</option>
-                <option value="24" selected>ทุก 24 ชั่วโมง</option>
-                <option value="48">ทุก 2 วัน</option>
-                <option value="168">ทุกสัปดาห์</option>
-              </select>
-            </div>
-          </div>
-
-          <div style="margin-top:10px;background:var(--dark4);border-radius:10px;padding:12px;font-size:12px;">
-            <div style="font-weight:700;color:var(--gold);margin-bottom:8px;">🔗 ตั้งค่า EmailJS (ส่งอีเมลอัตโนมัติ)
-            </div>
-            <div style="color:var(--text3);margin-bottom:8px;">สมัครฟรีที่ <a href="https://www.emailjs.com"
-                target="_blank" style="color:var(--blue);">emailjs.com</a> → สร้าง Service + Template → กรอก ID ด้านล่าง
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-              <div class="form-group"><label style="font-size:11px;">Service ID</label><input id="bs_ejsService"
-                  placeholder="service_xxx" style="font-size:11px;font-family:monospace;"></div>
-              <div class="form-group"><label style="font-size:11px;">Template ID</label><input id="bs_ejsTemplate"
-                  placeholder="template_xxx" style="font-size:11px;font-family:monospace;"></div>
-              <div class="form-group"><label style="font-size:11px;">Public Key</label><input id="bs_ejsKey"
-                  placeholder="xxxxxxxxxxxx" style="font-size:11px;font-family:monospace;"></div>
-            </div>
-            <div style="color:var(--text3);font-size:11px;margin-top:6px;">💡 Template variables ที่ใช้ได้:
-              {{to_email}}, {{subject}}, {{backup_data}}, {{asset_count}}, {{agent_count}}, {{customer_count}},
-              {{backup_time}}</div>
-          </div>
-
-          <div style="margin-top:12px;background:var(--dark4);border-radius:10px;padding:12px;font-size:12px;">
-            <div style="font-weight:700;color:var(--blue);margin-bottom:6px;">💡 ทางเลือก: Google Drive Backup</div>
-            <div style="color:var(--text3);line-height:1.7;">
-              วิธีง่ายที่สุดสำหรับ Google Drive คือ:<br>
-              1. กด <strong>Backup ทั้งหมด (.json)</strong> → ได้ไฟล์ benzhome_backup_xxxx.json<br>
-              2. อัพโหลดไฟล์ขึ้น Google Drive ด้วยมือ หรือ<br>
-              3. ใช้ Google Drive Desktop App ที่ sync โฟลเดอร์ Downloads อัตโนมัติ
-            </div>
-          </div>
-
-          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center;">
-            <button class="btn btn-primary" onclick="saveBackupSettings()">💾 บันทึกการตั้งค่า</button>
-            <button class="btn btn-green" onclick="runAutoBackup(true)">🧪 ทดสอบ Backup ตอนนี้</button>
-            <div id="bs_lastBackup" style="font-size:12px;color:var(--text3);">ยังไม่เคย Backup</div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /main -->
+      </div><!-- /main -->
 
     <!-- =================== MODALS =================== -->
 
@@ -3356,12 +3473,12 @@
     // FIREBASE CONFIG — แก้ค่านี้ให้ตรงกับ project ของคุณ
     // ============================
     const FIREBASE_CONFIG = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyBLQmKVKnLcmQgIRm-WsNOKhvW44nDz9Lg",
+      authDomain: "benz-home-db.firebaseapp.com",
+      projectId: "benz-home-db",
+      storageBucket: "benz-home-db.firebasestorage.app",
+      messagingSenderId: "4014891413",
+      appId: "1:4014891413:web:9d0a4435a45f3a4f1bd69c"
     };
 
     // โหลด Firebase config ที่บันทึกไว้จาก localStorage (กรอกผ่านหน้า User Management)
@@ -3611,20 +3728,29 @@
       const el = document.getElementById('fbStatusDot');
       const txt = document.getElementById('fbStatusText');
       if (!el) return;
-      if (_fbReady) {
-        el.style.background = '#50c878';
+      
+      const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
+      if (storageMode === 'local') {
+        el.style.background = '#0077CC'; // blue dot for local
+        txt.textContent = 'Offline Mode (Local) 📴';
+      } else if (_fbReady) {
+        el.style.background = '#50c878'; // green
         txt.textContent = 'Firebase ✅';
       } else if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
-        el.style.background = '#e8a020';
-        txt.textContent = 'Firebase ⚠️ ยังไม่ได้กรอก Config';
+        el.style.background = '#e8a020'; // orange
+        txt.textContent = 'Firebase ⚠️ ยังไม่ได้ตั้งค่า';
       } else {
-        el.style.background = '#e05050';
+        el.style.background = '#e05050'; // red
         txt.textContent = 'Firebase ❌ เชื่อมไม่ได้';
       }
-      // อัพเดท config status ใน settings panel
+      
+      // Update config status in settings panel
       const cfgStatus = document.getElementById('fbConfigStatus');
       if (cfgStatus) {
-        if (_fbReady) {
+        if (storageMode === 'local') {
+          cfgStatus.textContent = '📴 ปิดการใช้งานคลาวด์ (ใช้งาน Offline)';
+          cfgStatus.style.color = 'var(--text3)';
+        } else if (_fbReady) {
           cfgStatus.textContent = '🟢 เชื่อมต่อแล้ว' + (_realtimeSyncActive ? ' + Real-time Sync' : '');
           cfgStatus.style.color = 'var(--green)';
         } else if (localStorage.getItem('yb_fb_config')) {
@@ -3744,6 +3870,7 @@
       else { roleEl.textContent = '👁️ Viewer'; roleEl.className = 'role role-viewer'; }
       applyRoleAccess(found.role);
       loadDB();
+      updateSettingsProfileUI();
     }
 
     function tryRestoreSession(fromFirebase) {
@@ -3823,29 +3950,39 @@
     // ถ้า Firebase active จะเรียก tryRestoreSession อีกครั้งหลัง sync
     tryRestoreSession();
 
-    // จากนั้น init Firebase และ sync auth จาก Firebase
-    initFirebase().then(async (ok) => {
-      if (ok) {
-        const synced = await loadAuthFromFirebase();
-        if (synced) console.log('✅ Auth synced from Firebase');
-        // ตรวจ hasAdmin อีกครั้งหลัง sync
-        const hasAdmin = AUTH.users.some(u => u.role === 'admin');
-        if (!hasAdmin) {
-          AUTH.users.unshift({ email: 'admin@benzhome.com', password: 'admin1234', displayname: 'ผู้ดูแลระบบ', role: 'admin', note: 'Super Admin', linkedAgentId: null });
-          saveAuth();
+    const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
+    const isFirebaseConfigured = FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY" && FIREBASE_CONFIG.apiKey !== "";
+
+    if (storageMode === 'firebase' && isFirebaseConfigured) {
+      initFirebase().then(async (ok) => {
+        if (ok) {
+          const synced = await loadAuthFromFirebase();
+          if (synced) console.log('✅ Auth synced from Firebase');
+          // ตรวจ hasAdmin อีกครั้งหลัง sync
+          const hasAdmin = AUTH.users.some(u => u.role === 'admin');
+          if (!hasAdmin) {
+            AUTH.users.unshift({ email: 'admin@benzhome.com', password: 'admin1234', displayname: 'ผู้ดูแลระบบ', role: 'admin', note: 'Super Admin', linkedAgentId: null });
+            saveAuth();
+          }
+          // เริ่ม real-time sync อัตโนมัติ
+          startRealtimeSync();
+          // เริ่มระบบ scheduled backup
+          initScheduledBackup();
         }
-        // เริ่ม real-time sync อัตโนมัติ
-        startRealtimeSync();
-        // เริ่มระบบ scheduled backup
-        initScheduledBackup();
-      }
+        updateFirebaseStatus();
+        if (!AUTH.current) {
+          tryRestoreSession(true); // true = fromFirebase sync เสร็จแล้ว ลบ session ได้ถ้าหาไม่เจอ
+        }
+      });
+    } else {
+      console.log('📴 Running in Offline Local Mode');
+      _fbReady = false;
       updateFirebaseStatus();
-      // หลัง auth พร้อมแล้ว: ลอง restore session เสมอ
-      // เพราะ Firebase อาจ sync users ใหม่ ทำให้ tryRestoreSession ครั้งแรกล้มเหลว
+      initScheduledBackup();
       if (!AUTH.current) {
-        tryRestoreSession(true); // true = fromFirebase sync เสร็จแล้ว ลบ session ได้ถ้าหาไม่เจอ
+        tryRestoreSession(false);
       }
-    });
+    }
 
     function resetAuthData() {
       // แสดง users ที่มีอยู่ก่อน เพื่อ debug
@@ -3880,6 +4017,104 @@
       document.getElementById('fbConfigStatus').textContent = '✅ บันทึกแล้ว — กำลังเชื่อมต่อ...';
       // Reload page เพื่อ init Firebase ใหม่
       setTimeout(() => location.reload(), 800);
+    }
+
+    // ========================================================
+    // UNIFIED SETTINGS HELPERS
+    // ========================================================
+    function switchSettingsTab(tabName, btn) {
+      const cur = AUTH.current;
+      const isAdmin = cur && cur.role === 'admin';
+      
+      const adminTabs = ['users', 'firebase', 'backup', 'csv', 'reset'];
+      if (adminTabs.includes(tabName) && !isAdmin) {
+        alert('❌ ขออภัย เฉพาะผู้ดูแลระบบ (Admin) เท่านั้นที่สามารถเข้าถึงส่วนนี้ได้');
+        switchSettingsTab('profile');
+        return;
+      }
+
+      // Hide all sub-sections in settings
+      document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+      // Remove active class from all settings nav items
+      document.querySelectorAll('.snav-item').forEach(b => b.classList.remove('active'));
+      
+      // Show target sub-section
+      const target = document.getElementById('ssec-' + tabName);
+      if (target) target.classList.add('active');
+      
+      // Mark nav button active
+      if (btn) {
+        btn.classList.add('active');
+      } else {
+        const btnId = 'snav-' + tabName;
+        const el = document.getElementById(btnId);
+        if (el) el.classList.add('active');
+        else {
+          const profileBtn = document.querySelector('.snav-item[onclick*="profile"]');
+          if (profileBtn) profileBtn.classList.add('active');
+        }
+      }
+      
+      // Action when specific tabs are loaded
+      if (tabName === 'users') {
+        renderUsers();
+      } else if (tabName === 'firebase') {
+        loadFbConfigUI(true);
+      } else if (tabName === 'backup') {
+        loadBackupSettingsUI();
+        updateBackupStatus();
+      }
+    }
+
+    function updateSettingsProfileUI() {
+      const cur = AUTH.current;
+      if (!cur) return;
+      
+      const nameEl = document.getElementById('profileName');
+      const emailEl = document.getElementById('profileEmail');
+      const avatarEl = document.getElementById('profileAvatar');
+      
+      if (nameEl) nameEl.textContent = cur.displayname || 'ผู้ใช้งาน';
+      if (emailEl) emailEl.textContent = cur.email || '';
+      
+      if (avatarEl) {
+        const initial = (cur.displayname || cur.email || '?').charAt(0).toUpperCase();
+        avatarEl.textContent = initial;
+      }
+      
+      // Update storage mode radio checked status
+      const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
+      const rad = document.querySelector(`input[name="yb_storage_mode"][value="${storageMode}"]`);
+      if (rad) rad.checked = true;
+    }
+
+    function toggleStorageMode(mode) {
+      if (mode === 'firebase') {
+        const isFirebaseConfigured = FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY" && FIREBASE_CONFIG.apiKey !== "";
+        if (!isFirebaseConfigured) {
+          alert('⚠️ กรุณากรอก Firebase Configuration และเชื่อมต่อก่อนเปิดใช้งานโหมดคลาวด์');
+          const localRad = document.querySelector('input[name="yb_storage_mode"][value="local"]');
+          if (localRad) localRad.checked = true;
+          return;
+        }
+      }
+      localStorage.setItem('yb_storage_mode', mode);
+      showToast('💾 เปลี่ยนโหมดจัดเก็บข้อมูลเป็น: ' + (mode === 'local' ? 'Offline Local' : 'Firebase Cloud'), '#50c878');
+      
+      if (confirm('🔄 ระบบจำเป็นต้องโหลดหน้าเว็บใหม่เพื่อใช้โหมดจัดเก็บข้อมูลใหม่ ต้องการโหลดทันทีหรือไม่?')) {
+        location.reload();
+      }
+    }
+
+    function confirmSystemReset() {
+      const inp = document.getElementById('resetConfirmInput');
+      if (!inp) return;
+      if (inp.value !== 'CONFIRM') {
+        alert('❌ กรุณาพิมพ์คำว่า CONFIRM ให้ถูกต้องเพื่อยืนยัน');
+        return;
+      }
+      clearAllData();
+      inp.value = '';
     }
 
     function loadFbConfigUI(silent = false) {
@@ -4207,14 +4442,17 @@
       // Desktop header tabs
       const tabAgents = document.getElementById('tabAgents');
       const tabCustomers = document.getElementById('tabCustomers');
-      const tabIedata = document.getElementById('tabIedata');
-      const tabUsers = document.getElementById('tabUsers');
+      const tabSettings = document.getElementById('tabSettings');
       const tabClipboard = document.getElementById('tabClipboard');
       if (tabAgents) tabAgents.style.display = isAdmin ? '' : 'none';
       if (tabCustomers) tabCustomers.style.display = (isAdmin || isAgent) ? '' : 'none';
-      if (tabIedata) tabIedata.style.display = isAdmin ? '' : 'none';
-      if (tabUsers) tabUsers.style.display = isAdmin ? '' : 'none';
+      if (tabSettings) tabSettings.style.display = ''; // visible to all
       if (tabClipboard) tabClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
+
+      // Settings admin-only items
+      document.querySelectorAll('.settings-nav .admin-only').forEach(el => {
+        el.style.display = isAdmin ? '' : 'none';
+      });
 
       // Bottom nav: show/hide based on role
       const bnavCustomers = document.getElementById('bnav-customers');
@@ -4266,14 +4504,11 @@
       if (!container) return;
 
       const items = [];
-      // Admin: Agent, จัดการผู้ใช้, ตั้งค่า — ลูกค้าอยู่ bottom nav แล้ว ไม่ต้องซ้ำ
       if (isAdmin) {
         items.push({ icon: '👤', label: 'Agent', sub: 'จัดการรายชื่อ Agent', tab: 'agents' });
-        items.push({ icon: '👥', label: 'จัดการผู้ใช้', sub: 'เพิ่ม/แก้ไข User และสิทธิ์', tab: 'users' });
-        items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'นำเข้า/ส่งออก, Firebase, Backup', tab: 'iedata' });
+        items.push({ icon: '⚙️', label: 'ตั้งค่าระบบ', sub: 'ผู้ใช้, Firebase, Backup, CSV', tab: 'settings' });
       } else {
-        // Agent / Viewer: ตั้งค่าเท่านั้น — ลูกค้าอยู่ bottom nav
-        items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'ข้อมูลระบบ', tab: 'iedata' });
+        items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'บัญชีของฉัน & ข้อมูลระบบ', tab: 'settings' });
       }
 
       container.innerHTML = items.map(it => `
@@ -4337,8 +4572,7 @@
       agents: '👤 Agent',
       customers: '🤝 ลูกค้า',
       clipboard: '📋 ClipB',
-      iedata: '⚙️ ตั้งค่า',
-      users: '👥 จัดการผู้ใช้'
+      settings: '⚙️ ตั้งค่า'
     };
 
     function updateBnav(t) {
@@ -4360,20 +4594,17 @@
     function switchTab(t, btn) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.htab').forEach(b => b.classList.remove('active'));
-      document.getElementById('sec-' + t).classList.add('active');
+      const sec = document.getElementById('sec-' + t);
+      if (sec) sec.classList.add('active');
       if (btn) btn.classList.add('active');
       updateBnav(t);
       if (t === 'assets') { renderAssets(); renderStats(); }
       if (t === 'agents') renderAgents();
       if (t === 'customers') renderCustomers();
       if (t === 'clipboard') populateCbSelect();
-      if (t === 'users') {
-        renderUsers();
-        // auto-load Firebase config and backup config ทุกครั้งที่เปิด tab
-        loadFbConfigUI(true);
-        loadBackupSettingsUI();
-        updateSyncBadge();
-        updateBackupStatus();
+      if (t === 'settings') {
+        switchSettingsTab('profile');
+        updateSettingsProfileUI();
       }
     }
 
