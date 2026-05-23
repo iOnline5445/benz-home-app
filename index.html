@@ -2394,6 +2394,89 @@
         padding: 16px;
       }
     }
+
+    /* Lock horizontal scrolling globally */
+    html, body {
+      overflow-x: hidden !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      position: relative;
+    }
+    
+    /* Required fields highlight styling */
+    .form-group.required label span {
+      font-weight: 700;
+    }
+    .form-group.required input,
+    .form-group.required select,
+    .form-group.required textarea {
+      border: 1px solid var(--border) !important;
+      border-left: 5px solid var(--gold) !important;
+      background: color-mix(in srgb, var(--gold) 8%, var(--dark3)) !important;
+      box-shadow: 0 0 2px rgba(201, 168, 76, 0.15);
+    }
+    [data-theme="light"] .form-group.required input,
+    [data-theme="light"] .form-group.required select,
+    [data-theme="light"] .form-group.required textarea,
+    [data-theme="vibrant"] .form-group.required input,
+    [data-theme="vibrant"] .form-group.required select,
+    [data-theme="vibrant"] .form-group.required textarea,
+    [data-theme="ocean"] .form-group.required input,
+    [data-theme="ocean"] .form-group.required select,
+    [data-theme="ocean"] .form-group.required textarea,
+    [data-theme="sakura"] .form-group.required input,
+    [data-theme="sakura"] .form-group.required select,
+    [data-theme="sakura"] .form-group.required textarea,
+    [data-theme="forest"] .form-group.required input,
+    [data-theme="forest"] .form-group.required select,
+    [data-theme="forest"] .form-group.required textarea,
+    [data-theme="sunset"] .form-group.required input,
+    [data-theme="sunset"] .form-group.required select,
+    [data-theme="sunset"] .form-group.required textarea {
+      border: 1px solid var(--border) !important;
+      border-left: 5px solid var(--gold) !important;
+      background: color-mix(in srgb, var(--gold) 6%, var(--dark2)) !important;
+    }
+    .form-group.required input:focus,
+    .form-group.required select:focus,
+    .form-group.required textarea:focus {
+      border-color: var(--gold-light) !important;
+      border-left: 5px solid var(--gold-light) !important;
+      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.3) !important;
+    }
+
+    @media (max-width: 768px) {
+      /* Mobile layout adjustments */
+      #btnAssetViewTable, #btnAssetViewCard, #btnCustViewTable, #btnCustViewCard, #btnImportCustomerCSV {
+        display: none !important;
+      }
+      .toolbar .btn[id^="btnAdd"] {
+        width: 100% !important;
+        justify-content: center;
+      }
+      .price-filter-row {
+        width: 100% !important;
+        justify-content: space-between !important;
+      }
+      .price-filter-row .search-box {
+        flex: 1 !important;
+        max-width: none !important;
+      }
+      .logo {
+        font-size: 15px !important;
+      }
+      .user-badge {
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+      }
+      .user-badge .role {
+        display: none !important;
+      }
+      .logout-btn {
+        padding: 5px 8px !important;
+        font-size: 11px !important;
+      }
+    }
   </style>
 </head>
 
@@ -2550,20 +2633,22 @@
             <input type="text" id="assetSearch" placeholder="ค้นหาโครงการ, ทำเล..." oninput="renderAssets()"
               style="padding-left:36px;">
           </div>
-          <div class="search-box" style="max-width:130px;position:relative;">
-            <span
-              style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↑</span>
-            <input type="number" id="filterPriceMin" placeholder="ราคาต่ำสุด" oninput="renderAssets()"
-              style="padding:9px 10px 9px 32px;">
+          <div class="price-filter-row">
+            <div class="search-box" style="max-width:130px;position:relative;">
+              <span
+                style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↑</span>
+              <input type="number" id="filterPriceMin" placeholder="ราคาต่ำสุด" oninput="renderAssets()"
+                style="padding:9px 10px 9px 32px;">
+            </div>
+            <div class="search-box" style="max-width:130px;position:relative;">
+              <span
+                style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↓</span>
+              <input type="number" id="filterPriceMax" placeholder="ราคาสูงสุด" oninput="renderAssets()"
+                style="padding:9px 10px 9px 32px;">
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="clearAllAssetFilters()" title="ล้างฟิลเตอร์ทั้งหมด"
+              style="padding:9px 12px;">🔄</button>
           </div>
-          <div class="search-box" style="max-width:130px;position:relative;">
-            <span
-              style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↓</span>
-            <input type="number" id="filterPriceMax" placeholder="ราคาสูงสุด" oninput="renderAssets()"
-              style="padding:9px 10px 9px 32px;">
-          </div>
-          <button class="btn btn-outline btn-sm" onclick="clearPriceFilter()" title="ล้างฟิลเตอร์ราคา"
-            style="padding:9px 12px;">🔄</button>
           <select class="filter-select" id="filterStatus" onchange="renderAssets()">
             <option value="">ทุกสถานะ</option>
             <option value="ขาย">ขาย</option>
@@ -2656,20 +2741,22 @@
             <input type="text" id="customerSearch" placeholder="ค้นหาลูกค้า, ติดต่อ..." oninput="renderCustomers()"
               style="padding-left:36px;">
           </div>
-          <div class="search-box" style="max-width:130px;position:relative;">
-            <span
-              style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↑</span>
-            <input type="number" id="customerPriceMin" placeholder="งบต่ำสุด" oninput="renderCustomers()"
-              style="padding:9px 10px 9px 32px;">
+          <div class="price-filter-row">
+            <div class="search-box" style="max-width:130px;position:relative;">
+              <span
+                style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↑</span>
+              <input type="number" id="customerPriceMin" placeholder="งบต่ำสุด" oninput="renderCustomers()"
+                style="padding:9px 10px 9px 32px;">
+            </div>
+            <div class="search-box" style="max-width:130px;position:relative;">
+              <span
+                style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↓</span>
+              <input type="number" id="customerPriceMax" placeholder="งบสูงสุด" oninput="renderCustomers()"
+                style="padding:9px 10px 9px 32px;">
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="clearCustomerPriceFilter()" title="ล้างฟิลเตอร์ทั้งหมด"
+              style="padding:9px 12px;">🔄</button>
           </div>
-          <div class="search-box" style="max-width:130px;position:relative;">
-            <span
-              style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↓</span>
-            <input type="number" id="customerPriceMax" placeholder="งบสูงสุด" oninput="renderCustomers()"
-              style="padding:9px 10px 9px 32px;">
-          </div>
-          <button class="btn btn-outline btn-sm" onclick="clearCustomerPriceFilter()" title="ล้างฟิลเตอร์"
-            style="padding:9px 12px;">🔄</button>
           <div style="display:flex;gap:4px;">
             <button id="btnCustViewTable" class="btn btn-outline btn-sm" onclick="setCustView('table')" title="ตาราง"
               style="padding:9px 13px;font-size:16px;">☰</button>
@@ -2694,6 +2781,7 @@
                 <th>สถานะ</th>
                 <th>ประเภท</th>
                 <th>งบประมาณ</th>
+                <th>ทำเลที่สนใจ</th>
                 <th>Contact</th>
                 <th>Link Post</th>
                 <th>Note</th>
@@ -2765,6 +2853,7 @@
             <div class="output-box" id="cbOutput">เลือกทรัพย์สินเพื่อสร้าง Clipboard...</div>
             <div style="display:flex;gap:10px;margin-top:12px;align-items:center;">
               <button class="btn btn-primary" onclick="copyClipboard()">📋 คัดลอก</button>
+              <button class="btn btn-outline" onclick="clearClipboardFilters()">🔄 ล้างข้อมูล</button>
               <span id="copyMsg" class="copy-success" style="display:none">✅ คัดลอกแล้ว!</span>
             </div>
           </div>
@@ -3028,8 +3117,10 @@
         </div>
         <div class="modal-body">
           <div class="form-grid">
-            <div class="form-group full"><label>ชื่อโครงการ <span style="color:var(--red);">*</span></label><input
+            <div class="form-group full required"><label>ชื่อโครงการ <span style="color:var(--red);">*</span></label><input
                 id="a_name" placeholder="เช่น IDEO พระราม 9" required></div>
+            <div class="form-group full required"><label>Link โครงการ/Facebook <span style="color:var(--red);">*</span></label><input
+                id="a_link" placeholder="https://..." required></div>
             <div class="form-group"><label>ทำเลที่ตั้ง</label><input id="a_location"
                 placeholder="เช่น พระราม 9, สุขุมวิท"></div>
             <div class="form-group"><label>สถานะ</label>
@@ -3124,9 +3215,6 @@
                 placeholder="เช่น 1 ห้องนอน 1 ห้องน้ำ"></div>
             <div class="form-group"><label>ขนาดพื้นที่</label><input id="a_area" placeholder="เช่น 34 ตร.ม."></div>
             <div class="form-group"><label>ชั้น/ตึก</label><input id="a_floor" placeholder="เช่น ชั้น 22 อาคาร A"></div>
-            <div class="form-group"><label>Link โครงการ/Facebook <span style="color:var(--red);">*</span></label><input
-                id="a_link" placeholder="https://..." required>
-            </div>
             <div class="form-group"><label>Location Map</label><input id="a_map"
                 placeholder="https://maps.app.goo.gl/..."></div>
             <div class="form-group full"><label>🖼️ Link รูปภาพ (Google Drive / Album)</label><input id="a_linkpic"
@@ -3195,13 +3283,15 @@
         </div>
         <div class="modal-body">
           <div class="form-grid">
-            <div class="form-group full"><label>ชื่อโครงการที่สนใจ / ชื่อลูกค้า *</label><input id="cu_name"
-                placeholder="ชื่อโครงการ หรือ ชื่อลูกค้า"></div>
+            <div class="form-group full required"><label>ชื่อโครงการที่สนใจ / ชื่อลูกค้า <span style="color:var(--red);">*</span></label><input id="cu_name"
+                placeholder="ชื่อโครงการ หรือ ชื่อลูกค้า" required></div>
+            <div class="form-group full required"><label>🔗 Link Post <span style="color:var(--red);">*</span></label><input id="cu_linkpost"
+                placeholder="https://... (บังคับใส่ Link โพสต์ Facebook หรือ Line)" required></div>
             <div class="form-group"><label>สถานะ</label>
               <select id="cu_status">
-                <option>ขาย</option>
+                <option>ซื้อ</option>
                 <option>เช่า</option>
-                <option>เช่า/ขาย</option>
+                <option>ขาย</option>
               </select>
             </div>
             <div class="form-group"><label>ประเภท</label>
@@ -3217,10 +3307,217 @@
                 placeholder="เช่น 3 ล้าน หรือ 20,000/เดือน"></div>
             <div class="form-group"><label>ขนาดห้อง</label><input id="cu_area" placeholder="เช่น 30-50 ตร.ม."></div>
             <div class="form-group"><label>ชั้น</label><input id="cu_floor" placeholder="ชั้นที่ต้องการ"></div>
-            <div class="form-group full"><label>Contact</label><input id="cu_contact" placeholder="ชื่อ / เบอร์ / Line">
+            <div class="form-group"><label>Contact</label><input id="cu_contact" placeholder="ชื่อ / เบอร์ / Line"></div>
+            <div class="form-group"><label>ใกล้ BTS/MRT (สถานีเริ่มต้น)</label>
+              <select id="cu_station_start">
+                <option value="">-- สถานีเริ่มต้น --</option>
+                <optgroup label="BTS สายสุขุมวิท">
+                  <option>BTS ห้าแยกลาดพร้าว</option>
+                  <option>BTS หมอชิต</option>
+                  <option>BTS สะพานควาย</option>
+                  <option>BTS อารีย์</option>
+                  <option>BTS สนามเป้า</option>
+                  <option>BTS อนุสาวรีย์ชัยฯ</option>
+                  <option>BTS พญาไท</option>
+                  <option>BTS ราชเทวี</option>
+                  <option>BTS สยาม</option>
+                  <option>BTS ชิดลม</option>
+                  <option>BTS เพลินจิต</option>
+                  <option>BTS นานา</option>
+                  <option>BTS อโศก</option>
+                  <option>BTS พร้อมพงษ์</option>
+                  <option>BTS ทองหล่อ</option>
+                  <option>BTS เอกมัย</option>
+                  <option>BTS พระโขนง</option>
+                  <option>BTS อ่อนนุช</option>
+                  <option>BTS บางจาก</option>
+                  <option>BTS ปุณณวิถี</option>
+                  <option>BTS อุดมสุข</option>
+                  <option>BTS บางนา</option>
+                  <option>BTS แบริ่ง</option>
+                  <option>BTS สำโรง</option>
+                </optgroup>
+                <optgroup label="BTS สายสีลม">
+                  <option>BTS สนามกีฬาแห่งชาติ</option>
+                  <option>BTS ราชดำริ</option>
+                  <option>BTS ศาลาแดง</option>
+                  <option>BTS ช่องนนทรี</option>
+                  <option>BTS เซนต์หลุยส์</option>
+                  <option>BTS สุรศักดิ์</option>
+                  <option>BTS สะพานตากสิน</option>
+                  <option>BTS กรุงธนบุรี</option>
+                  <option>BTS วงเวียนใหญ่</option>
+                  <option>BTS ตลาดพลู</option>
+                  <option>BTS บางหว้า</option>
+                </optgroup>
+                <optgroup label="MRT สายสีน้ำเงิน">
+                  <option>MRT ท่าพระ</option>
+                  <option>MRT บางซื่อ</option>
+                  <option>MRT กำแพงเพชร</option>
+                  <option>MRT สวนจตุจักร</option>
+                  <option>MRT พหลโยธิน</option>
+                  <option>MRT ลาดพร้าว</option>
+                  <option>MRT สุทธิสาร</option>
+                  <option>MRT ห้วยขวาง</option>
+                  <option>MRT ศูนย์วัฒนธรรมฯ</option>
+                  <option>MRT พระราม 9</option>
+                  <option>MRT เพชรบุรี</option>
+                  <option>MRT สุขุมวิท</option>
+                  <option>MRT คลองเตย</option>
+                  <option>MRT ลุมพินี</option>
+                  <option>MRT สีลม</option>
+                  <option>MRT สามย่าน</option>
+                  <option>MRT หัวลำโพง</option>
+                  <option>MRT อิสรภาพ</option>
+                  <option>MRT บางหว้า</option>
+                  <option>MRT บางแค</option>
+                  <option>MRT หลักสอง</option>
+                </optgroup>
+                <optgroup label="MRT สายสีม่วง">
+                  <option>MRT คลองบางไผ่</option>
+                  <option>MRT ตลาดบางใหญ่</option>
+                  <option>MRT สะพานพระนั่งเกล้า</option>
+                  <option>MRT แยกนนทบุรี 1</option>
+                  <option>MRT ศูนย์ราชการนนทบุรี</option>
+                  <option>MRT กระทรวงสาธารณสุข</option>
+                  <option>MRT วงศ์สว่าง</option>
+                  <option>MRT เตาปูน</option>
+                </optgroup>
+                <optgroup label="MRT สายสีเหลือง">
+                  <option>MRT ลาดพร้าว (สายสีเหลือง)</option>
+                  <option>MRT โชคชัย 4</option>
+                  <option>MRT ลาดพร้าว 71</option>
+                  <option>MRT ลาดพร้าว 83</option>
+                  <option>MRT บางกะปิ</option>
+                  <option>MRT แยกลำสาลี</option>
+                  <option>MRT หัวหมาก</option>
+                  <option>MRT ศรีนครินทร์ 38</option>
+                  <option>MRT สวนหลวง ร.9</option>
+                  <option>MRT ศรีเอี่ยม</option>
+                  <option>MRT สำโรง (สายสีเหลือง)</option>
+                </optgroup>
+                <optgroup label="MRT สายสีชมพู">
+                  <option>MRT ศูนย์ราชการนนทบุรี (สายสีชมพู)</option>
+                  <option>MRT สนามบินน้ำ</option>
+                  <option>MRT เลี่ยงเมืองปากเกร็ด</option>
+                  <option>MRT แจ้งวัฒนะ-ปากเกร็ด 28</option>
+                  <option>MRT เมืองทองธานี</option>
+                  <option>MRT ศูนย์ราชการเฉลิมพระเกียรติ</option>
+                  <option>MRT หลักสี่</option>
+                  <option>MRT รามอินทรา 3</option>
+                  <option>MRT วัชรพล</option>
+                  <option>MRT คู้บอน</option>
+                  <option>MRT วงแหวนรามอินทรา</option>
+                  <option>MRT มีนบุรี</option>
+                </optgroup>
+              </select>
             </div>
-            <div class="form-group full"><label>🔗 Link Post</label><input id="cu_linkpost"
-                placeholder="https://... (Link โพสต์ Facebook หรือ Line)"></div>
+            <div class="form-group"><label>ถึง (สถานีสิ้นสุด)</label>
+              <select id="cu_station_end">
+                <option value="">-- สถานีสิ้นสุด --</option>
+                <optgroup label="BTS สายสุขุมวิท">
+                  <option>BTS ห้าแยกลาดพร้าว</option>
+                  <option>BTS หมอชิต</option>
+                  <option>BTS สะพานควาย</option>
+                  <option>BTS อารีย์</option>
+                  <option>BTS สนามเป้า</option>
+                  <option>BTS อนุสาวรีย์ชัยฯ</option>
+                  <option>BTS พญาไท</option>
+                  <option>BTS ราชเทวี</option>
+                  <option>BTS สยาม</option>
+                  <option>BTS ชิดลม</option>
+                  <option>BTS เพลินจิต</option>
+                  <option>BTS นานา</option>
+                  <option>BTS อโศก</option>
+                  <option>BTS พร้อมพงษ์</option>
+                  <option>BTS ทองหล่อ</option>
+                  <option>BTS เอกมัย</option>
+                  <option>BTS พระโขนง</option>
+                  <option>BTS อ่อนนุช</option>
+                  <option>BTS บางจาก</option>
+                  <option>BTS ปุณณวิถี</option>
+                  <option>BTS อุดมสุข</option>
+                  <option>BTS บางนา</option>
+                  <option>BTS แบริ่ง</option>
+                  <option>BTS สำโรง</option>
+                </optgroup>
+                <optgroup label="BTS สายสีลม">
+                  <option>BTS สนามกีฬาแห่งชาติ</option>
+                  <option>BTS ราชดำริ</option>
+                  <option>BTS ศาลาแดง</option>
+                  <option>BTS ช่องนนทรี</option>
+                  <option>BTS เซนต์หลุยส์</option>
+                  <option>BTS สุรศักดิ์</option>
+                  <option>BTS สะพานตากสิน</option>
+                  <option>BTS กรุงธนบุรี</option>
+                  <option>BTS วงเวียนใหญ่</option>
+                  <option>BTS ตลาดพลู</option>
+                  <option>BTS บางหว้า</option>
+                </optgroup>
+                <optgroup label="MRT สายสีน้ำเงิน">
+                  <option>MRT ท่าพระ</option>
+                  <option>MRT บางซื่อ</option>
+                  <option>MRT กำแพงเพชร</option>
+                  <option>MRT สวนจตุจักร</option>
+                  <option>MRT พหลโยธิน</option>
+                  <option>MRT ลาดพร้าว</option>
+                  <option>MRT สุทธิสาร</option>
+                  <option>MRT ห้วยขวาง</option>
+                  <option>MRT ศูนย์วัฒนธรรมฯ</option>
+                  <option>MRT พระราม 9</option>
+                  <option>MRT เพชรบุรี</option>
+                  <option>MRT สุขุมวิท</option>
+                  <option>MRT คลองเตย</option>
+                  <option>MRT ลุมพินี</option>
+                  <option>MRT สีลม</option>
+                  <option>MRT สามย่าน</option>
+                  <option>MRT หัวลำโพง</option>
+                  <option>MRT อิสรภาพ</option>
+                  <option>MRT บางหว้า</option>
+                  <option>MRT บางแค</option>
+                  <option>MRT หลักสอง</option>
+                </optgroup>
+                <optgroup label="MRT สายสีม่วง">
+                  <option>MRT คลองบางไผ่</option>
+                  <option>MRT ตลาดบางใหญ่</option>
+                  <option>MRT สะพานพระนั่งเกล้า</option>
+                  <option>MRT แยกนนทบุรี 1</option>
+                  <option>MRT ศูนย์ราชการนนทบุรี</option>
+                  <option>MRT กระทรวงสาธารณสุข</option>
+                  <option>MRT วงศ์สว่าง</option>
+                  <option>MRT เตาปูน</option>
+                </optgroup>
+                <optgroup label="MRT สายสีเหลือง">
+                  <option>MRT ลาดพร้าว (สายสีเหลือง)</option>
+                  <option>MRT โชคชัย 4</option>
+                  <option>MRT ลาดพร้าว 71</option>
+                  <option>MRT ลาดพร้าว 83</option>
+                  <option>MRT บางกะปิ</option>
+                  <option>MRT แยกลำสาลี</option>
+                  <option>MRT หัวหมาก</option>
+                  <option>MRT ศรีนครินทร์ 38</option>
+                  <option>MRT สวนหลวง ร.9</option>
+                  <option>MRT ศรีอุดม</option>
+                  <option>MRT สำโรง (สายสีเหลือง)</option>
+                </optgroup>
+                <optgroup label="MRT สายสีชมพู">
+                  <option>MRT ศูนย์ราชการนนทบุรี (สายสีชมพู)</option>
+                  <option>MRT สนามบินน้ำ</option>
+                  <option>MRT เลี่ยงเมืองปากเกร็ด</option>
+                  <option>MRT แจ้งวัฒนะ-ปากเกร็ด 28</option>
+                  <option>MRT เมืองทองธานี</option>
+                  <option>MRT ศูนย์ราชการเฉลิมพระเกียรติ</option>
+                  <option>MRT หลักสี่</option>
+                  <option>MRT รามอินทรา 3</option>
+                  <option>MRT วัชรพล</option>
+                  <option>MRT คู้บอน</option>
+                  <option>MRT วงแหวนรามอินทรา</option>
+                  <option>MRT มีนบุรี</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="form-group full"><label>ทำเลอื่นๆ (ระบุเพิ่มเติม)</label><input id="cu_location_other"
+                placeholder="เช่น ลาดพร้าว 71, อารีย์ ซอย 2"></div>
             <div class="form-group full"><label>Note / ความต้องการพิเศษ</label><textarea id="cu_note"
                 placeholder="ต้องการวิว, ไม่ติดถนนใหญ่..."></textarea></div>
           </div>
@@ -3876,26 +4173,34 @@
     function tryRestoreSession(fromFirebase) {
       try {
         const s = localStorage.getItem(SESSION_KEY);
-        if (!s) return false;
+        if (!s) {
+          if (fromFirebase !== undefined) window.location.href = 'login.html';
+          return false;
+        }
         const raw = JSON.parse(s);
         const email = (raw.email || '').toLowerCase().trim();
         const pw = raw.pw;
         const found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email && u.password === pw);
         if (!found) {
           if (fromFirebase) {
-            // Firebase sync เสร็จแล้ว ยังหา user ไม่เจอ = session ผิดจริง
-            clearSession(); return false;
+            clearSession();
+            window.location.href = 'login.html';
+            return false;
           }
-          if (!_fbReady) {
-            // ไม่มี Firebase + หาไม่เจอ = session ผิดจริง
-            clearSession(); return false;
+          if (!_fbReady && fromFirebase !== undefined) {
+            clearSession();
+            window.location.href = 'login.html';
+            return false;
           }
-          // Firebase กำลังโหลด — รอก่อน อย่าลบ session
           return false;
         }
         performLogin(found, false);
         return true;
-      } catch (e) { clearSession(); return false; }
+      } catch (e) {
+        clearSession();
+        if (fromFirebase !== undefined) window.location.href = 'login.html';
+        return false;
+      }
     }
 
     function loadAuth() {
@@ -4419,16 +4724,8 @@
       if (!confirm('ยืนยันออกจากระบบ?')) return;
       AUTH.current = null;
       clearSession(); // ลบ session — reload จะไม่ auto-login
-      // stop realtime sync
       if (typeof stopRealtimeSync === 'function') stopRealtimeSync();
-      document.getElementById('appShell').style.display = 'none';
-      document.getElementById('loginScreen').style.display = 'flex';
-      // restore remembered credentials (or clear if not remembered)
-      loadRemembered();
-      if (!document.getElementById('rememberMe').checked) {
-        document.getElementById('loginUsername').value = '';
-        document.getElementById('loginPassword').value = '';
-      }
+      window.location.href = 'login.html';
     }
 
     // ============================
@@ -4691,19 +4988,43 @@
     const _custPageSize = 20;
     let _custView = 'table'; // 'table' | 'card'
 
-    function clearPriceFilter() {
+    function clearAllAssetFilters() {
+      document.getElementById('assetSearch').value = '';
       document.getElementById('filterPriceMin').value = '';
       document.getElementById('filterPriceMax').value = '';
+      document.getElementById('filterStatus').value = '';
+      document.getElementById('filterListingActive').value = 'active';
+      document.getElementById('filterType').value = '';
       _assetPage = 1;
       renderAssets();
     }
+    function clearPriceFilter() {
+      clearAllAssetFilters();
+    }
     function clearCustomerPriceFilter() {
+      const q = document.getElementById('customerSearch');
       const mn = document.getElementById('customerPriceMin');
       const mx = document.getElementById('customerPriceMax');
+      if (q) q.value = '';
       if (mn) mn.value = '';
       if (mx) mx.value = '';
       _custPage = 1;
       renderCustomers();
+    }
+    function clearClipboardFilters() {
+      document.getElementById('cbAssetSearch').value = '';
+      document.getElementById('cbAssetSelect').value = '';
+      document.getElementById('cbAgentSelect').value = '';
+      document.getElementById('cbContact').checked = true;
+      document.getElementById('cbLink').checked = false;
+      document.getElementById('cbMap').checked = true;
+      document.getElementById('cbNote').checked = true;
+      document.getElementById('cbLineAt').checked = true;
+      document.getElementById('cbLinkPic').checked = false;
+      document.getElementById('cbTemplate').value = 'fb';
+      const prev = document.getElementById('cbAgentPreview');
+      if (prev) prev.style.display = 'none';
+      document.getElementById('cbOutput').textContent = 'เลือกทรัพย์สินเพื่อสร้าง Clipboard...';
     }
 
     function setAssetView(v) {
@@ -4829,6 +5150,9 @@
         }
         return mQ && mS && mT && mLA && mPrice;
       });
+
+      // Sort chronologically descending (newest first)
+      list.sort((a, b) => (b.id || '').localeCompare(a.id || ''));
 
       const totalPages = Math.max(1, Math.ceil(list.length / _assetPageSize));
       if (_assetPage > totalPages) _assetPage = totalPages;
@@ -5003,7 +5327,14 @@
       const priceMax = parseFloat(document.getElementById('customerPriceMax')?.value) || null;
 
       let list = DB.customers.filter(a => {
-        const mQ = !q || (a.name || '').toLowerCase().includes(q) || (a.contact || '').toLowerCase().includes(q) || (a.type || '').toLowerCase().includes(q);
+        const mQ = !q || 
+          (a.name || '').toLowerCase().includes(q) || 
+          (a.contact || '').toLowerCase().includes(q) || 
+          (a.type || '').toLowerCase().includes(q) ||
+          (a.stationStart || '').toLowerCase().includes(q) ||
+          (a.stationEnd || '').toLowerCase().includes(q) ||
+          (a.locationOther || '').toLowerCase().includes(q) ||
+          (a.note || '').toLowerCase().includes(q);
         let mPrice = true;
         if (priceMin || priceMax) {
           const pNum = parseFloat((a.budget || '').replace(/[^\d.]/g, ''));
@@ -5014,6 +5345,9 @@
         }
         return mQ && mPrice;
       });
+
+      // Sort chronologically descending (newest first)
+      list.sort((a, b) => (b.id || '').localeCompare(a.id || ''));
 
       const totalPages = Math.max(1, Math.ceil(list.length / _custPageSize));
       if (_custPage > totalPages) _custPage = totalPages;
@@ -5037,6 +5371,20 @@
           ml.innerHTML = paged.map(a => {
             const ri = DB.customers.indexOf(a);
             const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
+            
+            let locText = '';
+            if (a.stationStart && a.stationEnd) {
+              locText = `🚇 ${a.stationStart} - ${a.stationEnd}`;
+            } else if (a.stationStart) {
+              locText = `🚇 ${a.stationStart}`;
+            } else if (a.stationEnd) {
+              locText = `🚇 ${a.stationEnd}`;
+            }
+            if (a.locationOther) {
+              locText += (locText ? ' | ' : '') + `📍 ${a.locationOther}`;
+            }
+            locText = locText || '-';
+
             return `<div class="m-card">
               <span class="m-card-num">#${ri + 1}</span>
               <div class="m-card-top">
@@ -5047,6 +5395,7 @@
                 <span class="badge ${badge}">${a.status || '-'}</span>
               </div>
               ${a.budget ? `<div class="m-card-row"><span class="m-card-label">💰 งบ</span><span class="m-card-val gold">${a.budget}</span></div>` : ''}
+              ${locText !== '-' ? `<div class="m-card-row"><span class="m-card-label">📍 ทำเล</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${locText}</span></div>` : ''}
               ${a.contact ? `<div class="m-card-row"><span class="m-card-label">📞 Contact</span><span class="m-card-val">${a.contact}</span></div>` : ''}
               ${a.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${a.note}</span></div>` : ''}
               <div class="m-card-actions">
@@ -5062,21 +5411,36 @@
         if (ml) ml.innerHTML = '';
         if (!tb) return;
         if (!paged.length) {
-          tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">ไม่พบลูกค้าที่ตรงกับเงื่อนไข</td></tr>';
+          tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text3)">ไม่พบลูกค้าที่ตรงกับเงื่อนไข</td></tr>';
           return;
         }
         tb.innerHTML = paged.map(a => {
           const ri = DB.customers.indexOf(a);
           const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
+          
+          let locText = '';
+          if (a.stationStart && a.stationEnd) {
+            locText = `🚇 ${a.stationStart} - ${a.stationEnd}`;
+          } else if (a.stationStart) {
+            locText = `🚇 ${a.stationStart}`;
+          } else if (a.stationEnd) {
+            locText = `🚇 ${a.stationEnd}`;
+          }
+          if (a.locationOther) {
+            locText += (locText ? ' | ' : '') + `📍 ${a.locationOther}`;
+          }
+          locText = locText || '-';
+
           return `<tr>
             <td style="color:var(--text3)">${ri + 1}</td>
             <td style="font-weight:600">${a.name || '-'}</td>
             <td><span class="badge ${badge}">${a.status || '-'}</span></td>
             <td>${a.type || '-'}</td>
             <td style="color:var(--gold)">${a.budget || '-'}</td>
+            <td style="font-size:13px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${locText}">${locText}</td>
             <td>${a.contact || '-'}</td>
             <td style="font-size:12px">${a.linkpost ? `<a href="${a.linkpost}" target="_blank" style="color:var(--blue)">🔗 Link</a>` : '-'}</td>
-            <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.note || '-'}</td>
+            <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.note || ''}">${a.note || '-'}</td>
             <td><div style="display:flex;gap:5px">
               ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editCustomer(${ri})">✏️</button>` : ''}
               ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${ri})">🗑️</button>` : ''}
@@ -5088,6 +5452,20 @@
         if (ml) ml.innerHTML = paged.map(a => {
           const ri = DB.customers.indexOf(a);
           const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
+          
+          let locText = '';
+          if (a.stationStart && a.stationEnd) {
+            locText = `🚇 ${a.stationStart} - ${a.stationEnd}`;
+          } else if (a.stationStart) {
+            locText = `🚇 ${a.stationStart}`;
+          } else if (a.stationEnd) {
+            locText = `🚇 ${a.stationEnd}`;
+          }
+          if (a.locationOther) {
+            locText += (locText ? ' | ' : '') + `📍 ${a.locationOther}`;
+          }
+          locText = locText || '-';
+
           return `<div class="m-card">
             <span class="m-card-num">#${ri + 1}</span>
             <div class="m-card-top">
@@ -5098,6 +5476,7 @@
               <span class="badge ${badge}">${a.status || '-'}</span>
             </div>
             ${a.budget ? `<div class="m-card-row"><span class="m-card-label">💰 งบ</span><span class="m-card-val gold">${a.budget}</span></div>` : ''}
+            ${locText !== '-' ? `<div class="m-card-row"><span class="m-card-label">📍 ทำเล</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${locText}</span></div>` : ''}
             ${a.contact ? `<div class="m-card-row"><span class="m-card-label">📞 Contact</span><span class="m-card-val">${a.contact}</span></div>` : ''}
             ${a.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${a.note}</span></div>` : ''}
             <div class="m-card-actions">
@@ -5287,7 +5666,9 @@
       }
       if (t === 'customer') {
         document.getElementById('modalCustomerTitle').textContent = '🤝 เพิ่มลูกค้า';
-        ['cu_name', 'cu_budget', 'cu_area', 'cu_floor', 'cu_contact', 'cu_linkpost', 'cu_note'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        ['cu_name', 'cu_budget', 'cu_area', 'cu_floor', 'cu_contact', 'cu_linkpost', 'cu_note', 'cu_station_start', 'cu_station_end', 'cu_location_other'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        document.getElementById('cu_status').value = 'ซื้อ';
+        document.getElementById('cu_type').value = 'คอนโด';
       }
       if (t === 'user') {
         document.getElementById('modalUserTitle').textContent = '👤 เพิ่มผู้ใช้งาน';
@@ -5413,8 +5794,22 @@
     // SAVE CUSTOMER
     // ============================
     async function saveCustomer() {
-      const a = { name: v('cu_name'), status: v('cu_status'), type: v('cu_type'), budget: v('cu_budget'), area: v('cu_area'), floor: v('cu_floor'), contact: v('cu_contact'), linkpost: v('cu_linkpost'), note: v('cu_note') };
-      if (!a.name) { alert('กรุณาใส่ข้อมูล'); return; }
+      const a = {
+        name: v('cu_name'),
+        status: v('cu_status'),
+        type: v('cu_type'),
+        budget: v('cu_budget'),
+        area: v('cu_area'),
+        floor: v('cu_floor'),
+        contact: v('cu_contact'),
+        linkpost: v('cu_linkpost'),
+        note: v('cu_note'),
+        stationStart: v('cu_station_start'),
+        stationEnd: v('cu_station_end'),
+        locationOther: v('cu_location_other')
+      };
+      if (!a.name) { alert('❌ กรุณากรอกชื่อโครงการที่สนใจ / ชื่อลูกค้า'); return; }
+      if (!a.linkpost) { alert('❌ กรุณากรอก Link Post'); return; }
       if (editMode.idx >= 0) {
         const existing = DB.customers[editMode.idx];
         a.id = existing.id || genId();
@@ -5439,6 +5834,9 @@
       setV('cu_name', a.name); setV('cu_status', a.status); setV('cu_type', a.type);
       setV('cu_budget', a.budget); setV('cu_area', a.area); setV('cu_floor', a.floor);
       setV('cu_contact', a.contact); setV('cu_linkpost', a.linkpost); setV('cu_note', a.note);
+      setV('cu_station_start', a.stationStart || '');
+      setV('cu_station_end', a.stationEnd || '');
+      setV('cu_location_other', a.locationOther || '');
       editMode = { type: 'customer', idx: i };
       document.getElementById('modalCustomer').classList.add('open');
     }
@@ -5738,7 +6136,7 @@
     const CSV_HEADERS = {
       assets: ['No', 'ชื่อโครงการ', 'ทำเล', 'สถานะ', 'ประเภท', 'ราคา', 'ประเภทห้อง', 'ขนาด', 'ชั้นตึก', 'Contact', 'Link', 'Map', 'วันที่โพสต์', 'วันที่อัปเดต', 'หมายเหตุ', 'Link Pic', 'ผู้โพสต์'],
       agents: ['No', 'ชื่อAgent', 'บริษัท', 'Co-Agent', 'เบอร์', 'Facebook', 'E-Mail', 'LineID', 'LinkLine', 'เลขบัญชี'],
-      customers: ['No', 'ชื่อลูกค้า/โครงการ', 'สถานะ', 'ประเภท', 'งบประมาณ', 'ขนาดห้อง', 'ชั้น', 'Contact', 'Note', 'Link Post']
+      customers: ['No', 'ชื่อลูกค้า/โครงการ', 'สถานะ', 'ประเภท', 'งบประมาณ', 'ขนาดห้อง', 'ชั้น', 'Contact', 'Note', 'Link Post', 'สถานีเริ่มต้น', 'สถานีสิ้นสุด', 'ทำเลอื่นๆ']
     };
 
     function exportCSV(type) {
@@ -5755,7 +6153,7 @@
         rows = DB.agents.map((a, i) => [i + 1, a.name, a.company, a.coagent, a.tel, a.fb, a.email, a.line, a.linelink, a.bank].map(csvEscape).join(','));
         fname = 'yb_agents.csv';
       } else if (type === 'customers') {
-        rows = DB.customers.map((a, i) => [i + 1, a.name, a.status, a.type, a.budget, a.area, a.floor, a.contact, a.note, a.linkpost].map(csvEscape).join(','));
+        rows = DB.customers.map((a, i) => [i + 1, a.name, a.status, a.type, a.budget, a.area, a.floor, a.contact, a.note, a.linkpost, a.stationStart || '', a.stationEnd || '', a.locationOther || ''].map(csvEscape).join(','));
         fname = 'yb_customers.csv';
       }
       const content = [CSV_HEADERS[type].map(csvEscape).join(','), ...rows].join('\n');
@@ -5818,14 +6216,17 @@
           } else if (type === 'customers') {
             const hi = n => headers.findIndex(h => h === n);
             const iNm = hi('ชื่อลูกค้า/โครงการ'), iSt = hi('สถานะ'), iTy = hi('ประเภท'), iBd = hi('งบประมาณ'),
-              iAr = hi('ขนาดห้อง'), iFl = hi('ชั้น'), iCt = hi('Contact'), iNt = hi('Note'), iLk = hi('Link Post');
+              iAr = hi('ขนาดห้อง'), iFl = hi('ชั้น'), iCt = hi('Contact'), iNt = hi('Note'), iLk = hi('Link Post'),
+              iStStart = hi('สถานีเริ่มต้น'), iStEnd = hi('สถานีสิ้นสุด'), iLocOth = hi('ทำเลอื่นๆ');
             rows.forEach(r => {
               if (r.length < 2) return;
               const a = {
                 id: genId(), // BUG FIX: assign id ทันที
                 name: iNm >= 0 ? r[iNm] : '', status: iSt >= 0 ? r[iSt] : '', type: iTy >= 0 ? r[iTy] : '',
                 budget: iBd >= 0 ? r[iBd] : '', area: iAr >= 0 ? r[iAr] : '', floor: iFl >= 0 ? r[iFl] : '',
-                contact: iCt >= 0 ? r[iCt] : '', note: iNt >= 0 ? r[iNt] : '', linkpost: iLk >= 0 ? r[iLk] : ''
+                contact: iCt >= 0 ? r[iCt] : '', note: iNt >= 0 ? r[iNt] : '', linkpost: iLk >= 0 ? r[iLk] : '',
+                stationStart: iStStart >= 0 ? r[iStStart] : '', stationEnd: iStEnd >= 0 ? r[iStEnd] : '',
+                locationOther: iLocOth >= 0 ? r[iLocOth] : ''
               };
               if (a.name) { DB.customers.push(a); imported++; }
             });
