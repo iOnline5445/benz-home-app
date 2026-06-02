@@ -848,6 +848,21 @@
       grid-column: 1/-1;
     }
 
+    .form-group.mandatory label {
+      color: var(--gold) !important;
+      font-weight: 700;
+    }
+
+    .form-group.mandatory input {
+      border-color: rgba(201, 168, 76, 0.6) !important;
+      box-shadow: 0 0 4px rgba(201, 168, 76, 0.1) inset !important;
+    }
+
+    .form-group.mandatory input:focus {
+      border-color: var(--gold) !important;
+      box-shadow: 0 0 6px rgba(201, 168, 76, 0.3) !important;
+    }
+
     .form-group label {
       font-size: 12px;
       color: var(--text2);
@@ -3051,7 +3066,6 @@
           <div class="mkt-subtabs">
             <button class="mkt-subtab active" id="mktSubtabComposer" onclick="switchMktSubtab('composer')">🚀 สร้างโพสต์ (Composer)</button>
             <button class="mkt-subtab" id="mktSubtabQueue" onclick="switchMktSubtab('queue')">📅 คิวโพสต์ (Queue) <span id="mktQueueCount" class="badge-count" style="display:none;background:var(--gold);color:#1a1208;font-size:10px;padding:2px 6px;border-radius:10px;margin-left:4px;font-weight:700;">0</span></button>
-            <button class="mkt-subtab" id="mktSubtabParser" onclick="switchMktSubtab('parser')">⚡ AI Parser (สกัดคำ)</button>
             <button class="mkt-subtab" id="mktSubtabSchedule" onclick="switchMktSubtab('schedule')">⚙️ ตั้งค่าเวลาคิว (Schedule)</button>
           </div>
 
@@ -3182,57 +3196,6 @@
             </div>
           </div>
 
-          <!-- Tab 3: AI Parser -->
-          <div id="mktSubSec-parser" class="mkt-sub-section" style="display:none;">
-            <div class="cb-card" style="max-width:800px;margin:0 auto;">
-              <h3>⚡ AI Facebook Post Parser (ล้างข้อมูลติดต่อเดิม)</h3>
-              <p style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.5;">
-                วางข้อความโพสต์จาก Facebook เพื่อดึงข้อมูลโครงการ ราคา ชั้น ขนาด และล้างข้อมูลติดต่อเก่า (เบอร์โทร, Line) ออกอัตโนมัติ เมื่อสกัดแล้วสามารถส่งข้อมูลตรงเข้า Composer เพื่อจัดคิวได้เลย
-              </p>
-              
-              <textarea id="mktParseInput" rows="5" class="cb-select" style="height:120px;resize:vertical;" placeholder="วางข้อความโพสต์อสังหาฯ ตรงนี้..."></textarea>
-              
-              <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
-                <button class="btn btn-primary" onclick="handleQuickParseMarketing()">⚡ สกัดข้อมูลและเคลียร์เบอร์</button>
-              </div>
-              
-              <div id="mktParserResult" style="display:none;border-top:1px solid var(--border);padding-top:16px;margin-top:10px;">
-                <h4 style="font-size:13px;color:var(--gold);margin-bottom:10px;">📋 ผลลัพธ์การสกัดข้อมูล</h4>
-                
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-                  <div>
-                    <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;">ชื่อโครงการ</label>
-                    <input type="text" id="mktParsedProject" class="cb-select" style="margin-bottom:0;">
-                  </div>
-                  <div>
-                    <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;">ราคา</label>
-                    <input type="text" id="mktParsedPrice" class="cb-select" style="margin-bottom:0;">
-                  </div>
-                </div>
-                
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-                  <div>
-                    <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;">ขนาด (ตร.ม.)</label>
-                    <input type="text" id="mktParsedSize" class="cb-select" style="margin-bottom:0;">
-                  </div>
-                  <div>
-                    <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;">ชั้น</label>
-                    <input type="text" id="mktParsedFloor" class="cb-select" style="margin-bottom:0;">
-                  </div>
-                </div>
-                
-                <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;">รายละเอียดโพสต์ที่คลีนแล้ว</label>
-                <textarea id="mktParsedNote" rows="6" class="cb-select" style="height:150px;resize:vertical;"></textarea>
-                
-                <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
-                  <button class="btn btn-primary" onclick="openAddAssetModalWithParsedData()">➕ เปิดหน้าต่างเพิ่มทรัพย์ใหม่</button>
-                  <button class="btn btn-gold" onclick="sendParsedDataToComposer()">🚀 ส่งสคริปต์นี้ไปสร้างโพสต์จัดคิว</button>
-                  <button class="btn btn-outline" onclick="copyCleanedNote()">📋 คัดลอกโน้ต</button>
-                  <span id="mktCleanMsg" class="copy-success" style="display:none">✅ คัดลอกแล้ว!</span>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- Tab 4: Schedule Settings -->
           <div id="mktSubSec-schedule" class="mkt-sub-section" style="display:none;">
@@ -3533,10 +3496,22 @@
         </div>
         <div class="modal-body">
           <div class="form-grid">
-            <div class="form-group full"><label>ชื่อโครงการ <span style="color:var(--red);">*</span></label><input
-                id="a_name" placeholder="เช่น IDEO พระราม 9" required></div>
-            <div class="form-group"><label>ทำเลที่ตั้ง</label><input id="a_location"
-                placeholder="เช่น พระราม 9, สุขุมวิท"></div>
+            <div class="form-group full mandatory">
+              <label>ชื่อโครงการ <span style="color:var(--red);">*</span></label>
+              <input id="a_name" placeholder="เช่น IDEO พระราม 9" required>
+            </div>
+            <div class="form-group full mandatory">
+              <label>Link โครงการ/Facebook <span style="color:var(--red);">*</span></label>
+              <input id="a_link" placeholder="https://..." required>
+            </div>
+            <div class="form-group">
+              <label>ทำเลที่ตั้ง</label>
+              <input id="a_location" placeholder="เช่น พระราม 9, สุขุมวิท">
+            </div>
+            <div class="form-group">
+              <label>สถานีรถไฟฟ้า (BTS/MRT)</label>
+              <input id="a_bts" placeholder="เช่น BTS อโศก, MRT พระราม 9">
+            </div>
             <div class="form-group"><label>สถานะ</label>
               <select id="a_status">
                 <option>ขาย</option>
@@ -3629,11 +3604,10 @@
                 placeholder="เช่น 1 ห้องนอน 1 ห้องน้ำ"></div>
             <div class="form-group"><label>ขนาดพื้นที่</label><input id="a_area" placeholder="เช่น 34 ตร.ม."></div>
             <div class="form-group"><label>ชั้น/ตึก</label><input id="a_floor" placeholder="เช่น ชั้น 22 อาคาร A"></div>
-            <div class="form-group"><label>Link โครงการ/Facebook <span style="color:var(--red);">*</span></label><input
-                id="a_link" placeholder="https://..." required>
+            <div class="form-group">
+              <label>Location Map</label>
+              <input id="a_map" placeholder="https://maps.app.goo.gl/...">
             </div>
-            <div class="form-group"><label>Location Map</label><input id="a_map"
-                placeholder="https://maps.app.goo.gl/..."></div>
             <div class="form-group full"><label>🖼️ Link รูปภาพ (Google Drive / Album)</label><input id="a_linkpic"
                 placeholder="https://drive.google.com/... หรือ Link อัลบั้มรูป"></div>
             <div class="form-group"><label>วันที่โพสต์</label><input id="a_postdate" type="date"></div>
@@ -5422,7 +5396,7 @@
       const priceMax = parseFloat(document.getElementById('filterPriceMax')?.value) || null;
 
       let list = DB.assets.filter(a => {
-        const mQ = !q || (a.name || '').toLowerCase().includes(q) || (a.location || '').toLowerCase().includes(q);
+        const mQ = !q || (a.name || '').toLowerCase().includes(q) || (a.location || '').toLowerCase().includes(q) || (a.bts || '').toLowerCase().includes(q);
         const mS = !st || a.status === st;
         const mT = !ty || (a.type || '').includes(ty);
         const la = a.listingActive || 'available';
@@ -5439,6 +5413,14 @@
           }
         }
         return mQ && mS && mT && mLA && mPrice;
+      });
+
+      // Sort: Newest first (by postdate descending, then by original array index descending)
+      list.sort((x, y) => {
+        const dx = parseDateVal(x.postdate);
+        const dy = parseDateVal(y.postdate);
+        if (dx !== dy) return dy - dx;
+        return DB.assets.indexOf(y) - DB.assets.indexOf(x);
       });
 
       const totalPages = Math.max(1, Math.ceil(list.length / _assetPageSize));
@@ -5506,7 +5488,7 @@
             <td>${a.type || '-'}</td>
             <td style="color:var(--gold);white-space:nowrap">${a.price || '-'}</td>
             <td>${a.roomtype || '-'}</td>
-            <td>${a.location || '-'}</td>
+            <td>${a.location || '-'}${a.bts ? `<br><small style="color:var(--blue);font-weight:600;">🚇 ${a.bts}</small>` : ''}</td>
             <td style="font-size:12px">${a.contact || '-'}</td>
             <td>${a.poster || '-'} ${ownerBadge}</td>
             <td>${careInfo}</td>
@@ -5552,6 +5534,7 @@
               ${a.area ? `<div class="card-row"><span class="label">📐 ขนาด</span><span class="value">${a.area}</span></div>` : ''}
               ${a.floor ? `<div class="card-row"><span class="label">🏗️ ชั้น</span><span class="value">${a.floor}</span></div>` : ''}
               ${a.location ? `<div class="card-row"><span class="label">📍 ทำเล</span><span class="value">${a.location}</span></div>` : ''}
+              ${a.bts ? `<div class="card-row"><span class="label">🚇 รถไฟฟ้า</span><span class="value" style="color:var(--blue);font-weight:600;">🚄 ${a.bts}</span></div>` : ''}
               ${a.contact ? `<div class="card-row"><span class="label">📞 ติดต่อ</span><span class="value">${a.contact}</span></div>` : ''}
               ${a.poster ? `<div class="card-row"><span class="label">👤 โพสต์โดย</span><span class="value">${a.poster} ${ownerBadge}</span></div>` : ''}
               <div style="border-top:1px dashed var(--border);margin-top:8px;padding-top:8px;font-size:12px;">
@@ -5687,6 +5670,9 @@
         }
         return mQ && mPrice;
       });
+
+      // Sort: Newest first (highest index in DB.customers)
+      list.sort((x, y) => DB.customers.indexOf(y) - DB.customers.indexOf(x));
 
       const totalPages = Math.max(1, Math.ceil(list.length / _custPageSize));
       if (_custPage > totalPages) _custPage = totalPages;
@@ -5992,7 +5978,7 @@
     async function saveAsset() {
       const activeVal = document.querySelector('input[name="a_listingActive"]:checked');
       const a = {
-        name: v('a_name'), location: v('a_location'), status: v('a_status'), type: v('a_type'),
+        name: v('a_name'), location: v('a_location'), bts: v('a_bts'), status: v('a_status'), type: v('a_type'),
         price: v('a_price'), roomtype: v('a_roomtype'), area: v('a_area'), floor: v('a_floor'),
         link: v('a_link'), map: v('a_map'), linkpic: v('a_linkpic'), postdate: v('a_postdate'), updatedate: v('a_updatedate'),
         contact: v('a_contact'), poster: v('a_poster'), note: v('a_note'),
@@ -6067,7 +6053,7 @@
         return;
       }
       document.getElementById('modalAssetTitle').textContent = '✏️ แก้ไขทรัพย์สิน';
-      setV('a_name', a.name); setV('a_location', a.location); setV('a_status', a.status); setV('a_type', a.type);
+      setV('a_name', a.name); setV('a_location', a.location); setV('a_bts', a.bts); setV('a_status', a.status); setV('a_type', a.type);
       setV('a_price', a.price); setV('a_roomtype', a.roomtype); setV('a_area', a.area); setV('a_floor', a.floor);
       setV('a_link', a.link); setV('a_map', a.map); setV('a_linkpic', a.linkpic); setV('a_postdate', a.postdate); setV('a_updatedate', a.updatedate);
       setV('a_contact', a.contact); setV('a_note', a.note);
@@ -6184,6 +6170,30 @@
     // ============================
     function v(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
     function setV(id, val) { const el = document.getElementById(id); if (el) el.value = val || ''; }
+    function parseDateVal(dStr) {
+      if (!dStr) return 0;
+      if (dStr.includes('/')) {
+        const p = dStr.split('/');
+        if (p.length === 3) {
+          if (p[0].length === 4) {
+            return new Date(p[0], p[1] - 1, p[2]).getTime() || 0;
+          } else {
+            return new Date(p[2], p[1] - 1, p[0]).getTime() || 0;
+          }
+        }
+      } else if (dStr.includes('-')) {
+        const p = dStr.split('-');
+        if (p.length === 3) {
+          if (p[0].length === 4) {
+            return new Date(p[0], p[1] - 1, p[2]).getTime() || 0;
+          } else {
+            return new Date(p[2], p[1] - 1, p[0]).getTime() || 0;
+          }
+        }
+      }
+      const prs = Date.parse(dStr);
+      return isNaN(prs) ? 0 : prs;
+    }
 
     // ============================
     // CLIPBOARD
@@ -6216,7 +6226,13 @@
           const la = a.listingActive || 'available';
           if (la === 'sold') return false; // hide sold by default
           if (!q) return true;
-          return (a.name || '').toLowerCase().includes(q) || (a.location || '').toLowerCase().includes(q) || (a.status || '').toLowerCase().includes(q);
+          return (a.name || '').toLowerCase().includes(q) || (a.location || '').toLowerCase().includes(q) || (a.bts || '').toLowerCase().includes(q) || (a.status || '').toLowerCase().includes(q);
+        })
+        .sort((x, y) => {
+          const dx = parseDateVal(x.a.postdate);
+          const dy = parseDateVal(y.a.postdate);
+          if (dx !== dy) return dy - dx;
+          return y.i - x.i;
         });
     }
 
@@ -6337,6 +6353,8 @@
         if (a.roomtype) t += `\n🛏️ ${a.roomtype}`;
         if (a.area) t += ` | 📐 ${a.area}`;
         if (a.floor) t += ` | 🏗️ ${a.floor}`;
+        if (a.location) t += `\n📍 ทำเล: ${a.location}`;
+        if (a.bts) t += `\n🚇 รถไฟฟ้า: ${a.bts}`;
         if (showContact && contact) t += `\n📞 ${contact}`;
         if (lineAt) t += `\n💚 Line@ : ${lineAt}`;
         if (showLink && a.link) t += `\n🔗 ${a.link}`;
@@ -6346,6 +6364,7 @@
       if (tmpl === 'fb') {
         let t = `✨ ${st}\n━━━━━━━━━━━━━━━━━━━━\n🏢 ${a.name || ''}\n`;
         if (a.location) t += `📍 ทำเล: ${a.location}\n`;
+        if (a.bts) t += `🚇 รถไฟฟ้า: ${a.bts}\n`;
         t += `━━━━━━━━━━━━━━━━━━━━\n`;
         if (a.price) t += `💰 ราคา: ${a.price}\n`;
         if (a.type) t += `🏗️ ประเภท: ${a.type}\n`;
@@ -6367,7 +6386,8 @@
         if (a.price) t += `💰 ราคา: ${a.price}\n`;
         if (a.roomtype || a.area) t += `📋 ${[a.roomtype, a.area].filter(Boolean).join(' | ')}\n`;
         if (a.floor) t += `🔢 ${a.floor}\n`;
-        if (a.location) t += `📌 ${a.location}\n`;
+        if (a.location) t += `📌 ทำเล: ${a.location}\n`;
+        if (a.bts) t += `🚇 รถไฟฟ้า: ${a.bts}\n`;
         if (showNote && a.note) t += `\n${a.note}\n`;
         if (showContact && contact) t += `\n📞 ${contact}`;
         if (lineAt) t += `\n💚 Line@ : ${lineAt}`;
@@ -6382,6 +6402,7 @@
       if (a.area) t += `📐 ขนาด ${a.area}\n`;
       if (a.floor) t += `🏢 ${a.floor}\n`;
       if (a.location) t += `📍 ทำเล: ${a.location}\n`;
+      if (a.bts) t += `🚇 รถไฟฟ้า: ${a.bts}\n`;
       if (showNote && a.note) t += `\n📝 รายละเอียด:\n${a.note}\n`;
       if (showContact && contact) t += `\n📞 สนใจโทร/ไลน์: ${contact}\n`;
       if (lineAt) t += `💚 Line@ : ${lineAt}\n`;
@@ -6402,7 +6423,7 @@
     function switchMktSubtab(subTab) {
       _activeMktSubtab = subTab;
       // update buttons active state
-      ['composer', 'queue', 'parser', 'schedule'].forEach(x => {
+      ['composer', 'queue', 'schedule'].forEach(x => {
         const btn = document.getElementById('mktSubtab' + x.charAt(0).toUpperCase() + x.slice(1));
         const view = document.getElementById('mktSubSec-' + x);
         if (btn) btn.classList.toggle('active', x === subTab);
@@ -6439,7 +6460,13 @@
           const la = a.listingActive || 'available';
           if (la === 'sold') return false;
           if (!q) return true;
-          return (a.name || '').toLowerCase().includes(q) || (a.location || '').toLowerCase().includes(q) || (a.status || '').toLowerCase().includes(q);
+          return (a.name || '').toLowerCase().includes(q) || (a.location || '').toLowerCase().includes(q) || (a.bts || '').toLowerCase().includes(q) || (a.status || '').toLowerCase().includes(q);
+        })
+        .sort((x, y) => {
+          const dx = parseDateVal(x.a.postdate);
+          const dy = parseDateVal(y.a.postdate);
+          if (dx !== dy) return dy - dx;
+          return y.i - x.i;
         });
     }
 
@@ -7007,24 +7034,6 @@
       generateMarketingCopy();
     }
 
-    function sendParsedDataToComposer() {
-      const note = document.getElementById('mktParsedNote').value;
-      if (!note) {
-        alert('กรุณาสกัดข้อมูลที่มีประโยชน์ก่อนค่ะ');
-        return;
-      }
-      
-      switchMktSubtab('composer');
-      document.getElementById('mktComposerText').value = note;
-      
-      document.getElementById('mktAssetSelect').value = '';
-      document.getElementById('mktAssetSearch').value = '';
-      document.getElementById('mktAgentSelect').value = '';
-      document.getElementById('mktAgentPreview').style.display = 'none';
-      
-      showToast('⚡ ส่งสคริปต์สกัดคำเข้าช่องปรับแต่งแล้ว!');
-    }
-
     function checkScheduledQueueReminders() {
       if (!DB.mktQueue) return;
       const now = new Date();
@@ -7104,73 +7113,6 @@
       }
     }
 
-    function handleQuickParseMarketing() {
-      const text = document.getElementById('mktParseInput').value;
-      if (!text) {
-        alert('กรุณากรอกข้อความโพสต์จาก Facebook ก่อนค่ะ');
-        return;
-      }
-      
-      let project = "ไม่ระบุโครงการ";
-      let price = "โปรดเช็คราคา";
-      let size = "-";
-      let floor = "-";
-
-      const projectMatch = text.match(/(?:โครงการ|คอนโด|บ้านเดี่ยว)\s*([A-Za-z0-9\sก-๙]+)/i);
-      if (projectMatch) project = projectMatch[1].trim();
-
-      const priceMatch = text.match(/(?:ราคา|ขาย|เช่า|เดือนละ)\s*([0-9,.]+)\s*(?:บาท|บ\.)/i);
-      if (priceMatch) price = priceMatch[1].trim();
-
-      const sizeMatch = text.match(/([0-9.]+)\s*(?:ตร\.ม\.|ตารางเมตร)/i);
-      if (sizeMatch) size = sizeMatch[1].trim();
-
-      const floorMatch = text.match(/(?:ชั้น|floor)\s*([0-9ก-๙]+)/i);
-      if (floorMatch) floor = floorMatch[1].trim();
-
-      let cleanText = text.replace(/(\b0[689]\d{8}\b|\b0[689]\d-\d{3}-\d{4}\b)/g, '[ล้างข้อมูลติดต่อเดิม]');
-      cleanText = cleanText.replace(/(?:line|ไลน์)\s*:\s*([A-Za-z0-9_@-]+)/gi, 'LINE: [ล้างข้อมูลติดต่อเดิม]');
-
-      document.getElementById('mktParsedProject').value = project;
-      document.getElementById('mktParsedPrice').value = price;
-      document.getElementById('mktParsedSize').value = size;
-      document.getElementById('mktParsedFloor').value = floor;
-      document.getElementById('mktParsedNote').value = cleanText;
-
-      document.getElementById('mktParserResult').style.display = 'block';
-    }
-
-    function openAddAssetModalWithParsedData() {
-      openModal('asset');
-      
-      document.getElementById('a_name').value = document.getElementById('mktParsedProject').value;
-      document.getElementById('a_price').value = document.getElementById('mktParsedPrice').value;
-      document.getElementById('a_area').value = document.getElementById('mktParsedSize').value;
-      document.getElementById('a_floor').value = document.getElementById('mktParsedFloor').value;
-      document.getElementById('a_note').value = document.getElementById('mktParsedNote').value;
-      
-      const noteText = document.getElementById('mktParsedNote').value;
-      if (noteText.includes('เช่า') && !noteText.includes('ขาย')) {
-        document.getElementById('a_status').value = 'เช่า';
-      } else if (noteText.includes('ขาย') && !noteText.includes('เช่า')) {
-        document.getElementById('a_status').value = 'ขาย';
-      }
-      if (noteText.includes('บ้าน')) {
-        document.getElementById('a_type').value = 'บ้านเดี่ยว';
-      } else {
-        document.getElementById('a_type').value = 'คอนโด';
-      }
-    }
-
-    function copyCleanedNote() {
-      const text = document.getElementById('mktParsedNote').value;
-      navigator.clipboard.writeText(text);
-      const msg = document.getElementById('mktCleanMsg');
-      if (msg) {
-        msg.style.display = 'inline';
-        setTimeout(() => msg.style.display = 'none', 3000);
-      }
-    }
 
     function escapeHtml(str) {
       return str
