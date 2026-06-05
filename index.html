@@ -6183,7 +6183,7 @@
         }).join('');
       } else {
         if (tbWrap) tbWrap.style.display = 'none';
-        if (ml) ml.style.display = '';
+        if (ml) ml.style.display = 'block';
         if (!list.length) {
           if (ml) ml.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีข้อมูล Agent</div>`;
           return;
@@ -6295,7 +6295,7 @@
         if (tb) tb.innerHTML = '';
         if (tbWrap) tbWrap.style.display = 'none';
         if (ml) {
-          ml.style.display = '';
+          ml.style.display = 'block';
           if (!paged.length) {
             ml.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">ไม่พบลูกค้าที่ตรงกับเงื่อนไข</div>';
             return;
