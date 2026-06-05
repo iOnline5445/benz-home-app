@@ -538,10 +538,21 @@
     /* TOOLBAR */
     .toolbar {
       display: flex;
-      gap: 10px;
-      align-items: center;
+      flex-direction: column;
+      gap: 8px;
       margin-bottom: 18px;
+    }
+
+    .toolbar-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
       flex-wrap: wrap;
+    }
+
+    .toolbar-spacer {
+      flex: 1;
+      min-width: 0;
     }
 
     .search-box {
@@ -1399,29 +1410,43 @@
         margin-top: 2px;
       }
 
-      /* -- toolbar: search full-width, btn right -- */
+      /* -- toolbar: structured rows for mobile -- */
       .toolbar {
-        flex-wrap: wrap;
-        gap: 8px;
+        gap: 6px;
         margin-bottom: 14px;
       }
+
+      .toolbar-row {
+        gap: 6px;
+      }
+
+      .toolbar-spacer {
+        display: none;
+      }
+
       .view-toggles {
         display: none !important;
       }
 
-      .toolbar .search-box {
-        width: 100%;
+      /* Search: main search full-width, price fields side by side */
+      .toolbar-row .search-box {
         min-width: unset;
-        flex: unset;
+        flex: 1 1 calc(50% - 4px);
       }
 
-      .toolbar .search-box input {
+      .toolbar-row .search-box:first-child {
+        flex: 0 0 100% !important;
+      }
+
+      .toolbar-row .search-box input {
         border-radius: 14px;
         font-size: 15px;
+        min-height: 44px;
       }
 
-      .toolbar .filter-select {
-        flex: 1;
+      /* Filter selects: 2-3 per row */
+      .toolbar-row .filter-select {
+        flex: 1 1 calc(33% - 4px);
         min-width: 0;
         font-size: 13px;
         padding: 10px 10px;
@@ -1429,12 +1454,21 @@
         min-height: 44px;
       }
 
-      .toolbar .btn {
+      /* Action buttons */
+      .toolbar-row .btn {
         min-height: 44px;
-        padding: 10px 18px;
+        padding: 10px 14px;
         font-size: 14px;
         border-radius: 12px;
         font-weight: 700;
+      }
+
+      .toolbar-row .btn-primary {
+        flex: 1 1 100%;
+      }
+
+      .toolbar-row .btn-sm {
+        flex: 0 0 auto;
       }
 
       /* -- cards: single column, touch-friendly app style -- */
@@ -2871,70 +2905,75 @@
       <div id="sec-assets" class="section active">
         <div class="stats-row" id="assetStats"></div>
         <div class="toolbar">
-          <div class="search-box" style="flex:2;min-width:160px;position:relative;">
-            <span
-              style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;">🔍</span>
-            <input type="text" id="assetSearch" placeholder="ค้นหาโครงการ, ทำเล..." oninput="renderAssets()"
-              style="padding-left:36px;">
+          <!-- Row 1: Search + Price + Status Filters -->
+          <div class="toolbar-row">
+            <div class="search-box" style="flex:2;min-width:160px;position:relative;">
+              <span
+                style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;">🔍</span>
+              <input type="text" id="assetSearch" placeholder="ค้นหาโครงการ, ทำเล..." oninput="renderAssets()"
+                style="padding-left:36px;">
+            </div>
+            <div class="search-box" style="flex:1;min-width:100px;position:relative;">
+              <span
+                style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↑</span>
+              <input type="number" id="filterPriceMin" placeholder="ราคาต่ำสุด" oninput="renderAssets()"
+                style="padding:9px 10px 9px 32px;">
+            </div>
+            <div class="search-box" style="flex:1;min-width:100px;position:relative;">
+              <span
+                style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↓</span>
+              <input type="number" id="filterPriceMax" placeholder="ราคาสูงสุด" oninput="renderAssets()"
+                style="padding:9px 10px 9px 32px;">
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="clearAssetFilters()" title="ล้างฟิลเตอร์ทั้งหมด"
+              style="padding:9px 12px;">🔄</button>
+            <select class="filter-select" id="filterStatus" onchange="renderAssets()">
+              <option value="">ทุกสถานะ</option>
+              <option value="ขาย">ขาย</option>
+              <option value="เช่า">เช่า</option>
+              <option value="เช่า/ขาย">เช่า/ขาย</option>
+            </select>
+            <select class="filter-select" id="filterListingActive" onchange="renderAssets()">
+              <option value="active">📢 ใช้งานอยู่</option>
+              <option value="">ทั้งหมด</option>
+              <option value="sold">🔴 ปิดแล้ว</option>
+              <option value="reserved">⏳ จอง</option>
+            </select>
+            <select class="filter-select" id="filterType" onchange="renderAssets()">
+              <option value="">ทุกประเภท</option>
+              <option value="คอนโด">คอนโด</option>
+              <option value="บ้านเดี่ยว">บ้านเดี่ยว</option>
+              <option value="ทาวน์โฮม">ทาวน์โฮม</option>
+              <option value="ที่ดิน">ที่ดิน</option>
+            </select>
           </div>
-          <div class="search-box" style="max-width:130px;position:relative;">
-            <span
-              style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↑</span>
-            <input type="number" id="filterPriceMin" placeholder="ราคาต่ำสุด" oninput="renderAssets()"
-              style="padding:9px 10px 9px 32px;">
+          <!-- Row 2: Transit + View Toggles + Add -->
+          <div class="toolbar-row">
+            <select class="filter-select" id="filterTrainLine" onchange="onTrainLineChange()" style="flex:1.5;">
+              <option value="">🚇 ทุกสายรถไฟฟ้า</option>
+              <option value="BTS สุขุมวิท (สีเขียวอ่อน)">BTS สุขุมวิท (สีเขียวอ่อน)</option>
+              <option value="BTS สีลม (สีเขียวเข้ม)">BTS สีลม (สีเขียวเข้ม)</option>
+              <option value="MRT สายสีน้ำเงิน">MRT สายสีน้ำเงิน</option>
+              <option value="MRT สายสีม่วง">MRT สายสีม่วง</option>
+              <option value="MRT สายสีเหลือง">MRT สายสีเหลือง</option>
+              <option value="MRT สายสีชมพู">MRT สายสีชมพู</option>
+              <option value="ARL (แอร์พอร์ตเรลลิงก์)">ARL (แอร์พอร์ตเรลลิงก์)</option>
+            </select>
+            <select class="filter-select" id="filterStartStation" onchange="renderAssets()" disabled style="flex:1;">
+              <option value="">สถานีเริ่มต้น</option>
+            </select>
+            <select class="filter-select" id="filterEndStation" onchange="renderAssets()" disabled style="flex:1;">
+              <option value="">สถานีสิ้นสุด</option>
+            </select>
+            <div class="toolbar-spacer"></div>
+            <div style="display:flex;gap:4px;" class="view-toggles">
+              <button id="btnAssetViewCard" class="btn btn-outline btn-sm" onclick="setAssetView('card')" title="การ์ด"
+                style="padding:9px 13px;font-size:16px;">⊞</button>
+              <button id="btnAssetViewTable" class="btn btn-outline btn-sm" onclick="setAssetView('table')" title="ตาราง"
+                style="padding:9px 13px;font-size:16px;">☰</button>
+            </div>
+            <button class="btn btn-primary" id="btnAddAsset" onclick="openModal('asset')">+ เพิ่มทรัพย์สิน</button>
           </div>
-          <div class="search-box" style="max-width:130px;position:relative;">
-            <span
-              style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↓</span>
-            <input type="number" id="filterPriceMax" placeholder="ราคาสูงสุด" oninput="renderAssets()"
-              style="padding:9px 10px 9px 32px;">
-          </div>
-          <button class="btn btn-outline btn-sm" onclick="clearAssetFilters()" title="ล้างฟิลเตอร์ทั้งหมด"
-            style="padding:9px 12px;">🔄</button>
-          <select class="filter-select" id="filterStatus" onchange="renderAssets()">
-            <option value="">ทุกสถานะ</option>
-            <option value="ขาย">ขาย</option>
-            <option value="เช่า">เช่า</option>
-            <option value="เช่า/ขาย">เช่า/ขาย</option>
-          </select>
-          <select class="filter-select" id="filterListingActive" onchange="renderAssets()">
-            <option value="active">📢 ใช้งานอยู่</option>
-            <option value="">ทั้งหมด</option>
-            <option value="sold">🔴 ปิดแล้ว</option>
-            <option value="reserved">⏳ จอง</option>
-          </select>
-          <select class="filter-select" id="filterType" onchange="renderAssets()">
-            <option value="">ทุกประเภท</option>
-            <option value="คอนโด">คอนโด</option>
-            <option value="บ้านเดี่ยว">บ้านเดี่ยว</option>
-            <option value="ทาวน์โฮม">ทาวน์โฮม</option>
-            <option value="ที่ดิน">ที่ดิน</option>
-          </select>
-          
-          <select class="filter-select" id="filterTrainLine" onchange="onTrainLineChange()" style="max-width:150px;">
-            <option value="">ทุกสายรถไฟฟ้า</option>
-            <option value="BTS สุขุมวิท (สีเขียวอ่อน)">BTS สุขุมวิท (สีเขียวอ่อน)</option>
-            <option value="BTS สีลม (สีเขียวเข้ม)">BTS สีลม (สีเขียวเข้ม)</option>
-            <option value="MRT สายสีน้ำเงิน">MRT สายสีน้ำเงิน</option>
-            <option value="MRT สายสีม่วง">MRT สายสีม่วง</option>
-            <option value="MRT สายสีเหลือง">MRT สายสีเหลือง</option>
-            <option value="MRT สายสีชมพู">MRT สายสีชมพู</option>
-            <option value="ARL (แอร์พอร์ตเรลลิงก์)">ARL (แอร์พอร์ตเรลลิงก์)</option>
-          </select>
-          <select class="filter-select" id="filterStartStation" onchange="renderAssets()" disabled style="max-width:140px;">
-            <option value="">สถานีเริ่มต้น</option>
-          </select>
-          <select class="filter-select" id="filterEndStation" onchange="renderAssets()" disabled style="max-width:140px;">
-            <option value="">สถานีสิ้นสุด</option>
-          </select>
-          
-          <div style="display:flex;gap:4px;" class="view-toggles">
-            <button id="btnAssetViewCard" class="btn btn-outline btn-sm" onclick="setAssetView('card')" title="การ์ด"
-              style="padding:9px 13px;font-size:16px;">⊞</button>
-            <button id="btnAssetViewTable" class="btn btn-outline btn-sm" onclick="setAssetView('table')" title="ตาราง"
-              style="padding:9px 13px;font-size:16px;">☰</button>
-          </div>
-          <button class="btn btn-primary" id="btnAddAsset" onclick="openModal('asset')">+ เพิ่มทรัพย์สิน</button>
         </div>
         <div id="assetPaginationTop"
           style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;min-height:32px;"></div>
@@ -2966,15 +3005,19 @@
       <!-- =================== AGENTS =================== -->
       <div id="sec-agents" class="section">
         <div class="toolbar">
-          <div class="search-box"><input type="text" id="agentSearch" placeholder="ค้นหา Agent..."
-              oninput="renderAgents()"></div>
-          <div style="display:flex;gap:4px;" class="view-toggles">
-            <button id="btnAgentViewCard" class="btn btn-outline btn-sm" onclick="setAgentView('card')" title="การ์ด"
-              style="padding:9px 13px;font-size:16px;">⊞</button>
-            <button id="btnAgentViewTable" class="btn btn-outline btn-sm" onclick="setAgentView('table')" title="ตาราง"
-              style="padding:9px 13px;font-size:16px;">☰</button>
+          <div class="toolbar-row">
+            <div class="search-box" style="flex:2;min-width:160px;">
+              <input type="text" id="agentSearch" placeholder="ค้นหา Agent..." oninput="renderAgents()">
+            </div>
+            <div class="toolbar-spacer"></div>
+            <div style="display:flex;gap:4px;" class="view-toggles">
+              <button id="btnAgentViewCard" class="btn btn-outline btn-sm" onclick="setAgentView('card')" title="การ์ด"
+                style="padding:9px 13px;font-size:16px;">⊞</button>
+              <button id="btnAgentViewTable" class="btn btn-outline btn-sm" onclick="setAgentView('table')" title="ตาราง"
+                style="padding:9px 13px;font-size:16px;">☰</button>
+            </div>
+            <button class="btn btn-primary" onclick="openModal('agent')">+ เพิ่ม Agent</button>
           </div>
-          <button class="btn btn-primary" onclick="openModal('agent')">+ เพิ่ม Agent</button>
         </div>
         <div class="table-wrap" id="agentTableWrap" style="display:none;">
           <table>
@@ -3002,56 +3045,61 @@
       <!-- =================== CUSTOMERS =================== -->
       <div id="sec-customers" class="section">
         <div class="toolbar">
-          <div class="search-box" style="flex:2;min-width:160px;position:relative;">
-            <span
-              style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;">🔍</span>
-            <input type="text" id="customerSearch" placeholder="ค้นหาลูกค้า, ติดต่อ..." oninput="renderCustomers()"
-              style="padding-left:36px;">
+          <!-- Row 1: Search + Budget -->
+          <div class="toolbar-row">
+            <div class="search-box" style="flex:2;min-width:160px;position:relative;">
+              <span
+                style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;">🔍</span>
+              <input type="text" id="customerSearch" placeholder="ค้นหาลูกค้า, ติดต่อ..." oninput="renderCustomers()"
+                style="padding-left:36px;">
+            </div>
+            <div class="search-box" style="flex:1;min-width:100px;position:relative;">
+              <span
+                style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↑</span>
+              <input type="number" id="customerPriceMin" placeholder="งบต่ำสุด" oninput="renderCustomers()"
+                style="padding:9px 10px 9px 32px;">
+            </div>
+            <div class="search-box" style="flex:1;min-width:100px;position:relative;">
+              <span
+                style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↓</span>
+              <input type="number" id="customerPriceMax" placeholder="งบสูงสุด" oninput="renderCustomers()"
+                style="padding:9px 10px 9px 32px;">
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="clearCustomerFilters()" title="ล้างฟิลเตอร์ทั้งหมด"
+              style="padding:9px 12px;">🔄</button>
           </div>
-          <div class="search-box" style="max-width:130px;position:relative;">
-            <span
-              style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↑</span>
-            <input type="number" id="customerPriceMin" placeholder="งบต่ำสุด" oninput="renderCustomers()"
-              style="padding:9px 10px 9px 32px;">
+          <!-- Row 2: Transit + View Toggles + Actions -->
+          <div class="toolbar-row">
+            <select class="filter-select" id="filterCustTrainLine" onchange="onCustTrainLineChange()" style="flex:1.5;">
+              <option value="">🚇 ทุกสายรถไฟฟ้า</option>
+              <option value="BTS สุขุมวิท (สีเขียวอ่อน)">BTS สุขุมวิท (สีเขียวอ่อน)</option>
+              <option value="BTS สีลม (สีเขียวเข้ม)">BTS สีลม (สีเขียวเข้ม)</option>
+              <option value="MRT สายสีน้ำเงิน">MRT สายสีน้ำเงิน</option>
+              <option value="MRT สายสีม่วง">MRT สายสีม่วง</option>
+              <option value="MRT สายสีเหลือง">MRT สายสีเหลือง</option>
+              <option value="MRT สายสีชมพู">MRT สายสีชมพู</option>
+              <option value="ARL (แอร์พอร์ตเรลลิงก์)">ARL (แอร์พอร์ตเรลลิงก์)</option>
+            </select>
+            <select class="filter-select" id="filterCustStartStation" onchange="renderCustomers()" disabled style="flex:1;">
+              <option value="">สถานีเริ่มต้น</option>
+            </select>
+            <select class="filter-select" id="filterCustEndStation" onchange="renderCustomers()" disabled style="flex:1;">
+              <option value="">สถานีสิ้นสุด</option>
+            </select>
+            <div class="toolbar-spacer"></div>
+            <div style="display:flex;gap:4px;" class="view-toggles">
+              <button id="btnCustViewCard" class="btn btn-outline btn-sm" onclick="setCustView('card')" title="การ์ด"
+                style="padding:9px 13px;font-size:16px;">⊞</button>
+              <button id="btnCustViewTable" class="btn btn-outline btn-sm" onclick="setCustView('table')" title="ตาราง"
+                style="padding:9px 13px;font-size:16px;">☰</button>
+            </div>
+            <label id="btnImportCustomerCSV" class="btn btn-outline" style="cursor:pointer;"
+              title="Import ลูกค้าจากไฟล์ CSV">
+              📥 Import CSV
+              <input type="file" accept=".csv" style="display:none" onchange="importCSV(event,'customers')">
+            </label>
+            <button id="btnAddCustomer" class="btn btn-primary" onclick="openModal('customer')">+ เพิ่มลูกค้า</button>
           </div>
-          <div class="search-box" style="max-width:130px;position:relative;">
-            <span
-              style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--gold);">฿↓</span>
-            <input type="number" id="customerPriceMax" placeholder="งบสูงสุด" oninput="renderCustomers()"
-              style="padding:9px 10px 9px 32px;">
-          </div>
-          <button class="btn btn-outline btn-sm" onclick="clearCustomerFilters()" title="ล้างฟิลเตอร์ทั้งหมด"
-            style="padding:9px 12px;">🔄</button>
-          
-          <select class="filter-select" id="filterCustTrainLine" onchange="onCustTrainLineChange()" style="max-width:150px;">
-            <option value="">ทุกสายรถไฟฟ้า</option>
-            <option value="BTS สุขุมวิท (สีเขียวอ่อน)">BTS สุขุมวิท (สีเขียวอ่อน)</option>
-            <option value="BTS สีลม (สีเขียวเข้ม)">BTS สีลม (สีเขียวเข้ม)</option>
-            <option value="MRT สายสีน้ำเงิน">MRT สายสีน้ำเงิน</option>
-            <option value="MRT สายสีม่วง">MRT สายสีม่วง</option>
-            <option value="MRT สายสีเหลือง">MRT สายสีเหลือง</option>
-            <option value="MRT สายสีชมพู">MRT สายสีชมพู</option>
-            <option value="ARL (แอร์พอร์ตเรลลิงก์)">ARL (แอร์พอร์ตเรลลิงก์)</option>
-          </select>
-          <select class="filter-select" id="filterCustStartStation" onchange="renderCustomers()" disabled style="max-width:140px;">
-            <option value="">สถานีเริ่มต้น</option>
-          </select>
-          <select class="filter-select" id="filterCustEndStation" onchange="renderCustomers()" disabled style="max-width:140px;">
-            <option value="">สถานีสิ้นสุด</option>
-          </select>
-          
-          <div style="display:flex;gap:4px;" class="view-toggles">
-            <button id="btnCustViewCard" class="btn btn-outline btn-sm" onclick="setCustView('card')" title="การ์ด"
-              style="padding:9px 13px;font-size:16px;">⊞</button>
-            <button id="btnCustViewTable" class="btn btn-outline btn-sm" onclick="setCustView('table')" title="ตาราง"
-              style="padding:9px 13px;font-size:16px;">☰</button>
-          </div>
-          <label id="btnImportCustomerCSV" class="btn btn-outline" style="cursor:pointer;"
-            title="Import ลูกค้าจากไฟล์ CSV">
-            📥 Import CSV
-            <input type="file" accept=".csv" style="display:none" onchange="importCSV(event,'customers')">
-          </label>
-          <button id="btnAddCustomer" class="btn btn-primary" onclick="openModal('customer')">+ เพิ่มลูกค้า</button>
         </div>
         <div id="customerPaginationTop"
           style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;min-height:32px;"></div>
