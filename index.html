@@ -38,6 +38,62 @@
       --stat-num: var(--gold);
     }
 
+    /* ===== THEME: DARK NAVY (กรมท่า — มืด) ===== */
+    [data-theme="dark-navy"] {
+      --gold: #64FFDA;
+      --gold-light: #52E0C4;
+      --gold-dark: #14B8A6;
+      --dark: #0A192F;
+      --dark2: #112240;
+      --dark3: #233554;
+      --dark4: #1E2D4A;
+      --text: #E6F1FF;
+      --text2: #8892B0;
+      --text3: #495670;
+      --accent: #64FFDA;
+      --red: #FF6B6B;
+      --green: #50C878;
+      --blue: #4DABF7;
+      --purple: #B197FC;
+      --border: rgba(100, 255, 218, 0.22);
+      --border2: rgba(100, 255, 218, 0.09);
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+      --login-bg1: #0A192F;
+      --login-bg2: #020C1B;
+      --header-bg1: #112240;
+      --header-bg2: #0A192F;
+      --card-hover-shadow: rgba(100, 255, 218, 0.08);
+      --stat-num: #64FFDA;
+    }
+
+    /* ===== THEME: DARK PURPLE (ม่วงเที่ยงคืน — มืด) ===== */
+    [data-theme="dark-purple"] {
+      --gold: #D0BFFF;
+      --gold-light: #E5D9F2;
+      --gold-dark: #A580FF;
+      --dark: #120A1A;
+      --dark2: #1D1128;
+      --dark3: #2A1B38;
+      --dark4: #38244A;
+      --text: #F3E8FF;
+      --text2: #C4B5FD;
+      --text3: #8B5CF6;
+      --accent: #D0BFFF;
+      --red: #FB7185;
+      --green: #4ADE80;
+      --blue: #60A5FA;
+      --purple: #C084FC;
+      --border: rgba(208, 191, 255, 0.22);
+      --border2: rgba(208, 191, 255, 0.09);
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+      --login-bg1: #120A1A;
+      --login-bg2: #0A0510;
+      --header-bg1: #1D1128;
+      --header-bg2: #120A1A;
+      --card-hover-shadow: rgba(208, 191, 255, 0.08);
+      --stat-num: #D0BFFF;
+    }
+
     /* ===== THEME: LIGHT (เบจทอง) ===== */
     [data-theme="light"] {
       --gold: #C07800;
@@ -4103,7 +4159,23 @@
               <div class="tp-dot" style="background:#C9A84C;opacity:.5"></div>
               <div class="tp-dot" style="background:#1A1A1A"></div>
             </div>
-            <span>🌙 มืด</span>
+            <span>🌙 มืดทอง</span>
+          </div>
+          <div class="tp-color-opt" id="tpColor-dark-navy" onclick="tpSelectColor('dark-navy')">
+            <div class="tp-dots">
+              <div class="tp-dot" style="background:#64FFDA"></div>
+              <div class="tp-dot" style="background:#112240"></div>
+              <div class="tp-dot" style="background:#0A192F"></div>
+            </div>
+            <span>🌌 ฟ้ามืด</span>
+          </div>
+          <div class="tp-color-opt" id="tpColor-dark-purple" onclick="tpSelectColor('dark-purple')">
+            <div class="tp-dots">
+              <div class="tp-dot" style="background:#D0BFFF"></div>
+              <div class="tp-dot" style="background:#1D1128"></div>
+              <div class="tp-dot" style="background:#120A1A"></div>
+            </div>
+            <span>🔮 ม่วงมืด</span>
           </div>
           <div class="tp-color-opt" id="tpColor-light" onclick="tpSelectColor('light')">
             <div class="tp-dots">
@@ -7655,7 +7727,7 @@
     // ============================
     // THEME PANEL
     // ============================
-    const THEME_COLORS = ['dark', 'light', 'vibrant', 'ocean', 'sakura', 'forest', 'sunset'];
+    const THEME_COLORS = ['dark', 'dark-navy', 'dark-purple', 'light', 'vibrant', 'ocean', 'sakura', 'forest', 'sunset'];
     const FONT_MAP = {
       'Sarabun': "'Sarabun', sans-serif",
       'Prompt': "'Prompt', sans-serif",
