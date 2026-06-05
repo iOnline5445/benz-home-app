@@ -1265,24 +1265,13 @@
         display: none !important;
       }
 
-      .theme-panel-btn {
+      .theme-panel-btn, .logout-btn {
         padding: 6px;
-        font-size: 0;
         min-height: 34px;
-      }
-      .theme-panel-btn::before {
-        content: "🎨";
         font-size: 14px;
       }
-
-      .logout-btn {
-        padding: 6px;
-        font-size: 0;
-        min-height: 34px;
-      }
-      .logout-btn::before {
-        content: "🚪";
-        font-size: 14px;
+      .tp-btn-text {
+        display: none;
       }
 
       /* -- bottom nav: native app style -- */
@@ -1416,6 +1405,9 @@
         gap: 8px;
         margin-bottom: 14px;
       }
+      .view-toggles {
+        display: none !important;
+      }
 
       .toolbar .search-box {
         width: 100%;
@@ -1530,7 +1522,7 @@
 
       /* -- tables: HIDDEN on mobile, replaced by card-list -- */
       .table-wrap {
-        display: none !important;
+        display: none;
       }
 
       /* Mobile card-list for Agent/Customer/User */
@@ -2808,12 +2800,12 @@
           <span id="fbStatusText">Firebase...</span>
         </div>
         <!-- Theme Panel Button -->
-        <button class="theme-panel-btn" onclick="openThemePanel()">🎨 Theme</button>
+        <button class="theme-panel-btn" onclick="openThemePanel()">🎨<span class="tp-btn-text"> Theme</span></button>
         <div class="user-badge">
           <span id="headerUserName">-</span>
           <span class="role" id="headerUserRole">-</span>
         </div>
-        <button class="logout-btn" onclick="doLogout()">ออกระบบ</button>
+        <button class="logout-btn" onclick="doLogout()">🚪<span class="tp-btn-text"> ออกระบบ</span></button>
       </div>
     </div>
 
@@ -2897,7 +2889,7 @@
             <input type="number" id="filterPriceMax" placeholder="ราคาสูงสุด" oninput="renderAssets()"
               style="padding:9px 10px 9px 32px;">
           </div>
-          <button class="btn btn-outline btn-sm" onclick="clearPriceFilter()" title="ล้างฟิลเตอร์ราคา"
+          <button class="btn btn-outline btn-sm" onclick="clearAssetFilters()" title="ล้างฟิลเตอร์ทั้งหมด"
             style="padding:9px 12px;">🔄</button>
           <select class="filter-select" id="filterStatus" onchange="renderAssets()">
             <option value="">ทุกสถานะ</option>
@@ -2918,7 +2910,25 @@
             <option value="ทาวน์โฮม">ทาวน์โฮม</option>
             <option value="ที่ดิน">ที่ดิน</option>
           </select>
-          <div style="display:flex;gap:4px;">
+          
+          <select class="filter-select" id="filterTrainLine" onchange="onTrainLineChange()" style="max-width:150px;">
+            <option value="">ทุกสายรถไฟฟ้า</option>
+            <option value="BTS สุขุมวิท (สีเขียวอ่อน)">BTS สุขุมวิท (สีเขียวอ่อน)</option>
+            <option value="BTS สีลม (สีเขียวเข้ม)">BTS สีลม (สีเขียวเข้ม)</option>
+            <option value="MRT สายสีน้ำเงิน">MRT สายสีน้ำเงิน</option>
+            <option value="MRT สายสีม่วง">MRT สายสีม่วง</option>
+            <option value="MRT สายสีเหลือง">MRT สายสีเหลือง</option>
+            <option value="MRT สายสีชมพู">MRT สายสีชมพู</option>
+            <option value="ARL (แอร์พอร์ตเรลลิงก์)">ARL (แอร์พอร์ตเรลลิงก์)</option>
+          </select>
+          <select class="filter-select" id="filterStartStation" onchange="renderAssets()" disabled style="max-width:140px;">
+            <option value="">สถานีเริ่มต้น</option>
+          </select>
+          <select class="filter-select" id="filterEndStation" onchange="renderAssets()" disabled style="max-width:140px;">
+            <option value="">สถานีสิ้นสุด</option>
+          </select>
+          
+          <div style="display:flex;gap:4px;" class="view-toggles">
             <button id="btnAssetViewCard" class="btn btn-outline btn-sm" onclick="setAssetView('card')" title="การ์ด"
               style="padding:9px 13px;font-size:16px;">⊞</button>
             <button id="btnAssetViewTable" class="btn btn-outline btn-sm" onclick="setAssetView('table')" title="ตาราง"
@@ -2958,11 +2968,11 @@
         <div class="toolbar">
           <div class="search-box"><input type="text" id="agentSearch" placeholder="ค้นหา Agent..."
               oninput="renderAgents()"></div>
-          <div style="display:flex;gap:4px;">
-            <button id="btnAgentViewTable" class="btn btn-outline btn-sm" onclick="setAgentView('table')" title="ตาราง"
-              style="padding:9px 13px;font-size:16px;">☰</button>
+          <div style="display:flex;gap:4px;" class="view-toggles">
             <button id="btnAgentViewCard" class="btn btn-outline btn-sm" onclick="setAgentView('card')" title="การ์ด"
               style="padding:9px 13px;font-size:16px;">⊞</button>
+            <button id="btnAgentViewTable" class="btn btn-outline btn-sm" onclick="setAgentView('table')" title="ตาราง"
+              style="padding:9px 13px;font-size:16px;">☰</button>
           </div>
           <button class="btn btn-primary" onclick="openModal('agent')">+ เพิ่ม Agent</button>
         </div>
@@ -3010,13 +3020,31 @@
             <input type="number" id="customerPriceMax" placeholder="งบสูงสุด" oninput="renderCustomers()"
               style="padding:9px 10px 9px 32px;">
           </div>
-          <button class="btn btn-outline btn-sm" onclick="clearCustomerPriceFilter()" title="ล้างฟิลเตอร์"
+          <button class="btn btn-outline btn-sm" onclick="clearCustomerFilters()" title="ล้างฟิลเตอร์ทั้งหมด"
             style="padding:9px 12px;">🔄</button>
-          <div style="display:flex;gap:4px;">
-            <button id="btnCustViewTable" class="btn btn-outline btn-sm" onclick="setCustView('table')" title="ตาราง"
-              style="padding:9px 13px;font-size:16px;">☰</button>
+          
+          <select class="filter-select" id="filterCustTrainLine" onchange="onCustTrainLineChange()" style="max-width:150px;">
+            <option value="">ทุกสายรถไฟฟ้า</option>
+            <option value="BTS สุขุมวิท (สีเขียวอ่อน)">BTS สุขุมวิท (สีเขียวอ่อน)</option>
+            <option value="BTS สีลม (สีเขียวเข้ม)">BTS สีลม (สีเขียวเข้ม)</option>
+            <option value="MRT สายสีน้ำเงิน">MRT สายสีน้ำเงิน</option>
+            <option value="MRT สายสีม่วง">MRT สายสีม่วง</option>
+            <option value="MRT สายสีเหลือง">MRT สายสีเหลือง</option>
+            <option value="MRT สายสีชมพู">MRT สายสีชมพู</option>
+            <option value="ARL (แอร์พอร์ตเรลลิงก์)">ARL (แอร์พอร์ตเรลลิงก์)</option>
+          </select>
+          <select class="filter-select" id="filterCustStartStation" onchange="renderCustomers()" disabled style="max-width:140px;">
+            <option value="">สถานีเริ่มต้น</option>
+          </select>
+          <select class="filter-select" id="filterCustEndStation" onchange="renderCustomers()" disabled style="max-width:140px;">
+            <option value="">สถานีสิ้นสุด</option>
+          </select>
+          
+          <div style="display:flex;gap:4px;" class="view-toggles">
             <button id="btnCustViewCard" class="btn btn-outline btn-sm" onclick="setCustView('card')" title="การ์ด"
               style="padding:9px 13px;font-size:16px;">⊞</button>
+            <button id="btnCustViewTable" class="btn btn-outline btn-sm" onclick="setCustView('table')" title="ตาราง"
+              style="padding:9px 13px;font-size:16px;">☰</button>
           </div>
           <label id="btnImportCustomerCSV" class="btn btn-outline" style="cursor:pointer;"
             title="Import ลูกค้าจากไฟล์ CSV">
@@ -4014,6 +4042,24 @@
                 <option>เช่า/ขาย</option>
               </select>
             </div>
+            <div class="form-group full"><label>แนวรถไฟฟ้า (ความต้องการ)</label>
+              <select id="cu_line" onchange="onCustModalTrainLineChange()">
+                <option value="">ไม่ระบุ</option>
+                <option value="BTS สุขุมวิท (สีเขียวอ่อน)">BTS สุขุมวิท (สีเขียวอ่อน)</option>
+                <option value="BTS สีลม (สีเขียวเข้ม)">BTS สีลม (สีเขียวเข้ม)</option>
+                <option value="MRT สายสีน้ำเงิน">MRT สายสีน้ำเงิน</option>
+                <option value="MRT สายสีม่วง">MRT สายสีม่วง</option>
+                <option value="MRT สายสีเหลือง">MRT สายสีเหลือง</option>
+                <option value="MRT สายสีชมพู">MRT สายสีชมพู</option>
+                <option value="ARL (แอร์พอร์ตเรลลิงก์)">ARL (แอร์พอร์ตเรลลิงก์)</option>
+              </select>
+            </div>
+            <div class="form-group"><label>ตั้งแต่สถานี</label>
+              <select id="cu_stationStart" disabled><option value="">ไม่ระบุ</option></select>
+            </div>
+            <div class="form-group"><label>ถึงสถานี</label>
+              <select id="cu_stationEnd" disabled><option value="">ไม่ระบุ</option></select>
+            </div>
             <div class="form-group"><label>ประเภท</label>
               <select id="cu_type">
                 <option>คอนโด</option>
@@ -4325,6 +4371,19 @@
     // DATA STORE
     // ============================
     let DB = { assets: [], agents: [], customers: [], mktQueue: [], mktScheduleSlots: ['09:00', '12:00', '15:00', '18:00'] };
+
+    // ============================
+    // TRANSIT LINES CONFIG
+    // ============================
+    const TRANSIT_LINES = {
+      'BTS สุขุมวิท (สีเขียวอ่อน)': ['BTS คูคต', 'BTS แยก คปอ.', 'BTS สะพานใหม่', 'BTS สายหยุด', 'BTS พหลโยธิน 59', 'BTS วัดพระศรีมหาธาตุ', 'BTS กรมทหารราบที่ 11', 'BTS บางบัว', 'BTS กรมป่าไม้', 'BTS มหาวิทยาลัยเกษตรศาสตร์', 'BTS เสนานิคม', 'BTS รัชโยธิน', 'BTS พหลโยธิน 24', 'BTS ห้าแยกลาดพร้าว', 'BTS หมอชิต', 'BTS สะพานควาย', 'BTS อารีย์', 'BTS สนามเป้า', 'BTS อนุสาวรีย์ชัยสมรภูมิ', 'BTS พญาไท', 'BTS ราชเทวี', 'BTS สยาม', 'BTS ชิดลม', 'BTS เพลินจิต', 'BTS นานา', 'BTS อโศก', 'BTS พร้อมพงษ์', 'BTS ทองหล่อ', 'BTS เอกมัย', 'BTS พระโขนง', 'BTS อ่อนนุช', 'BTS บางจาก', 'BTS ปุณณวิถี', 'BTS อุดมสุข', 'BTS บางนา', 'BTS แบริ่ง', 'BTS สำโรง', 'BTS ปู่เจ้า', 'BTS ช้างเอราวัณ', 'BTS โรงเรียนนายเรือ', 'BTS ปากน้ำ', 'BTS ศรีนครินทร์', 'BTS แพรกษา', 'BTS สายลวด', 'BTS เคหะฯ'],
+      'BTS สีลม (สีเขียวเข้ม)': ['BTS สนามกีฬาแห่งชาติ', 'BTS สยาม', 'BTS ราชดำริ', 'BTS ศาลาแดง', 'BTS ช่องนนทรี', 'BTS เซนต์หลุยส์', 'BTS สุรศักดิ์', 'BTS สะพานตากสิน', 'BTS กรุงธนบุรี', 'BTS วงเวียนใหญ่', 'BTS โพธิ์นิมิตร', 'BTS ตลาดพลู', 'BTS วุฒากาศ', 'BTS บางหว้า'],
+      'MRT สายสีน้ำเงิน': ['MRT ท่าพระ', 'MRT จรัญฯ 13', 'MRT ไฟฉาย', 'MRT บางขุนนนท์', 'MRT บางยี่ขัน', 'MRT สิรินธร', 'MRT บางพลัด', 'MRT บางอ้อ', 'MRT บางโพ', 'MRT เตาปูน', 'MRT บางซื่อ', 'MRT กำแพงเพชร', 'MRT สวนจตุจักร', 'MRT พหลโยธิน', 'MRT ลาดพร้าว', 'MRT รัชดาภิเษก', 'MRT สุทธิสาร', 'MRT ห้วยขวาง', 'MRT ศูนย์วัฒนธรรมแห่งประเทศไทย', 'MRT พระราม 9', 'MRT เพชรบุรี', 'MRT สุขุมวิท', 'MRT ศูนย์การประชุมแห่งชาติสิริกิติ์', 'MRT คลองเตย', 'MRT ลุมพินี', 'MRT สีลม', 'MRT สามย่าน', 'MRT หัวลำโพง', 'MRT วัดมังกร', 'MRT สามยอด', 'MRT สนามไชย', 'MRT อิสรภาพ', 'MRT บางไผ่', 'MRT บางหว้า', 'MRT เพชรเกษม 48', 'MRT ภาษีเจริญ', 'MRT บางแค', 'MRT หลักสอง'],
+      'MRT สายสีม่วง': ['MRT คลองบางไผ่', 'MRT ตลาดบางใหญ่', 'MRT สามแยกบางใหญ่', 'MRT บางพลู', 'MRT บางรักใหญ่', 'MRT บางรักน้อยท่าอิฐ', 'MRT ไทรม้า', 'MRT สะพานพระนั่งเกล้า', 'MRT แยกนนทบุรี 1', 'MRT บางกระสอ', 'MRT ศูนย์ราชการนนทบุรี', 'MRT กระทรวงสาธารณสุข', 'MRT แยกติวานนท์', 'MRT วงศ์สว่าง', 'MRT บางซ่อน', 'MRT เตาปูน'],
+      'MRT สายสีเหลือง': ['MRT ลาดพร้าว', 'MRT ภาวนา', 'MRT โชคชัย 4', 'MRT ลาดพร้าว 71', 'MRT ลาดพร้าว 83', 'MRT มหาดไทย', 'MRT ลาดพร้าว 101', 'MRT บางกะปิ', 'MRT แยกลำสาลี', 'MRT ศรีกรีฑา', 'MRT หัวหมาก', 'MRT กลันตัน', 'MRT ศรีนุช', 'MRT ศรีนครินทร์ 38', 'MRT สวนหลวง ร.9', 'MRT ศรีอุดม', 'MRT ศรีเอี่ยม', 'MRT ศรีลาซาล', 'MRT ศรีแบริ่ง', 'MRT ศรีด่าน', 'MRT ศรีเทพา', 'MRT ทิพวัล', 'MRT สำโรง'],
+      'MRT สายสีชมพู': ['MRT ศูนย์ราชการนนทบุรี', 'MRT แคราย', 'MRT สนามบินน้ำ', 'MRT สามัคคี', 'MRT กรมชลประทาน', 'MRT แยกปากเกร็ด', 'MRT เลี่ยงเมืองปากเกร็ด', 'MRT แจ้งวัฒนะ-ปากเกร็ด 28', 'MRT ศรีรัช', 'MRT เมืองทองธานี', 'MRT แจ้งวัฒนะ 14', 'MRT ศูนย์ราชการเฉลิมพระเกียรติ', 'MRT โทรคมนาคมแห่งชาติ', 'MRT หลักสี่', 'MRT ราชภัฏพระนคร', 'MRT วัดพระศรีมหาธาตุ', 'MRT รามอินทรา 3', 'MRT ลาดปลาเค้า', 'MRT รามอินทรา กม.4', 'MRT มัยลาภ', 'MRT วัชรพล', 'MRT รามอินทรา กม.6', 'MRT คู้บอน', 'MRT รามอินทรา กม.9', 'MRT วงแหวนรามอินทรา', 'MRT นพรัตน์', 'MRT บางชัน', 'MRT เศรษฐบุตรบำเพ็ญ', 'MRT ตลาดมีนบุรี', 'MRT มีนบุรี'],
+      'ARL (แอร์พอร์ตเรลลิงก์)': ['ARL พญาไท', 'ARL ราชปรารภ', 'ARL มักกะสัน', 'ARL รามคำแหง', 'ARL หัวหมาก', 'ARL บ้านทับช้าง', 'ARL ลาดกระบัง', 'ARL สุวรรณภูมิ']
+    };
     let AUTH = { users: [], current: null };
     let editMode = { type: '', idx: -1 };
     let _db = null;         // Firestore instance
@@ -5672,11 +5731,40 @@
       _assetPage = 1;
       renderAssets();
     }
-    function clearCustomerPriceFilter() {
+    function onCustTrainLineChange() {
+      const line = document.getElementById('filterCustTrainLine').value;
+      const startSel = document.getElementById('filterCustStartStation');
+      const endSel = document.getElementById('filterCustEndStation');
+      
+      startSel.innerHTML = '<option value="">สถานีเริ่มต้น</option>';
+      endSel.innerHTML = '<option value="">สถานีสิ้นสุด</option>';
+      
+      if (line && TRANSIT_LINES[line]) {
+        startSel.disabled = false;
+        endSel.disabled = false;
+        TRANSIT_LINES[line].forEach(st => {
+          startSel.innerHTML += `<option value="${st}">${st}</option>`;
+          endSel.innerHTML += `<option value="${st}">${st}</option>`;
+        });
+      } else {
+        startSel.disabled = true;
+        endSel.disabled = true;
+      }
+      renderCustomers();
+    }
+
+    function clearCustomerFilters() {
       const mn = document.getElementById('customerPriceMin');
       const mx = document.getElementById('customerPriceMax');
+      const qs = document.getElementById('customerSearch');
       if (mn) mn.value = '';
       if (mx) mx.value = '';
+      if (qs) qs.value = '';
+      const lineFilter = document.getElementById('filterCustTrainLine');
+      if (lineFilter) {
+        lineFilter.value = '';
+        onCustTrainLineChange();
+      }
       _custPage = 1;
       renderCustomers();
     }
@@ -5702,6 +5790,27 @@
         if (b) b.style.color = (x === v) ? '#1a1208' : '';
       });
       renderCustomers();
+    }
+
+    function onCustModalTrainLineChange() {
+      const line = document.getElementById('cu_line').value;
+      const startSel = document.getElementById('cu_stationStart');
+      const endSel = document.getElementById('cu_stationEnd');
+      
+      startSel.innerHTML = '<option value="">ไม่ระบุ</option>';
+      endSel.innerHTML = '<option value="">ไม่ระบุ</option>';
+      
+      if (line && TRANSIT_LINES[line]) {
+        startSel.disabled = false;
+        endSel.disabled = false;
+        TRANSIT_LINES[line].forEach(st => {
+          startSel.innerHTML += `<option value="${st}">${st}</option>`;
+          endSel.innerHTML += `<option value="${st}">${st}</option>`;
+        });
+      } else {
+        startSel.disabled = true;
+        endSel.disabled = true;
+      }
     }
 
     function _buildPager(currentPage, totalPages, onPage, containerId) {
@@ -5777,6 +5886,43 @@
       }
     });
 
+    function onTrainLineChange() {
+      const line = document.getElementById('filterTrainLine').value;
+      const startSel = document.getElementById('filterStartStation');
+      const endSel = document.getElementById('filterEndStation');
+      
+      startSel.innerHTML = '<option value="">สถานีเริ่มต้น</option>';
+      endSel.innerHTML = '<option value="">สถานีสิ้นสุด</option>';
+      
+      if (line && TRANSIT_LINES[line]) {
+        startSel.disabled = false;
+        endSel.disabled = false;
+        TRANSIT_LINES[line].forEach(st => {
+          startSel.innerHTML += `<option value="${st}">${st}</option>`;
+          endSel.innerHTML += `<option value="${st}">${st}</option>`;
+        });
+      } else {
+        startSel.disabled = true;
+        endSel.disabled = true;
+      }
+      renderAssets();
+    }
+
+    function clearAssetFilters() {
+      document.getElementById('assetSearch').value = '';
+      document.getElementById('filterPriceMin').value = '';
+      document.getElementById('filterPriceMax').value = '';
+      document.getElementById('filterStatus').value = '';
+      document.getElementById('filterListingActive').value = 'active';
+      document.getElementById('filterType').value = '';
+      const lineFilter = document.getElementById('filterTrainLine');
+      if (lineFilter) {
+        lineFilter.value = '';
+        onTrainLineChange();
+      }
+      renderAssets();
+    }
+
     function renderAssets() {
       const q = (document.getElementById('assetSearch')?.value || '').toLowerCase();
       const st = document.getElementById('filterStatus')?.value || '';
@@ -5784,6 +5930,10 @@
       const laFilter = document.getElementById('filterListingActive')?.value ?? 'active';
       const priceMin = parseFloat(document.getElementById('filterPriceMin')?.value) || null;
       const priceMax = parseFloat(document.getElementById('filterPriceMax')?.value) || null;
+      
+      const lineFilter = document.getElementById('filterTrainLine')?.value || '';
+      const startFilter = document.getElementById('filterStartStation')?.value || '';
+      const endFilter = document.getElementById('filterEndStation')?.value || '';
 
       let list = DB.assets.filter(a => {
         const mQ = !q || (a.name || '').toLowerCase().includes(q) || (a.location || '').toLowerCase().includes(q) || (a.bts || '').toLowerCase().includes(q);
@@ -5794,6 +5944,7 @@
         if (laFilter === 'active') mLA = la !== 'sold';
         else if (laFilter === 'sold') mLA = la === 'sold';
         else if (laFilter === 'reserved') mLA = la === 'reserved';
+        
         let mPrice = true;
         if (priceMin || priceMax) {
           const pNum = parseFloat((a.price || '').replace(/[^\d.]/g, ''));
@@ -5802,7 +5953,26 @@
             if (priceMax && pNum > priceMax) mPrice = false;
           }
         }
-        return mQ && mS && mT && mLA && mPrice;
+        
+        let mStation = true;
+        if (lineFilter) {
+          const stations = TRANSIT_LINES[lineFilter] || [];
+          if (startFilter && endFilter) {
+            const idx1 = stations.indexOf(startFilter);
+            const idx2 = stations.indexOf(endFilter);
+            if (idx1 !== -1 && idx2 !== -1) {
+              const minIdx = Math.min(idx1, idx2);
+              const maxIdx = Math.max(idx1, idx2);
+              const validStations = stations.slice(minIdx, maxIdx + 1);
+              mStation = validStations.includes(a.bts);
+            }
+          } else {
+            // If line selected but not a full range, just check if asset is in that line
+            mStation = stations.includes(a.bts);
+          }
+        }
+
+        return mQ && mS && mT && mLA && mPrice && mStation;
       });
 
       // Sort: Newest first (by postdate descending, then by original array index descending)
@@ -5824,9 +5994,11 @@
       const cardEl = document.getElementById('assetCards');
       const tableEl = document.getElementById('assetTable');
       const tableBody = document.getElementById('assetTableBody');
+      
+      const effectiveView = (window.innerWidth <= 768) ? 'card' : _assetView;
 
       // view toggle: card vs table
-      if (_assetView === 'table' && tableEl && tableBody) {
+      if (effectiveView === 'table' && tableEl && tableBody) {
         if (cardEl) cardEl.style.display = 'none';
         tableEl.style.display = '';
         if (!paged.length) {
@@ -5982,7 +6154,9 @@
         if (b) b.style.color = (x === _agentView) ? '#1a1208' : '';
       });
 
-      if (_agentView === 'table' && tbWrap) {
+      const effectiveView = (window.innerWidth <= 768) ? 'card' : _agentView;
+
+      if (effectiveView === 'table' && tbWrap) {
         if (ml) ml.style.display = 'none';
         tbWrap.style.display = '';
         if (!list.length) {
@@ -6048,6 +6222,10 @@
       const priceMin = parseFloat(document.getElementById('customerPriceMin')?.value) || null;
       const priceMax = parseFloat(document.getElementById('customerPriceMax')?.value) || null;
 
+      const lineFilter = document.getElementById('filterCustTrainLine')?.value || '';
+      const startFilter = document.getElementById('filterCustStartStation')?.value || '';
+      const endFilter = document.getElementById('filterCustEndStation')?.value || '';
+
       let list = DB.customers.filter(a => {
         const mQ = !q || (a.name || '').toLowerCase().includes(q) || (a.contact || '').toLowerCase().includes(q) || (a.type || '').toLowerCase().includes(q);
         let mPrice = true;
@@ -6058,7 +6236,41 @@
             if (priceMax && pNum > priceMax) mPrice = false;
           }
         }
-        return mQ && mPrice;
+
+        let mStation = true;
+        if (lineFilter) {
+          if (a.line && a.line !== lineFilter) {
+            mStation = false;
+          } else if (a.line === lineFilter && startFilter && endFilter) {
+            const stations = TRANSIT_LINES[lineFilter] || [];
+            const fIdx1 = stations.indexOf(startFilter);
+            const fIdx2 = stations.indexOf(endFilter);
+            if (fIdx1 !== -1 && fIdx2 !== -1) {
+              const fMin = Math.min(fIdx1, fIdx2);
+              const fMax = Math.max(fIdx1, fIdx2);
+              
+              let cMin = 0, cMax = stations.length - 1; // default to whole line if customer didn't specify
+              if (a.stationStart) {
+                const s1 = stations.indexOf(a.stationStart);
+                if (s1 !== -1) cMin = s1;
+              }
+              if (a.stationEnd) {
+                const s2 = stations.indexOf(a.stationEnd);
+                if (s2 !== -1) cMax = s2;
+              }
+              // Adjust cMin and cMax to be correctly ordered
+              const trueCMin = Math.min(cMin, cMax);
+              const trueCMax = Math.max(cMin, cMax);
+              
+              // Overlap check
+              if (trueCMax < fMin || trueCMin > fMax) {
+                mStation = false;
+              }
+            }
+          }
+        }
+
+        return mQ && mPrice && mStation;
       });
 
       // Sort: Newest first (highest index in DB.customers)
@@ -6076,7 +6288,9 @@
       const canEdit = window._canEdit !== false;
       const canDelete = window._canDelete !== false;
 
-      if (_custView === 'card') {
+      const effectiveView = (window.innerWidth <= 768) ? 'card' : _custView;
+
+      if (effectiveView === 'card') {
         // CARD VIEW (mobile-style)
         if (tb) tb.innerHTML = '';
         if (tbWrap) tbWrap.style.display = 'none';
@@ -6506,7 +6720,7 @@
     // SAVE CUSTOMER
     // ============================
     async function saveCustomer() {
-      const a = { name: v('cu_name'), status: v('cu_status'), type: v('cu_type'), budget: v('cu_budget'), area: v('cu_area'), floor: v('cu_floor'), contact: v('cu_contact'), linkpost: v('cu_linkpost'), note: v('cu_note') };
+      const a = { name: v('cu_name'), status: v('cu_status'), type: v('cu_type'), budget: v('cu_budget'), area: v('cu_area'), floor: v('cu_floor'), contact: v('cu_contact'), linkpost: v('cu_linkpost'), note: v('cu_note'), line: v('cu_line'), stationStart: v('cu_stationStart'), stationEnd: v('cu_stationEnd') };
       if (!a.name || !a.linkpost) { alert('กรุณาใส่ชื่อลูกค้าและ Link Post'); return; }
       if (editMode.idx >= 0) {
         const existing = DB.customers[editMode.idx];
@@ -6532,6 +6746,10 @@
       setV('cu_name', a.name); setV('cu_status', a.status); setV('cu_type', a.type);
       setV('cu_budget', a.budget); setV('cu_area', a.area); setV('cu_floor', a.floor);
       setV('cu_contact', a.contact); setV('cu_linkpost', a.linkpost); setV('cu_note', a.note);
+      setV('cu_line', a.line);
+      onCustModalTrainLineChange();
+      setV('cu_stationStart', a.stationStart);
+      setV('cu_stationEnd', a.stationEnd);
       editMode = { type: 'customer', idx: i };
       document.getElementById('modalCustomer').classList.add('open');
     }
