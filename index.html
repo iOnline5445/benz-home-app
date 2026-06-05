@@ -1183,6 +1183,7 @@
         padding: 0 14px;
         flex-wrap: nowrap;
         gap: 8px;
+        overflow: hidden;
       }
 
       .logo {
@@ -1205,29 +1206,27 @@
       }
 
       .user-badge {
-        padding: 5px 10px;
-        font-size: 12px;
-        border-radius: 20px;
-      }
-
-      .user-badge .role {
-        font-size: 10px;
-        padding: 2px 6px;
-        border-radius: 10px;
+        display: none !important;
       }
 
       .theme-panel-btn {
-        padding: 6px 10px;
-        font-size: 12px;
-        border-radius: 20px;
+        padding: 6px;
+        font-size: 0;
         min-height: 34px;
+      }
+      .theme-panel-btn::before {
+        content: "🎨";
+        font-size: 14px;
       }
 
       .logout-btn {
-        padding: 6px 10px;
-        font-size: 12px;
-        border-radius: 20px;
+        padding: 6px;
+        font-size: 0;
         min-height: 34px;
+      }
+      .logout-btn::before {
+        content: "🚪";
+        font-size: 14px;
       }
 
       /* -- bottom nav: native app style -- */
@@ -3328,6 +3327,8 @@
                 </div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
                   <button class="btn btn-primary" onclick="saveFbConfig()">💾 บันทึกและเชื่อมต่อ Firebase</button>
+                  <button class="btn btn-outline" onclick="testFirebaseConnection()" style="border-color:var(--gold);color:var(--gold);">🛠️ ทดสอบการเชื่อมต่อ</button>
+                  <button class="btn btn-outline" onclick="uploadBackupToFirebase()" style="border-color:#50c878;color:#50c878;">⬆️ อัปโหลดข้อมูลในเครื่องขึ้นคลาวด์</button>
                   <div id="fbConfigStatus" style="display:flex;align-items:center;font-size:13px;color:var(--green);font-weight:600;"></div>
                 </div>
               </div>
@@ -4504,7 +4505,7 @@
       const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
       if (storageMode === 'local') {
         el.style.background = '#0077CC'; // blue dot for local
-        txt.textContent = 'Offline Mode (Local) 📴';
+        txt.textContent = 'Offline 📴';
       } else if (_fbReady) {
         el.style.background = '#50c878'; // green
         txt.textContent = 'Firebase ✅';
@@ -4793,6 +4794,74 @@
       document.getElementById('fbConfigStatus').textContent = '✅ บันทึกแล้ว — กำลังเปิดใช้งานคลาวด์...';
       // Reload page เพื่อ init Firebase ใหม่
       setTimeout(() => location.reload(), 800);
+    }
+
+    async function testFirebaseConnection() {
+      if (!_fbReady || !_db) {
+        alert('❌ ระบบเชื่อมต่อ Firebase ล้มเหลวตั้งแต่ตอนโหลด\n\nสาเหตุที่เป็นไปได้:\n1. คุณยังไม่ได้กด "บันทึกและเชื่อมต่อ Firebase"\n2. ข้อมูล API Key หรือ Project ID ผิดรูปแบบจนเชื่อมต่อไม่ได้');
+        return;
+      }
+      const st = document.getElementById('fbConfigStatus');
+      const oldText = st.textContent;
+      st.textContent = 'กำลังทดสอบการเชื่อมต่อ... ⏳';
+      st.style.color = 'var(--gold)';
+      try {
+        const { collection, getDocs } = window._firestoreLib;
+        await getDocs(collection(_db, 'users'));
+        st.textContent = '✅ เชื่อมต่อและอ่านข้อมูลสำเร็จ!';
+        st.style.color = 'var(--green)';
+        alert('✅ การเชื่อมต่อ Firebase สมบูรณ์!\nระบบสามารถอ่านข้อมูลจาก Firestore ได้อย่างถูกต้องครับ');
+      } catch (e) {
+        st.textContent = '❌ มีปัญหาการเชื่อมต่อ';
+        st.style.color = 'var(--red)';
+        alert('❌ พบปัญหาการเชื่อมต่อ Firebase:\n\n' + e.message + '\n\nสาเหตุที่พบบ่อย:\n1. ยังไม่ได้ตั้งค่า Rules ของ Firestore ให้เป็นแบบ public (allow read, write: if true;)\n2. Project ID ผิด หรือโดเมนผิด\n3. ฐานข้อมูล Firestore Database อาจจะยังไม่ได้กดสร้าง (Create Database) ใน Firebase Console');
+      }
+      setTimeout(() => { if(st.textContent.includes('สำเร็จ') || st.textContent.includes('ปัญหา')) { st.textContent = oldText; st.style.color = 'var(--green)'; } }, 6000);
+    }
+
+    async function uploadBackupToFirebase() {
+      if (!_fbReady || !_db) {
+        alert('❌ ต้องเชื่อมต่อ Firebase ให้สำเร็จก่อนครับ'); return;
+      }
+      const bStr = localStorage.getItem('yb_backup_DB');
+      if (!bStr) {
+        alert('❌ ไม่พบข้อมูล Backup ภายในเครื่องนี้ครับ (หรืออาจจะยังไม่เคยมีข้อมูลในโหมด Offline)'); return;
+      }
+      if (!confirm('ยืนยันที่จะอัปโหลดข้อมูล Backup (ที่มีอยู่ในเครื่อง) ขึ้นไปยัง Firebase หรือไม่?\n\n(ระบบจะนำข้อมูล ทรัพย์สิน ลูกค้า ที่เคยเซฟไว้ในเครื่องนี้ อัปโหลดไปเก็บในคลาวด์เพื่อให้ทุกเครื่องเห็นตรงกัน)')) return;
+      
+      const st = document.getElementById('fbConfigStatus');
+      const oldText = st.textContent;
+      st.textContent = 'กำลังอัปโหลดข้อมูลขึ้นคลาวด์... ⏳';
+      st.style.color = '#50c878';
+      try {
+        const backupData = JSON.parse(bStr);
+        const { collection, doc, setDoc } = window._firestoreLib;
+        let count = 0;
+        for (const col of ['assets', 'customers', 'agents']) {
+          if (backupData[col] && backupData[col].length > 0) {
+            for (const item of backupData[col]) {
+              const id = item.id || (col.charAt(0).toUpperCase() + Date.now() + Math.random().toString(36).substr(2,5));
+              item.id = id;
+              const ref = doc(collection(_db, col), id);
+              await setDoc(ref, item);
+              count++;
+            }
+          }
+        }
+        if (count === 0) {
+          alert('⚠️ ใน Backup ภายในเครื่องไม่มีข้อมูลเลยครับ');
+          st.textContent = oldText;
+          return;
+        }
+        alert(`✅ อัปโหลดสำเร็จ!\nนำเข้าข้อมูลจำนวน ${count} รายการขึ้นคลาวด์เรียบร้อยแล้ว ระบบจะซิงค์ข้อมูลให้ทันทีครับ`);
+        st.textContent = '✅ อัปโหลดเสร็จสิ้น';
+      } catch (e) {
+        console.error(e);
+        st.textContent = '❌ อัปโหลดผิดพลาด';
+        st.style.color = 'var(--red)';
+        alert('❌ เกิดข้อผิดพลาดในการอัปโหลด: ' + e.message);
+      }
+      setTimeout(() => { st.textContent = oldText; st.style.color = 'var(--green)'; }, 5000);
     }
 
     // ========================================================
