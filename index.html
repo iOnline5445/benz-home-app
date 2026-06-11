@@ -1230,6 +1230,93 @@
       margin: 18px 0;
     }
 
+    /* SEARCHABLE SELECT STYLE */
+    .searchable-select-container {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .searchable-select-input {
+      width: 100%;
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius, 8px);
+      padding: 9px 30px 9px 12px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      cursor: pointer;
+      box-sizing: border-box;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .searchable-select-container.open .searchable-select-input,
+    .searchable-select-input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.15);
+    }
+
+    .searchable-select-arrow {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 9px;
+      color: var(--text3);
+      pointer-events: none;
+      transition: transform 0.2s;
+    }
+
+    .searchable-select-container.open .searchable-select-arrow {
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    .searchable-select-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      max-height: 250px;
+      overflow-y: auto;
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius, 8px);
+      margin-top: 4px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      z-index: 9999;
+    }
+
+    .searchable-select-option {
+      padding: 8px 12px;
+      color: var(--text2);
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .searchable-select-option:hover {
+      background: var(--dark3);
+      color: var(--text);
+    }
+
+    .searchable-select-option.selected {
+      background: rgba(201, 168, 76, 0.15);
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .searchable-select-container.disabled {
+      opacity: 0.6;
+    }
+    
+    .searchable-select-container.disabled .searchable-select-input {
+      cursor: not-allowed;
+      background: var(--dark2);
+    }
+
     /* ===== BOTTOM NAV (mobile only) ===== */
     .bottom-nav {
       display: none;
@@ -1450,6 +1537,18 @@
         min-width: 0;
         font-size: 13px;
         padding: 10px 10px;
+        border-radius: 12px;
+        min-height: 44px;
+      }
+
+      .toolbar-row .searchable-select-container {
+        flex: 1 1 calc(33% - 4px);
+        min-width: 0;
+      }
+
+      .toolbar-row .searchable-select-input {
+        font-size: 13px;
+        padding: 10px 30px 10px 10px;
         border-radius: 12px;
         min-height: 44px;
       }
@@ -5926,12 +6025,255 @@
       }
     }
 
+    // ===== SEARCHABLE SELECT DECORATOR =====
+    function initSearchableSelect(selectId, placeholderText = 'พิมพ์เพื่อค้นหา...') {
+      const selectEl = document.getElementById(selectId);
+      if (!selectEl) return;
+
+      if (selectEl.dataset.searchableInitialized) return;
+      selectEl.dataset.searchableInitialized = "true";
+
+      // Hide native select
+      selectEl.style.display = 'none';
+
+      // Create container
+      const container = document.createElement('div');
+      container.className = 'searchable-select-container';
+      if (selectEl.style.cssText) {
+        container.style.cssText = selectEl.style.cssText;
+        container.style.display = 'inline-flex';
+      }
+      container.style.position = 'relative';
+
+      // Create input
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'searchable-select-input';
+      input.placeholder = placeholderText;
+      input.disabled = selectEl.disabled;
+      input.autocomplete = 'off';
+
+      // Create arrow
+      const arrow = document.createElement('span');
+      arrow.className = 'searchable-select-arrow';
+      arrow.innerHTML = '▼';
+
+      // Create dropdown
+      const dropdown = document.createElement('div');
+      dropdown.className = 'searchable-select-dropdown';
+      dropdown.style.display = 'none';
+
+      container.appendChild(input);
+      container.appendChild(arrow);
+      container.appendChild(dropdown);
+
+      selectEl.parentNode.insertBefore(container, selectEl.nextSibling);
+
+      let highlightedIndex = -1;
+
+      function setHighlighted(index) {
+        const visibleOptions = Array.from(dropdown.querySelectorAll('.searchable-select-option')).filter(el => el.style.display !== 'none');
+        dropdown.querySelectorAll('.searchable-select-option').forEach(el => el.classList.remove('highlighted'));
+        
+        if (visibleOptions.length === 0) {
+          highlightedIndex = -1;
+          return;
+        }
+        
+        if (index >= visibleOptions.length) index = 0;
+        if (index < 0) index = visibleOptions.length - 1;
+        
+        highlightedIndex = index;
+        const target = visibleOptions[highlightedIndex];
+        if (target) {
+          target.classList.add('highlighted');
+          target.scrollIntoView({ block: 'nearest' });
+        }
+      }
+
+      function rebuildOptions() {
+        dropdown.innerHTML = '';
+        const options = selectEl.options;
+        for (let i = 0; i < options.length; i++) {
+          const opt = options[i];
+          const optDiv = document.createElement('div');
+          optDiv.className = 'searchable-select-option';
+          optDiv.textContent = opt.textContent;
+          optDiv.dataset.value = opt.value;
+          
+          if (opt.value === selectEl.value) {
+            optDiv.classList.add('selected');
+          }
+
+          optDiv.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            selectOption(opt.value, opt.textContent);
+          });
+
+          dropdown.appendChild(optDiv);
+        }
+        updateInputValue();
+      }
+
+      function selectOption(value, text) {
+        selectEl.value = value;
+        input.value = text;
+        dropdown.style.display = 'none';
+        container.classList.remove('open');
+        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+
+      function updateInputValue() {
+        const selectedOpt = selectEl.options[selectEl.selectedIndex];
+        input.value = selectedOpt ? selectedOpt.textContent : '';
+        dropdown.querySelectorAll('.searchable-select-option').forEach(div => {
+          if (div.dataset.value === selectEl.value) {
+            div.classList.add('selected');
+          } else {
+            div.classList.remove('selected');
+          }
+        });
+      }
+
+      function filterOptions(searchTerm) {
+        const optDivs = dropdown.querySelectorAll('.searchable-select-option');
+        optDivs.forEach(div => {
+          const text = div.textContent.toLowerCase();
+          if (text.includes(searchTerm.toLowerCase())) {
+            div.style.display = '';
+          } else {
+            div.style.display = 'none';
+          }
+        });
+        setHighlighted(0);
+      }
+
+      // Input events
+      input.addEventListener('focus', () => {
+        if (selectEl.disabled) return;
+        dropdown.style.display = 'block';
+        container.classList.add('open');
+        dropdown.querySelectorAll('.searchable-select-option').forEach(div => div.style.display = '');
+        setHighlighted(-1);
+        setTimeout(() => input.select(), 50);
+      });
+
+      input.addEventListener('blur', () => {
+        setTimeout(() => {
+          dropdown.style.display = 'none';
+          container.classList.remove('open');
+          updateInputValue();
+        }, 150);
+      });
+
+      input.addEventListener('input', () => {
+        filterOptions(input.value);
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (dropdown.style.display === 'none') {
+          if (e.key === 'ArrowDown' || e.key === 'Enter') {
+            dropdown.style.display = 'block';
+            container.classList.add('open');
+            setHighlighted(0);
+            e.preventDefault();
+          }
+          return;
+        }
+
+        const visibleOptions = Array.from(dropdown.querySelectorAll('.searchable-select-option')).filter(el => el.style.display !== 'none');
+
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setHighlighted(highlightedIndex + 1);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setHighlighted(highlightedIndex - 1);
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (highlightedIndex >= 0 && highlightedIndex < visibleOptions.length) {
+            const opt = visibleOptions[highlightedIndex];
+            selectOption(opt.dataset.value, opt.textContent);
+          }
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          dropdown.style.display = 'none';
+          container.classList.remove('open');
+          updateInputValue();
+          input.blur();
+        }
+      });
+
+      // Toggle arrow
+      arrow.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (selectEl.disabled) return;
+        if (dropdown.style.display === 'none') {
+          input.focus();
+        } else {
+          input.blur();
+        }
+      });
+
+      // Dynamic option list updates
+      const observer = new MutationObserver(() => {
+        rebuildOptions();
+      });
+      observer.observe(selectEl, { childList: true, subtree: true });
+
+      // Attribute changes (disabled)
+      const attrObserver = new MutationObserver((mutations) => {
+        mutations.forEach(mutation => {
+          if (mutation.attributeName === 'disabled') {
+            input.disabled = selectEl.disabled;
+            if (selectEl.disabled) {
+              container.classList.add('disabled');
+              dropdown.style.display = 'none';
+              container.classList.remove('open');
+            } else {
+              container.classList.remove('disabled');
+            }
+          }
+        });
+      });
+      attrObserver.observe(selectEl, { attributes: true });
+
+      // Intercept property setter for 'value'
+      const originalDescriptor = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+      Object.defineProperty(selectEl, 'value', {
+        get: function() {
+          return originalDescriptor.get.call(this);
+        },
+        set: function(val) {
+          originalDescriptor.set.call(this, val);
+          updateInputValue();
+        },
+        configurable: true
+      });
+
+      rebuildOptions();
+      if (selectEl.disabled) {
+        container.classList.add('disabled');
+      }
+    }
+
+    function initAllSearchableSelects() {
+      initSearchableSelect('filterStartStation', 'สถานีเริ่มต้น');
+      initSearchableSelect('filterEndStation', 'สถานีสิ้นสุด');
+      initSearchableSelect('filterCustStartStation', 'สถานีเริ่มต้น');
+      initSearchableSelect('filterCustEndStation', 'สถานีสิ้นสุด');
+      initSearchableSelect('a_bts', '-- เลือกสถานี --');
+      initSearchableSelect('cu_stationStart', 'ไม่ระบุ');
+      initSearchableSelect('cu_stationEnd', 'ไม่ระบุ');
+    }
+
     // Auto-calculate when start date changes
     document.addEventListener('DOMContentLoaded', function () {
       const startDateEl = document.getElementById('a_reservationDate');
       if (startDateEl) {
         startDateEl.addEventListener('change', calculateReservationEnd);
       }
+      initAllSearchableSelects();
     });
 
     function onTrainLineChange() {
@@ -6583,7 +6925,7 @@
       if (t === 'asset') {
         document.getElementById('modalAssetTitle').textContent = '🏠 เพิ่มทรัพย์สิน';
         // Clear all fields
-        ['a_name', 'a_location', 'a_price', 'a_roomtype', 'a_area', 'a_floor', 'a_link', 'a_map', 'a_linkpic', 'a_postdate', 'a_updatedate', 'a_contact', 'a_note', 'a_reservationDate', 'a_reservationEndDate'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        ['a_name', 'a_location', 'a_price', 'a_roomtype', 'a_area', 'a_floor', 'a_link', 'a_map', 'a_linkpic', 'a_postdate', 'a_updatedate', 'a_contact', 'a_note', 'a_reservationDate', 'a_reservationEndDate', 'a_bts'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
         document.getElementById('a_status').value = 'เช่า';
         document.getElementById('a_type').value = 'คอนโด';
         document.getElementById('a_careContract').value = 'ยังไม่ทำ';
@@ -6607,7 +6949,8 @@
       }
       if (t === 'customer') {
         document.getElementById('modalCustomerTitle').textContent = '🤝 เพิ่มลูกค้า';
-        ['cu_name', 'cu_budget', 'cu_area', 'cu_floor', 'cu_contact', 'cu_linkpost', 'cu_note'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        ['cu_name', 'cu_budget', 'cu_area', 'cu_floor', 'cu_contact', 'cu_linkpost', 'cu_note', 'cu_line', 'cu_stationStart', 'cu_stationEnd'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        onCustModalTrainLineChange();
       }
       if (t === 'user') {
         document.getElementById('modalUserTitle').textContent = '👤 เพิ่มผู้ใช้งาน';
