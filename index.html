@@ -1308,6 +1308,18 @@
       font-weight: 600;
     }
 
+    .searchable-select-group-header {
+      padding: 8px 12px 4px 12px;
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 700;
+      pointer-events: none;
+      background: var(--dark2);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
     .searchable-select-container.disabled {
       opacity: 0.6;
     }
@@ -3064,13 +3076,6 @@
           <div class="toolbar-row">
             <select class="filter-select" id="filterTrainLine" onchange="onTrainLineChange()" style="flex:1.5;">
               <option value="">🚇 ทุกสายรถไฟฟ้า</option>
-              <option value="BTS สุขุมวิท (สีเขียวอ่อน)">BTS สุขุมวิท (สีเขียวอ่อน)</option>
-              <option value="BTS สีลม (สีเขียวเข้ม)">BTS สีลม (สีเขียวเข้ม)</option>
-              <option value="MRT สายสีน้ำเงิน">MRT สายสีน้ำเงิน</option>
-              <option value="MRT สายสีม่วง">MRT สายสีม่วง</option>
-              <option value="MRT สายสีเหลือง">MRT สายสีเหลือง</option>
-              <option value="MRT สายสีชมพู">MRT สายสีชมพู</option>
-              <option value="ARL (แอร์พอร์ตเรลลิงก์)">ARL (แอร์พอร์ตเรลลิงก์)</option>
             </select>
             <select class="filter-select" id="filterStartStation" onchange="renderAssets()" disabled style="flex:1;">
               <option value="">สถานีเริ่มต้น</option>
@@ -3185,13 +3190,6 @@
           <div class="toolbar-row">
             <select class="filter-select" id="filterCustTrainLine" onchange="onCustTrainLineChange()" style="flex:1.5;">
               <option value="">🚇 ทุกสายรถไฟฟ้า</option>
-              <option value="BTS สุขุมวิท (สีเขียวอ่อน)">BTS สุขุมวิท (สีเขียวอ่อน)</option>
-              <option value="BTS สีลม (สีเขียวเข้ม)">BTS สีลม (สีเขียวเข้ม)</option>
-              <option value="MRT สายสีน้ำเงิน">MRT สายสีน้ำเงิน</option>
-              <option value="MRT สายสีม่วง">MRT สายสีม่วง</option>
-              <option value="MRT สายสีเหลือง">MRT สายสีเหลือง</option>
-              <option value="MRT สายสีชมพู">MRT สายสีชมพู</option>
-              <option value="ARL (แอร์พอร์ตเรลลิงก์)">ARL (แอร์พอร์ตเรลลิงก์)</option>
             </select>
             <select class="filter-select" id="filterCustStartStation" onchange="renderCustomers()" disabled style="flex:1;">
               <option value="">สถานีเริ่มต้น</option>
@@ -3758,246 +3756,6 @@
               <label>สถานีรถไฟฟ้า (BTS/MRT)</label>
               <select id="a_bts">
                 <option value="">-- เลือกสถานี --</option>
-                <option value="BTS กรมทหารราบที่ 11">BTS กรมทหารราบที่ 11</option>
-                <option value="BTS กรมป่าไม้">BTS กรมป่าไม้</option>
-                <option value="BTS กรุงธนบุรี">BTS กรุงธนบุรี</option>
-                <option value="สายสีทอง คลองสาน">สายสีทอง คลองสาน</option>
-                <option value="BTS คูคต">BTS คูคต</option>
-                <option value="BTS ชิดลม">BTS ชิดลม</option>
-                <option value="BTS ช่องนนทรี">BTS ช่องนนทรี</option>
-                <option value="BTS ช้างเอราวัณ">BTS ช้างเอราวัณ</option>
-                <option value="BTS ตลาดพลู">BTS ตลาดพลู</option>
-                <option value="BTS ทองหล่อ">BTS ทองหล่อ</option>
-                <option value="BTS นานา">BTS นานา</option>
-                <option value="BTS บางจาก">BTS บางจาก</option>
-                <option value="BTS บางนา">BTS บางนา</option>
-                <option value="BTS บางบัว">BTS บางบัว</option>
-                <option value="BTS บางหว้า">BTS บางหว้า</option>
-                <option value="BTS ปากน้ำ">BTS ปากน้ำ</option>
-                <option value="BTS ปุณณวิถี">BTS ปุณณวิถี</option>
-                <option value="BTS ปู่เจ้า">BTS ปู่เจ้า</option>
-                <option value="BTS พญาไท">BTS พญาไท</option>
-                <option value="BTS พระโขนง">BTS พระโขนง</option>
-                <option value="BTS พร้อมพงษ์">BTS พร้อมพงษ์</option>
-                <option value="BTS พหลโยธิน 24">BTS พหลโยธิน 24</option>
-                <option value="BTS พหลโยธิน 59">BTS พหลโยธิน 59</option>
-                <option value="BTS พิพิธภัณฑ์กองทัพอากาศ">BTS พิพิธภัณฑ์กองทัพอากาศ</option>
-                <option value="BTS ม.เกษตรศาสตร์">BTS ม.เกษตรศาสตร์</option>
-                <option value="BTS รัชโยธิน">BTS รัชโยธิน</option>
-                <option value="BTS ราชดำริ">BTS ราชดำริ</option>
-                <option value="BTS ราชเทวี">BTS ราชเทวี</option>
-                <option value="BTS วงเวียนใหญ่">BTS วงเวียนใหญ่</option>
-                <option value="BTS วัดพระศรีมหาธาตุ">BTS วัดพระศรีมหาธาตุ</option>
-                <option value="BTS วุฒากาศ">BTS วุฒากาศ</option>
-                <option value="BTS ศรีนครินทร์">BTS ศรีนครินทร์</option>
-                <option value="BTS ศาลาแดง">BTS ศาลาแดง</option>
-                <option value="BTS สนามกีฬาแห่งชาติ">BTS สนามกีฬาแห่งชาติ</option>
-                <option value="BTS สนามเป้า">BTS สนามเป้า</option>
-                <option value="BTS สยาม">BTS สยาม</option>
-                <option value="BTS สะพานควาย">BTS สะพานควาย</option>
-                <option value="BTS สะพานตากสิน">BTS สะพานตากสิน</option>
-                <option value="BTS สะพานใหม่">BTS สะพานใหม่</option>
-                <option value="BTS สายลวด">BTS สายลวด</option>
-                <option value="BTS สายหยุด">BTS สายหยุด</option>
-                <option value="BTS สำโรง">BTS สำโรง</option>
-                <option value="BTS สุรศักดิ์">BTS สุรศักดิ์</option>
-                <option value="BTS หมอชิต">BTS หมอชิต</option>
-                <option value="BTS ห้าแยกลาดพร้าว">BTS ห้าแยกลาดพร้าว</option>
-                <option value="BTS อนุสาวรีย์ชัยสมรภูมิ">BTS อนุสาวรีย์ชัยสมรภูมิ</option>
-                <option value="BTS อารีย์">BTS อารีย์</option>
-                <option value="BTS อุดมสุข">BTS อุดมสุข</option>
-                <option value="BTS อโศก">BTS อโศก</option>
-                <option value="BTS อ่อนนุช">BTS อ่อนนุช</option>
-                <option value="BTS เคหะฯ">BTS เคหะฯ</option>
-                <option value="สายสีทอง เจริญนคร">สายสีทอง เจริญนคร</option>
-                <option value="BTS เซนต์หลุยส์">BTS เซนต์หลุยส์</option>
-                <option value="BTS เพลินจิต">BTS เพลินจิต</option>
-                <option value="BTS เสนานิคม">BTS เสนานิคม</option>
-                <option value="BTS เอกมัย">BTS เอกมัย</option>
-                <option value="BTS แบริ่ง">BTS แบริ่ง</option>
-                <option value="BTS แพรกษา">BTS แพรกษา</option>
-                <option value="BTS แยก คปอ.">BTS แยก คปอ.</option>
-                <option value="BTS โพธิ์นิมิตร">BTS โพธิ์นิมิตร</option>
-                <option value="BTS โรงพยาบาลภูมิพลอดุลยเดช">BTS โรงพยาบาลภูมิพลอดุลยเดช</option>
-                <option value="BTS โรงเรียนนายเรือ">BTS โรงเรียนนายเรือ</option>
-                <option value="MRT กกท.">MRT กกท.</option>
-                <option value="MRT กรมชลประทาน">MRT กรมชลประทาน</option>
-                <option value="MRT กระทรวงสาธารณสุข">MRT กระทรวงสาธารณสุข</option>
-                <option value="MRT กลันตัน">MRT กลันตัน</option>
-                <option value="MRT กำแพงเพชร">MRT กำแพงเพชร</option>
-                <option value="MRT ครุใน">MRT ครุใน</option>
-                <option value="MRT คลองบางบัว">MRT คลองบางบัว</option>
-                <option value="MRT คลองบางไผ่">MRT คลองบางไผ่</option>
-                <option value="MRT คลองบ้านม้า">MRT คลองบ้านม้า</option>
-                <option value="MRT คลองลำเจียก">MRT คลองลำเจียก</option>
-                <option value="MRT คลองเตย">MRT คลองเตย</option>
-                <option value="MRT คู้บอน">MRT คู้บอน</option>
-                <option value="MRT จรัญฯ 13">MRT จรัญฯ 13</option>
-                <option value="MRT จุฬาเกษม">MRT จุฬาเกษม</option>
-                <option value="MRT ฉลองรัช">MRT ฉลองรัช</option>
-                <option value="MRT ฉลองรัช-รามอินทรา">MRT ฉลองรัช-รามอินทรา</option>
-                <option value="MRT ชินเขต">MRT ชินเขต</option>
-                <option value="MRT ดาวคะนอง">MRT ดาวคะนอง</option>
-                <option value="MRT ดินแดง">MRT ดินแดง</option>
-                <option value="MRT ตลาดบางใหญ่">MRT ตลาดบางใหญ่</option>
-                <option value="MRT ตลาดมีนบุรี">MRT ตลาดมีนบุรี</option>
-                <option value="MRT ทิพวัล">MRT ทิพวัล</option>
-                <option value="MRT ท่าพระ">MRT ท่าพระ</option>
-                <option value="MRT นพรัตน์">MRT นพรัตน์</option>
-                <option value="MRT นวมินทร์ภิรมย์">MRT นวมินทร์ภิรมย์</option>
-                <option value="MRT นวลจันทร์">MRT นวลจันทร์</option>
-                <option value="MRT น้อมเกล้า">MRT น้อมเกล้า</option>
-                <option value="MRT บางกระสอ">MRT บางกระสอ</option>
-                <option value="MRT บางกะปิ">MRT บางกะปิ</option>
-                <option value="MRT บางขุนนนท์">MRT บางขุนนนท์</option>
-                <option value="MRT บางขุนพรหม">MRT บางขุนพรหม</option>
-                <option value="MRT บางชัน">MRT บางชัน</option>
-                <option value="MRT บางซื่อ">MRT บางซื่อ</option>
-                <option value="MRT บางซ่อน">MRT บางซ่อน</option>
-                <option value="MRT บางปะกอก">MRT บางปะกอก</option>
-                <option value="MRT บางปะแก้ว">MRT บางปะแก้ว</option>
-                <option value="MRT บางพลัด">MRT บางพลัด</option>
-                <option value="MRT บางยี่ขัน">MRT บางยี่ขัน</option>
-                <option value="MRT บางรักน้อยท่าอิฐ">MRT บางรักน้อยท่าอิฐ</option>
-                <option value="MRT บางรักใหญ่">MRT บางรักใหญ่</option>
-                <option value="MRT บางหว้า">MRT บางหว้า</option>
-                <option value="MRT บางอ้อ">MRT บางอ้อ</option>
-                <option value="MRT บางแค">MRT บางแค</option>
-                <option value="MRT บางโพ">MRT บางโพ</option>
-                <option value="MRT บางไผ่">MRT บางไผ่</option>
-                <option value="MRT ประชาธิปก">MRT ประชาธิปก</option>
-                <option value="MRT ประชาสงเคราะห์">MRT ประชาสงเคราะห์</option>
-                <option value="MRT ประชาอุทิศ">MRT ประชาอุทิศ</option>
-                <option value="MRT ประตูน้ำ">MRT ประตูน้ำ</option>
-                <option value="MRT ปากเกร็ด">MRT ปากเกร็ด</option>
-                <option value="MRT ผ่านฟ้าลีลาศ">MRT ผ่านฟ้าลีลาศ</option>
-                <option value="MRT พระประแดง">MRT พระประแดง</option>
-                <option value="MRT พระราม 9">MRT พระราม 9</option>
-                <option value="MRT พหลโยธิน">MRT พหลโยธิน</option>
-                <option value="MRT พัฒนาการ">MRT พัฒนาการ</option>
-                <option value="MRT ภาวนา">MRT ภาวนา</option>
-                <option value="MRT ภาษีเจริญ">MRT ภาษีเจริญ</option>
-                <option value="MRT มหาดไทย">MRT มหาดไทย</option>
-                <option value="MRT มัยลาภ">MRT มัยลาภ</option>
-                <option value="MRT มีนบุรี">MRT มีนบุรี</option>
-                <option value="MRT มีนพัฒนา">MRT มีนพัฒนา</option>
-                <option value="MRT ยมราช">MRT ยมราช</option>
-                <option value="MRT รฟม.">MRT รฟม.</option>
-                <option value="MRT รัชดาภิเษก">MRT รัชดาภิเษก</option>
-                <option value="MRT รัฐสภา">MRT รัฐสภา</option>
-                <option value="MRT ราชภัฏพระนคร">MRT ราชภัฏพระนคร</option>
-                <option value="MRT รามคำแหง 12">MRT รามคำแหง 12</option>
-                <option value="MRT รามอินทรา 3">MRT รามอินทรา 3</option>
-                <option value="MRT รามอินทรา กม. 4">MRT รามอินทรา กม. 4</option>
-                <option value="MRT รามอินทรา กม. 6">MRT รามอินทรา กม. 6</option>
-                <option value="MRT รามอินทรา กม. 9">MRT รามอินทรา กม. 9</option>
-                <option value="MRT ราษฎร์บูรณะ">MRT ราษฎร์บูรณะ</option>
-                <option value="MRT ราษฎร์พัฒนา">MRT ราษฎร์พัฒนา</option>
-                <option value="MRT ลาดปลาเค้า">MRT ลาดปลาเค้า</option>
-                <option value="MRT ลาดพร้าว">MRT ลาดพร้าว</option>
-                <option value="MRT ลาดพร้าว 101">MRT ลาดพร้าว 101</option>
-                <option value="MRT ลาดพร้าว 71">MRT ลาดพร้าว 71</option>
-                <option value="MRT ลาดพร้าว 83">MRT ลาดพร้าว 83</option>
-                <option value="MRT ลาดพร้าว 89">MRT ลาดพร้าว 89</option>
-                <option value="MRT ลาดพร้าว 91">MRT ลาดพร้าว 91</option>
-                <option value="MRT ลุมพินี">MRT ลุมพินี</option>
-                <option value="MRT วงศ์สว่าง">MRT วงศ์สว่าง</option>
-                <option value="MRT วงแหวนตะวันออก">MRT วงแหวนตะวันออก</option>
-                <option value="MRT วชิรพยาบาล">MRT วชิรพยาบาล</option>
-                <option value="MRT วัชรพล">MRT วัชรพล</option>
-                <option value="MRT วัดพระราม 9">MRT วัดพระราม 9</option>
-                <option value="MRT วัดมังกร">MRT วัดมังกร</option>
-                <option value="MRT ศรีกรีฑา">MRT ศรีกรีฑา</option>
-                <option value="MRT ศรีด่าน">MRT ศรีด่าน</option>
-                <option value="MRT ศรีนครินทร์ 38">MRT ศรีนครินทร์ 38</option>
-                <option value="MRT ศรีนุช">MRT ศรีนุช</option>
-                <option value="MRT ศรีบูรพา">MRT ศรีบูรพา</option>
-                <option value="MRT ศรีย่าน">MRT ศรีย่าน</option>
-                <option value="MRT ศรีรัช">MRT ศรีรัช</option>
-                <option value="MRT ศรีลาซาล">MRT ศรีลาซาล</option>
-                <option value="MRT ศรีวรา">MRT ศรีวรา</option>
-                <option value="MRT ศรีอุดม">MRT ศรีอุดม</option>
-                <option value="MRT ศรีเทพา">MRT ศรีเทพา</option>
-                <option value="MRT ศรีเอี่ยม">MRT ศรีเอี่ยม</option>
-                <option value="MRT ศรีแบริ่ง">MRT ศรีแบริ่ง</option>
-                <option value="MRT ศูนย์การประชุมแห่งชาติสิริกิติ์">MRT ศูนย์การประชุมแห่งชาติสิริกิติ์</option>
-                <option value="MRT ศูนย์ราชการนนทบุรี">MRT ศูนย์ราชการนนทบุรี</option>
-                <option value="MRT ศูนย์ราชการเฉลิมพระเกียรติ">MRT ศูนย์ราชการเฉลิมพระเกียรติ</option>
-                <option value="MRT ศูนย์วัฒนธรรมแห่งประเทศไทย">MRT ศูนย์วัฒนธรรมแห่งประเทศไทย</option>
-                <option value="MRT สนามบินน้ำ">MRT สนามบินน้ำ</option>
-                <option value="MRT สนามไชย">MRT สนามไชย</option>
-                <option value="MRT สวนจตุจักร">MRT สวนจตุจักร</option>
-                <option value="MRT สวนหลวง ร.9">MRT สวนหลวง ร.9</option>
-                <option value="MRT สะพานพระนั่งเกล้า">MRT สะพานพระนั่งเกล้า</option>
-                <option value="MRT สะพานพุทธ">MRT สะพานพุทธ</option>
-                <option value="MRT สังคมสงเคราะห์">MRT สังคมสงเคราะห์</option>
-                <option value="MRT สัมมากร">MRT สัมมากร</option>
-                <option value="MRT สามยอด">MRT สามยอด</option>
-                <option value="MRT สามย่าน">MRT สามย่าน</option>
-                <option value="MRT สามัคคี">MRT สามัคคี</option>
-                <option value="MRT สามเสน">MRT สามเสน</option>
-                <option value="MRT สามแยกบางใหญ่">MRT สามแยกบางใหญ่</option>
-                <option value="MRT สำเหร่">MRT สำเหร่</option>
-                <option value="MRT สีลม">MRT สีลม</option>
-                <option value="MRT สุขุมวิท">MRT สุขุมวิท</option>
-                <option value="MRT สุทธิสาร">MRT สุทธิสาร</option>
-                <option value="MRT หลักสอง">MRT หลักสอง</option>
-                <option value="MRT หลักสี่">MRT หลักสี่</option>
-                <option value="MRT หอสมุดแห่งชาติ">MRT หอสมุดแห่งชาติ</option>
-                <option value="MRT หัวลำโพง">MRT หัวลำโพง</option>
-                <option value="MRT ห้วยขวาง">MRT ห้วยขวาง</option>
-                <option value="MRT อินทรารักษ์">MRT อินทรารักษ์</option>
-                <option value="MRT อิสรภาพ">MRT อิสรภาพ</option>
-                <option value="MRT เคหะรามคำแหง">MRT เคหะรามคำแหง</option>
-                <option value="MRT เตาปูน">MRT เตาปูน</option>
-                <option value="MRT เพชรบุรี">MRT เพชรบุรี</option>
-                <option value="MRT เพชรเกษม 48">MRT เพชรเกษม 48</option>
-                <option value="MRT เมืองทองธานี">MRT เมืองทองธานี</option>
-                <option value="MRT เลี่ยงเมืองปากเกร็ด">MRT เลี่ยงเมืองปากเกร็ด</option>
-                <option value="MRT เศรษฐบุตรบำเพ็ญ">MRT เศรษฐบุตรบำเพ็ญ</option>
-                <option value="MRT แคราย">MRT แคราย</option>
-                <option value="MRT แจ้งวัฒนะ 14">MRT แจ้งวัฒนะ 14</option>
-                <option value="MRT แจ้งวัฒนะ-ปากเกร็ด 28">MRT แจ้งวัฒนะ-ปากเกร็ด 28</option>
-                <option value="MRT แยกติวานอน">MRT แยกติวานอน</option>
-                <option value="MRT แยกนนทบุรี 1">MRT แยกนนทบุรี 1</option>
-                <option value="MRT แยกนวมินทร์">MRT แยกนวมินทร์</option>
-                <option value="MRT แยกประชาอุทิศ">MRT แยกประชาอุทิศ</option>
-                <option value="MRT แยกลำสาลี">MRT แยกลำสาลี</option>
-                <option value="MRT โชคชัย 4">MRT โชคชัย 4</option>
-                <option value="MRT โทรคมนาคมแห่งชาติ">MRT โทรคมนาคมแห่งชาติ</option>
-                <option value="MRT โพธิ์แก้ว">MRT โพธิ์แก้ว</option>
-                <option value="MRT โยธินพัฒนา">MRT โยธินพัฒนา</option>
-                <option value="MRT ไทรม้า">MRT ไทรม้า</option>
-                <option value="MRT ไฟฉาย">MRT ไฟฉาย</option>
-                <option value="ARL บ้านทับช้าง">ARL บ้านทับช้าง</option>
-                <option value="ARL พญาไท">ARL พญาไท</option>
-                <option value="ARL มักกะสัน">ARL มักกะสัน</option>
-                <option value="ARL ราชปรารภ">ARL ราชปรารภ</option>
-                <option value="ARL รามคำแหง">ARL รามคำแหง</option>
-                <option value="ARL ลาดกระบัง">ARL ลาดกระบัง</option>
-                <option value="ARL สุวรรณภูมิ">ARL สุวรรณภูมิ</option>
-                <option value="ARL หัวหมาก">ARL หัวหมาก</option>
-                <option value="SRT การเคหะ">SRT การเคหะ</option>
-                <option value="SRT คลองหนึ่ง">SRT คลองหนึ่ง</option>
-                <option value="SRT จตุจักร">SRT จตุจักร</option>
-                <option value="SRT ดอนเมือง">SRT ดอนเมือง</option>
-                <option value="SRT ตลิ่งชัน">SRT ตลิ่งชัน</option>
-                <option value="SRT ทุ่งสองห้อง">SRT ทุ่งสองห้อง</option>
-                <option value="SRT บางกรวย-กฟผ.">SRT บางกรวย-กฟผ.</option>
-                <option value="SRT บางซื่อ">SRT บางซื่อ</option>
-                <option value="SRT บางซ่อน">SRT บางซ่อน</option>
-                <option value="SRT บางบำหรุ">SRT บางบำหรุ</option>
-                <option value="SRT บางเขน">SRT บางเขน</option>
-                <option value="SRT บ้านฉิมพลี">SRT บ้านฉิมพลี</option>
-                <option value="SRT ม.ธรรมศาสตร์ ศูนย์รังสิต">SRT ม.ธรรมศาสตร์ ศูนย์รังสิต</option>
-                <option value="SRT รังสิต">SRT รังสิต</option>
-                <option value="SRT วัดเสมียนนารี">SRT วัดเสมียนนารี</option>
-                <option value="SRT ศาลาธรรมสพน์">SRT ศาลาธรรมสพน์</option>
-                <option value="SRT ศาลายา">SRT ศาลายา</option>
-                <option value="SRT สถานีกลางกรุงเทพอภิวัฒน์">SRT สถานีกลางกรุงเทพอภิวัฒน์</option>
-                <option value="SRT หลักสี่">SRT หลักสี่</option>
-                <option value="SRT หลักหก">SRT หลักหก</option>
-                <option value="SRT เชียงราก">SRT เชียงราก</option>
               </select>
             </div>
             <div class="form-group"><label>สถานะ</label>
@@ -4206,13 +3964,6 @@
             <div class="form-group full"><label>แนวรถไฟฟ้า (ความต้องการ)</label>
               <select id="cu_line" onchange="onCustModalTrainLineChange()">
                 <option value="">ไม่ระบุ</option>
-                <option value="BTS สุขุมวิท (สีเขียวอ่อน)">BTS สุขุมวิท (สีเขียวอ่อน)</option>
-                <option value="BTS สีลม (สีเขียวเข้ม)">BTS สีลม (สีเขียวเข้ม)</option>
-                <option value="MRT สายสีน้ำเงิน">MRT สายสีน้ำเงิน</option>
-                <option value="MRT สายสีม่วง">MRT สายสีม่วง</option>
-                <option value="MRT สายสีเหลือง">MRT สายสีเหลือง</option>
-                <option value="MRT สายสีชมพู">MRT สายสีชมพู</option>
-                <option value="ARL (แอร์พอร์ตเรลลิงก์)">ARL (แอร์พอร์ตเรลลิงก์)</option>
               </select>
             </div>
             <div class="form-group"><label>ตั้งแต่สถานี</label>
@@ -4537,13 +4288,91 @@
     // TRANSIT LINES CONFIG
     // ============================
     const TRANSIT_LINES = {
-      'BTS สุขุมวิท (สีเขียวอ่อน)': ['BTS คูคต', 'BTS แยก คปอ.', 'BTS สะพานใหม่', 'BTS สายหยุด', 'BTS พหลโยธิน 59', 'BTS วัดพระศรีมหาธาตุ', 'BTS กรมทหารราบที่ 11', 'BTS บางบัว', 'BTS กรมป่าไม้', 'BTS มหาวิทยาลัยเกษตรศาสตร์', 'BTS เสนานิคม', 'BTS รัชโยธิน', 'BTS พหลโยธิน 24', 'BTS ห้าแยกลาดพร้าว', 'BTS หมอชิต', 'BTS สะพานควาย', 'BTS อารีย์', 'BTS สนามเป้า', 'BTS อนุสาวรีย์ชัยสมรภูมิ', 'BTS พญาไท', 'BTS ราชเทวี', 'BTS สยาม', 'BTS ชิดลม', 'BTS เพลินจิต', 'BTS นานา', 'BTS อโศก', 'BTS พร้อมพงษ์', 'BTS ทองหล่อ', 'BTS เอกมัย', 'BTS พระโขนง', 'BTS อ่อนนุช', 'BTS บางจาก', 'BTS ปุณณวิถี', 'BTS อุดมสุข', 'BTS บางนา', 'BTS แบริ่ง', 'BTS สำโรง', 'BTS ปู่เจ้า', 'BTS ช้างเอราวัณ', 'BTS โรงเรียนนายเรือ', 'BTS ปากน้ำ', 'BTS ศรีนครินทร์', 'BTS แพรกษา', 'BTS สายลวด', 'BTS เคหะฯ'],
-      'BTS สีลม (สีเขียวเข้ม)': ['BTS สนามกีฬาแห่งชาติ', 'BTS สยาม', 'BTS ราชดำริ', 'BTS ศาลาแดง', 'BTS ช่องนนทรี', 'BTS เซนต์หลุยส์', 'BTS สุรศักดิ์', 'BTS สะพานตากสิน', 'BTS กรุงธนบุรี', 'BTS วงเวียนใหญ่', 'BTS โพธิ์นิมิตร', 'BTS ตลาดพลู', 'BTS วุฒากาศ', 'BTS บางหว้า'],
-      'MRT สายสีน้ำเงิน': ['MRT ท่าพระ', 'MRT จรัญฯ 13', 'MRT ไฟฉาย', 'MRT บางขุนนนท์', 'MRT บางยี่ขัน', 'MRT สิรินธร', 'MRT บางพลัด', 'MRT บางอ้อ', 'MRT บางโพ', 'MRT เตาปูน', 'MRT บางซื่อ', 'MRT กำแพงเพชร', 'MRT สวนจตุจักร', 'MRT พหลโยธิน', 'MRT ลาดพร้าว', 'MRT รัชดาภิเษก', 'MRT สุทธิสาร', 'MRT ห้วยขวาง', 'MRT ศูนย์วัฒนธรรมแห่งประเทศไทย', 'MRT พระราม 9', 'MRT เพชรบุรี', 'MRT สุขุมวิท', 'MRT ศูนย์การประชุมแห่งชาติสิริกิติ์', 'MRT คลองเตย', 'MRT ลุมพินี', 'MRT สีลม', 'MRT สามย่าน', 'MRT หัวลำโพง', 'MRT วัดมังกร', 'MRT สามยอด', 'MRT สนามไชย', 'MRT อิสรภาพ', 'MRT บางไผ่', 'MRT บางหว้า', 'MRT เพชรเกษม 48', 'MRT ภาษีเจริญ', 'MRT บางแค', 'MRT หลักสอง'],
-      'MRT สายสีม่วง': ['MRT คลองบางไผ่', 'MRT ตลาดบางใหญ่', 'MRT สามแยกบางใหญ่', 'MRT บางพลู', 'MRT บางรักใหญ่', 'MRT บางรักน้อยท่าอิฐ', 'MRT ไทรม้า', 'MRT สะพานพระนั่งเกล้า', 'MRT แยกนนทบุรี 1', 'MRT บางกระสอ', 'MRT ศูนย์ราชการนนทบุรี', 'MRT กระทรวงสาธารณสุข', 'MRT แยกติวานนท์', 'MRT วงศ์สว่าง', 'MRT บางซ่อน', 'MRT เตาปูน'],
-      'MRT สายสีเหลือง': ['MRT ลาดพร้าว', 'MRT ภาวนา', 'MRT โชคชัย 4', 'MRT ลาดพร้าว 71', 'MRT ลาดพร้าว 83', 'MRT มหาดไทย', 'MRT ลาดพร้าว 101', 'MRT บางกะปิ', 'MRT แยกลำสาลี', 'MRT ศรีกรีฑา', 'MRT หัวหมาก', 'MRT กลันตัน', 'MRT ศรีนุช', 'MRT ศรีนครินทร์ 38', 'MRT สวนหลวง ร.9', 'MRT ศรีอุดม', 'MRT ศรีเอี่ยม', 'MRT ศรีลาซาล', 'MRT ศรีแบริ่ง', 'MRT ศรีด่าน', 'MRT ศรีเทพา', 'MRT ทิพวัล', 'MRT สำโรง'],
-      'MRT สายสีชมพู': ['MRT ศูนย์ราชการนนทบุรี', 'MRT แคราย', 'MRT สนามบินน้ำ', 'MRT สามัคคี', 'MRT กรมชลประทาน', 'MRT แยกปากเกร็ด', 'MRT เลี่ยงเมืองปากเกร็ด', 'MRT แจ้งวัฒนะ-ปากเกร็ด 28', 'MRT ศรีรัช', 'MRT เมืองทองธานี', 'MRT แจ้งวัฒนะ 14', 'MRT ศูนย์ราชการเฉลิมพระเกียรติ', 'MRT โทรคมนาคมแห่งชาติ', 'MRT หลักสี่', 'MRT ราชภัฏพระนคร', 'MRT วัดพระศรีมหาธาตุ', 'MRT รามอินทรา 3', 'MRT ลาดปลาเค้า', 'MRT รามอินทรา กม.4', 'MRT มัยลาภ', 'MRT วัชรพล', 'MRT รามอินทรา กม.6', 'MRT คู้บอน', 'MRT รามอินทรา กม.9', 'MRT วงแหวนรามอินทรา', 'MRT นพรัตน์', 'MRT บางชัน', 'MRT เศรษฐบุตรบำเพ็ญ', 'MRT ตลาดมีนบุรี', 'MRT มีนบุรี'],
-      'ARL (แอร์พอร์ตเรลลิงก์)': ['ARL พญาไท', 'ARL ราชปรารภ', 'ARL มักกะสัน', 'ARL รามคำแหง', 'ARL หัวหมาก', 'ARL บ้านทับช้าง', 'ARL ลาดกระบัง', 'ARL สุวรรณภูมิ']
+      'BTS สุขุมวิท (สีเขียวอ่อน)': [
+        'BTS คูคต', 'BTS แยก คปอ.', 'BTS โรงพยาบาลภูมิพลอดุลยเดช', 'BTS พิพิธภัณฑ์กองทัพอากาศ',
+        'BTS สะพานใหม่', 'BTS สายหยุด', 'BTS พหลโยธิน 59', 'BTS วัดพระศรีมหาธาตุ', 'MRT วัดพระศรีมหาธาตุ',
+        'BTS กรมทหารราบที่ 11', 'BTS บางบัว', 'BTS กรมป่าไม้', 'BTS ม.เกษตรศาสตร์', 'BTS เสนานิคม',
+        'BTS รัชโยธิน', 'BTS พหลโยธิน 24', 'BTS ห้าแยกลาดพร้าว', 'BTS หมอชิต', 'BTS สะพานควาย',
+        'BTS อารีย์', 'BTS สนามเป้า', 'BTS อนุสาวรีย์ชัยสมรภูมิ', 'BTS พญาไท', 'BTS ราชเทวี',
+        'BTS สยาม', 'BTS ชิดลม', 'BTS เพลินจิต', 'BTS นานา', 'BTS อโศก', 'BTS พร้อมพงษ์',
+        'BTS ทองหล่อ', 'BTS เอกมัย', 'BTS พระโขนง', 'BTS อ่อนนุช', 'BTS บางจาก', 'BTS ปุณณวิถี',
+        'BTS อุดมสุข', 'BTS บางนา', 'BTS แบริ่ง', 'BTS สำโรง', 'MRT สำโรง', 'BTS ปู่เจ้า',
+        'BTS ช้างเอราวัณ', 'BTS โรงเรียนนายเรือ', 'BTS ปากน้ำ', 'BTS ศรีนครินทร์', 'BTS แพรกษา',
+        'BTS สายลวด', 'BTS เคหะฯ'
+      ],
+      'BTS สีลม (สีเขียวเข้ม)': [
+        'BTS สนามกีฬาแห่งชาติ', 'BTS สยาม', 'BTS ราชดำริ', 'BTS ศาลาแดง', 'BTS ช่องนนทรี',
+        'BTS เซนต์หลุยส์', 'BTS สุรศักดิ์', 'BTS สะพานตากสิน', 'BTS กรุงธนบุรี', 'สายสีทอง กรุงธนบุรี',
+        'BTS วงเวียนใหญ่', 'MRT วงเวียนใหญ่', 'BTS โพธิ์นิมิตร', 'BTS ตลาดพลู', 'BTS วุฒากาศ',
+        'BTS บางหว้า', 'MRT บางหว้า'
+      ],
+      'สายสีทอง': [
+        'สายสีทอง กรุงธนบุรี', 'BTS กรุงธนบุรี', 'สายสีทอง เจริญนคร', 'สายสีทอง คลองสาน'
+      ],
+      'MRT สายสีน้ำเงิน': [
+        'MRT ท่าพระ', 'MRT จรัญฯ 13', 'MRT ไฟฉาย', 'MRT บางขุนนนท์', 'MRT บางยี่ขัน',
+        'MRT สิรินธร', 'MRT บางพลัด', 'MRT บางอ้อ', 'MRT บางโพ', 'MRT เตาปูน',
+        'MRT บางซื่อ', 'SRT บางซื่อ', 'MRT กำแพงเพชร', 'MRT สวนจตุจักร', 'MRT พหลโยธิน',
+        'MRT ลาดพร้าว', 'MRT รัชดาภิเษก', 'MRT สุทธิสาร', 'MRT ห้วยขวาง',
+        'MRT ศูนย์วัฒนธรรมแห่งประเทศไทย', 'MRT พระราม 9', 'MRT เพชรบุรี', 'MRT สุขุมวิท',
+        'MRT ศูนย์การประชุมแห่งชาติสิริกิติ์', 'MRT คลองเตย', 'MRT ลุมพินี', 'MRT สีลม',
+        'MRT สามย่าน', 'MRT หัวลำโพง', 'MRT วัดมังกร', 'MRT สามยอด', 'MRT สนามไชย',
+        'MRT อิสรภาพ', 'MRT บางไผ่', 'MRT บางหว้า', 'BTS บางหว้า', 'MRT เพชรเกษม 48',
+        'MRT ภาษีเจริญ', 'MRT บางแค', 'MRT หลักสอง'
+      ],
+      'MRT สายสีม่วง': [
+        'MRT คลองบางไผ่', 'MRT ตลาดบางใหญ่', 'MRT สามแยกบางใหญ่', 'MRT บางพลู',
+        'MRT บางรักใหญ่', 'MRT บางรักน้อยท่าอิฐ', 'MRT ไทรม้า', 'MRT สะพานพระนั่งเกล้า',
+        'MRT แยกนนทบุรี 1', 'MRT บางกระสอ', 'MRT ศูนย์ราชการนนทบุรี', 'MRT กระทรวงสาธารณสุข',
+        'MRT แยกติวานอน', 'MRT วงศ์สว่าง', 'MRT บางซ่อน', 'SRT บางซ่อน', 'MRT เตาปูน',
+        'MRT ผ่านฟ้าลีลาศ', 'MRT สามยอด', 'MRT สะพานพุทธ', 'MRT ประชาธิปก',
+        'MRT วงเวียนใหญ่', 'BTS วงเวียนใหญ่', 'MRT สำเหร่', 'MRT ดาวคะนอง',
+        'MRT บางปะแก้ว', 'MRT บางปะกอก', 'MRT แยกประชาอุทิศ', 'MRT ราษฎร์บูรณะ',
+        'MRT พระประแดง', 'MRT ครุใน', 'MRT รัฐสภา', 'MRT ศรีย่าน', 'MRT วชิรพยาบาล',
+        'MRT หอสมุดแห่งชาติ', 'MRT บางขุนพรหม', 'MRT สามเสน'
+      ],
+      'MRT สายสีเหลือง': [
+        'MRT ลาดพร้าว', 'MRT ภาวนา', 'MRT โชคชัย 4', 'MRT ลาดพร้าว 71', 'MRT ลาดพร้าว 83',
+        'MRT มหาดไทย', 'MRT ลาดพร้าว 101', 'MRT บางกะปิ', 'MRT แยกลำสาลี', 'MRT ศรีกรีฑา',
+        'MRT หัวหมาก', 'MRT กลันตัน', 'MRT ศรีนุช', 'MRT ศรีนครินทร์ 38', 'MRT สวนหลวง ร.9',
+        'MRT ศรีอุดม', 'MRT ศรีเอี่ยม', 'MRT ศรีลาซาล', 'MRT ศรีแบริ่ง', 'MRT ศรีด่าน',
+        'MRT ศรีเทพา', 'MRT ทิพวัล', 'MRT สำโรง', 'BTS สำโรง', 'MRT ลาดพร้าว 89',
+        'MRT ลาดพร้าว 91', 'MRT พัฒนาการ'
+      ],
+      'MRT สายสีชมพู': [
+        'MRT ศูนย์ราชการนนทบุรี', 'MRT แคราย', 'MRT สนามบินน้ำ', 'MRT สามัคคี',
+        'MRT กรมชลประทาน', 'MRT แยกปากเกร็ด', 'MRT ปากเกร็ด', 'MRT เลี่ยงเมืองปากเกร็ด',
+        'MRT แจ้งวัฒนะ-ปากเกร็ด 28', 'MRT ศรีรัช', 'MRT เมืองทองธานี', 'MRT แจ้งวัฒนะ 14',
+        'MRT ศูนย์ราชการเฉลิมพระเกียรติ', 'MRT โทรคมนาคมแห่งชาติ', 'MRT หลักสี่', 'SRT หลักสี่',
+        'MRT ราชภัฏพระนคร', 'MRT วัดพระศรีมหาธาตุ', 'BTS วัดพระศรีมหาธาตุ', 'MRT รามอินทรา 3',
+        'MRT ลาดปลาเค้า', 'MRT รามอินทรา กม. 4', 'MRT มัยลาภ', 'MRT วัชรพล',
+        'MRT รามอินทรา กม. 6', 'MRT คู้บอน', 'MRT รามอินทรา กม. 9', 'MRT วงแหวนรามอินทรา',
+        'MRT นพรัตน์', 'MRT บางชัน', 'MRT เศรษฐบุตรบำเพ็ญ', 'MRT ตลาดมีนบุรี', 'MRT มีนบุรี'
+      ],
+      'MRT สายสีส้ม': [
+        'MRT ยมราช', 'MRT ประตูน้ำ', 'MRT รามคำแหง 12', 'MRT รฟม.', 'MRT วัดพระราม 9',
+        'MRT กกท.', 'MRT ศรีบูรพา', 'MRT สัมมากร', 'MRT น้อมเกล้า', 'MRT ราษฎร์พัฒนา',
+        'MRT มีนพัฒนา', 'MRT เคหะรามคำแหง', 'MRT วงแหวนตะวันออก', 'MRT คลองบ้านม้า',
+        'MRT ดินแดง', 'MRT ประชาสงเคราะห์', 'MRT ประชาอุทิศ'
+      ],
+      'MRT สายสีน้ำตาล': [
+        'MRT คลองลำเจียก', 'MRT จุฬาเกษม', 'MRT ชินเขต', 'MRT นวมินทร์ภิรมย์', 'MRT นวลจันทร์',
+        'MRT โพธิ์แก้ว', 'MRT แยกนวมินทร์', 'MRT อินทรารักษ์', 'MRT คลองบางบัว'
+      ],
+      'MRT สายสีเทา': [
+        'MRT ฉลองรัช', 'MRT ฉลองรัช-รามอินทรา', 'MRT ศรีวรา', 'MRT สังคมสงเคราะห์', 'MRT โยธินพัฒนา'
+      ],
+      'ARL (แอร์พอร์ตเรลลิงก์)': [
+        'ARL พญาไท', 'BTS พญาไท', 'ARL ราชปรารภ', 'ARL มักกะสัน', 'MRT เพชรบุรี', 'ARL รามคำแหง',
+        'ARL หัวหมาก', 'MRT หัวหมาก', 'ARL บ้านทับช้าง', 'ARL ลาดกระบัง', 'ARL สุวรรณภูมิ'
+      ],
+      'SRT สายสีแดง': [
+        'SRT เชียงราก', 'SRT ม.ธรรมศาสตร์ ศูนย์รังสิต', 'SRT คลองหนึ่ง', 'SRT รังสิต',
+        'SRT หลักหก', 'SRT สถานีกลางกรุงเทพอภิวัฒน์', 'SRT หลักสี่', 'MRT หลักสี่', 'SRT การเคหะ',
+        'SRT ดอนเมือง', 'SRT ทุ่งสองห้อง', 'SRT บางเขน', 'SRT วัดเสมียนนารี', 'SRT จตุจักร',
+        'SRT บางซื่อ', 'MRT บางซื่อ', 'SRT บางซ่อน', 'MRT บางซ่อน', 'SRT ตลิ่งชัน',
+        'SRT บางบำหรุ', 'SRT บางกรวย-กฟผ.', 'SRT บ้านฉิมพลี', 'SRT ศาลาธรรมสพน์', 'SRT ศาลายา'
+      ]
     };
     let AUTH = { users: [], current: null };
     let editMode = { type: '', idx: -1 };
@@ -6039,6 +5868,47 @@
       }
     }
 
+    // ===== DYNAMIC POPULATION HELPERS =====
+    function populateTrainLineSelects() {
+      const trainLineSelects = [
+        { id: 'filterTrainLine', defaultText: '🚇 ทุกสายรถไฟฟ้า' },
+        { id: 'filterCustTrainLine', defaultText: '🚇 ทุกสายรถไฟฟ้า' },
+        { id: 'cu_line', defaultText: 'ไม่ระบุ' }
+      ];
+
+      trainLineSelects.forEach(selInfo => {
+        const el = document.getElementById(selInfo.id);
+        if (!el) return;
+        
+        let html = `<option value="">${selInfo.defaultText}</option>`;
+        Object.keys(TRANSIT_LINES).forEach(lineName => {
+          html += `<option value="${lineName}">${lineName}</option>`;
+        });
+        el.innerHTML = html;
+      });
+    }
+
+    function populateAssetBtsSelect() {
+      const selectEl = document.getElementById('a_bts');
+      if (!selectEl) return;
+      
+      selectEl.innerHTML = '<option value="">-- เลือกสถานี --</option>';
+      
+      Object.keys(TRANSIT_LINES).forEach(lineName => {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = lineName;
+        
+        const uniqueStations = [...new Set(TRANSIT_LINES[lineName])];
+        uniqueStations.forEach(st => {
+          const opt = document.createElement('option');
+          opt.value = st;
+          opt.textContent = st;
+          optgroup.appendChild(opt);
+        });
+        selectEl.appendChild(optgroup);
+      });
+    }
+
     // ===== SEARCHABLE SELECT DECORATOR =====
     function initSearchableSelect(selectId, placeholderText = 'พิมพ์เพื่อค้นหา...') {
       const selectEl = document.getElementById(selectId);
@@ -6107,26 +5977,43 @@
 
       function rebuildOptions() {
         dropdown.innerHTML = '';
-        const options = selectEl.options;
-        for (let i = 0; i < options.length; i++) {
-          const opt = options[i];
-          const optDiv = document.createElement('div');
-          optDiv.className = 'searchable-select-option';
-          optDiv.textContent = opt.textContent;
-          optDiv.dataset.value = opt.value;
-          
-          if (opt.value === selectEl.value) {
-            optDiv.classList.add('selected');
+        const children = selectEl.children;
+        
+        for (let i = 0; i < children.length; i++) {
+          const child = children[i];
+          if (child.tagName === 'OPTGROUP') {
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'searchable-select-group-header';
+            headerDiv.textContent = child.label;
+            dropdown.appendChild(headerDiv);
+            
+            const groupOpts = child.children;
+            for (let j = 0; j < groupOpts.length; j++) {
+              createOptionDiv(groupOpts[j]);
+            }
+          } else if (child.tagName === 'OPTION') {
+            createOptionDiv(child);
           }
-
-          optDiv.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            selectOption(opt.value, opt.textContent);
-          });
-
-          dropdown.appendChild(optDiv);
         }
         updateInputValue();
+      }
+
+      function createOptionDiv(opt) {
+        const optDiv = document.createElement('div');
+        optDiv.className = 'searchable-select-option';
+        optDiv.textContent = opt.textContent;
+        optDiv.dataset.value = opt.value;
+        
+        if (opt.value === selectEl.value) {
+          optDiv.classList.add('selected');
+        }
+
+        optDiv.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          selectOption(opt.value, opt.textContent);
+        });
+
+        dropdown.appendChild(optDiv);
       }
 
       function selectOption(value, text) {
@@ -6150,15 +6037,32 @@
       }
 
       function filterOptions(searchTerm) {
-        const optDivs = dropdown.querySelectorAll('.searchable-select-option');
-        optDivs.forEach(div => {
-          const text = div.textContent.toLowerCase();
-          if (text.includes(searchTerm.toLowerCase())) {
-            div.style.display = '';
-          } else {
-            div.style.display = 'none';
+        const children = dropdown.children;
+        let lastHeader = null;
+        let visibleCountInGroup = 0;
+        
+        for (let i = 0; i < children.length; i++) {
+          const child = children[i];
+          if (child.classList.contains('searchable-select-group-header')) {
+            if (lastHeader) {
+              lastHeader.style.display = visibleCountInGroup > 0 ? '' : 'none';
+            }
+            lastHeader = child;
+            visibleCountInGroup = 0;
+            child.style.display = 'none';
+          } else if (child.classList.contains('searchable-select-option')) {
+            const text = child.textContent.toLowerCase();
+            if (text.includes(searchTerm.toLowerCase())) {
+              child.style.display = '';
+              visibleCountInGroup++;
+            } else {
+              child.style.display = 'none';
+            }
           }
-        });
+        }
+        if (lastHeader) {
+          lastHeader.style.display = visibleCountInGroup > 0 ? '' : 'none';
+        }
         setHighlighted(0);
       }
 
@@ -6167,7 +6071,9 @@
         if (selectEl.disabled) return;
         dropdown.style.display = 'block';
         container.classList.add('open');
-        dropdown.querySelectorAll('.searchable-select-option').forEach(div => div.style.display = '');
+        Array.from(dropdown.children).forEach(child => {
+          child.style.display = '';
+        });
         setHighlighted(-1);
         setTimeout(() => input.select(), 50);
       });
@@ -6287,6 +6193,8 @@
       if (startDateEl) {
         startDateEl.addEventListener('change', calculateReservationEnd);
       }
+      populateTrainLineSelects();
+      populateAssetBtsSelect();
       initAllSearchableSelects();
     });
 
