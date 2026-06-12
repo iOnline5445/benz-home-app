@@ -1320,6 +1320,20 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
+    .searchable-select-option.future-station {
+      color: var(--text3);
+      font-style: italic;
+      opacity: 0.75;
+    }
+    .searchable-select-option.future-station::after {
+      content: " (ในอนาคต)";
+      font-size: 11px;
+      color: var(--text3);
+      margin-left: 6px;
+      font-style: normal;
+      opacity: 0.7;
+    }
+
     .searchable-select-container.disabled {
       opacity: 0.6;
     }
@@ -4302,12 +4316,12 @@
       ],
       'BTS สีลม (สีเขียวเข้ม)': [
         'BTS สนามกีฬาแห่งชาติ', 'BTS สยาม', 'BTS ราชดำริ', 'BTS ศาลาแดง', 'BTS ช่องนนทรี',
-        'BTS เซนต์หลุยส์', 'BTS สุรศักดิ์', 'BTS สะพานตากสิน', 'BTS กรุงธนบุรี', 'สายสีทอง กรุงธนบุรี',
+        'BTS เซนต์หลุยส์', 'BTS สุรศักดิ์', 'BTS สะพานตากสิน', 'BTS กรุงธนบุรี',
         'BTS วงเวียนใหญ่', 'MRT วงเวียนใหญ่', 'BTS โพธิ์นิมิตร', 'BTS ตลาดพลู', 'BTS วุฒากาศ',
         'BTS บางหว้า', 'MRT บางหว้า'
       ],
       'สายสีทอง': [
-        'สายสีทอง กรุงธนบุรี', 'BTS กรุงธนบุรี', 'สายสีทอง เจริญนคร', 'สายสีทอง คลองสาน'
+        'BTS กรุงธนบุรี', 'สายสีทอง เจริญนคร', 'สายสีทอง คลองสาน'
       ],
       'MRT สายสีน้ำเงิน': [
         'MRT ท่าพระ', 'MRT จรัญฯ 13', 'MRT ไฟฉาย', 'MRT บางขุนนนท์', 'MRT บางยี่ขัน',
@@ -4374,6 +4388,19 @@
         'SRT บางบำหรุ', 'SRT บางกรวย-กฟผ.', 'SRT บ้านฉิมพลี', 'SRT ศาลาธรรมสพน์', 'SRT ศาลายา'
       ]
     };
+
+    // สถานีในอนาคต (แยกแยะสไตล์ให้ต่างออกไป)
+    const FUTURE_STATIONS = new Set();
+    ['MRT สายสีส้ม', 'MRT สายสีน้ำตาล', 'MRT สายสีเทา'].forEach(line => {
+      if (TRANSIT_LINES[line]) TRANSIT_LINES[line].forEach(st => FUTURE_STATIONS.add(st));
+    });
+    [
+      'MRT ผ่านฟ้าลีลาศ', 'MRT สะพานพุทธ', 'MRT ประชาธิปก', 'MRT สำเหร่', 'MRT ดาวคะนอง',
+      'MRT บางปะแก้ว', 'MRT บางปะกอก', 'MRT แยกประชาอุทิศ', 'MRT ราษฎร์บูรณะ', 'MRT พระประแดง',
+      'MRT ครุใน', 'MRT รัฐสภา', 'MRT ศรีย่าน', 'MRT วชิรพยาบาล', 'MRT หอสมุดแห่งชาติ',
+      'MRT บางขุนพรหม', 'MRT สามเสน'
+    ].forEach(st => FUTURE_STATIONS.add(st));
+
     let AUTH = { users: [], current: null };
     let editMode = { type: '', idx: -1 };
     let _db = null;         // Firestore instance
@@ -6006,6 +6033,10 @@
         
         if (opt.value === selectEl.value) {
           optDiv.classList.add('selected');
+        }
+
+        if (typeof FUTURE_STATIONS !== 'undefined' && FUTURE_STATIONS.has(opt.value)) {
+          optDiv.classList.add('future-station');
         }
 
         optDiv.addEventListener('mousedown', (e) => {
