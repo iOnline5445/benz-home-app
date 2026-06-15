@@ -3651,6 +3651,41 @@
                     <div class="form-group"><label style="font-size:11px;">Public Key</label><input id="bs_ejsKey" placeholder="xxxxxxxxxxxx" style="font-size:11px;font-family:monospace;"></div>
                   </div>
                 </div>
+                <div style="background:var(--dark4);border-radius:12px;padding:14px;font-size:12px;border:1px solid var(--border2);margin-bottom:14px;">
+                  <div style="font-weight:700;color:var(--gold);margin-bottom:8px;">💾 ตั้งค่าสำรองข้อมูลไป Google Drive</div>
+                  <div style="color:var(--text3);margin-bottom:10px;">
+                    กรอกลิงก์ Google Apps Script Web App เพื่อส่งไฟล์ไปเก็บบน Google Drive ของคุณโดยอัตโนมัติ:
+                  </div>
+                  <div class="form-group">
+                    <label style="font-size:11px;">Google Apps Script Web App URL</label>
+                    <input id="bs_gdUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec" style="font-size:11px;font-family:monospace;width:100%;">
+                  </div>
+                  <details style="margin-top:10px;color:var(--text3);font-size:11px;cursor:pointer;">
+                    <summary style="font-weight:700;color:var(--blue);">📝 วิธีรับลิงก์ Google Apps Script (คลิกเพื่อดูขั้นตอน)</summary>
+                    <ol style="margin-top:6px;margin-left:14px;padding-left:0;line-height:1.4;">
+                      <li>ไปที่ <a href="https://script.google.com/" target="_blank" style="color:var(--blue);text-decoration:underline;">Google Apps Script</a> และสร้างโครงการใหม่</li>
+                      <li>คัดลอกโค้ดนี้ไปวาง:
+                        <pre style="background:var(--dark);padding:6px;border-radius:6px;margin-top:4px;overflow-x:auto;user-select:all;font-family:monospace;font-size:10px;color:var(--text);">function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var folderId = "YOUR_FOLDER_ID_HERE"; // แก้ไขเป็น ID โฟลเดอร์ Google Drive ของคุณ
+    var folder = DriveApp.getFolderById(folderId);
+    var file = folder.createFile(data.filename, data.content, "application/json");
+    return ContentService.createTextOutput(JSON.stringify({status: "success", fileId: file.getId()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({status: "error", message: err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}</pre>
+                      </li>
+                      <li>คลิก <strong>Deploy (การทำให้ใช้งานได้)</strong> &gt; <strong>New deployment (การทำให้ใช้งานได้ใหม่)</strong></li>
+                      <li>เลือกประเภทเป็น <strong>Web app (เว็บแอป)</strong></li>
+                      <li>ตั้งค่า: Execute as = <strong>Me (ฉัน)</strong> และ Who has access = <strong>Anyone (ทุกคน)</strong></li>
+                      <li>คลิก Deploy และคัดลอก <strong>Web app URL</strong> นำมาวางในช่องด้านบน</li>
+                    </ol>
+                  </details>
+                </div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
                   <button class="btn btn-primary btn-sm" onclick="saveBackupSettings()">💾 บันทึกการตั้งค่า Backup</button>
                   <button class="btn btn-green btn-sm" onclick="runAutoBackup(true)">🧪 ทดสอบส่ง Backup ตอนนี้</button>
@@ -4339,11 +4374,12 @@
         'MRT บางรักใหญ่', 'MRT บางรักน้อยท่าอิฐ', 'MRT ไทรม้า', 'MRT สะพานพระนั่งเกล้า',
         'MRT แยกนนทบุรี 1', 'MRT บางกระสอ', 'MRT ศูนย์ราชการนนทบุรี', 'MRT กระทรวงสาธารณสุข',
         'MRT แยกติวานอน', 'MRT วงศ์สว่าง', 'MRT บางซ่อน', 'SRT บางซ่อน', 'MRT เตาปูน',
-        'MRT ผ่านฟ้าลีลาศ', 'MRT สามยอด', 'MRT สะพานพุทธ', 'MRT ประชาธิปก',
-        'MRT วงเวียนใหญ่', 'BTS วงเวียนใหญ่', 'MRT สำเหร่', 'MRT ดาวคะนอง',
-        'MRT บางปะแก้ว', 'MRT บางปะกอก', 'MRT แยกประชาอุทิศ', 'MRT ราษฎร์บูรณะ',
-        'MRT พระประแดง', 'MRT ครุใน', 'MRT รัฐสภา', 'MRT ศรีย่าน', 'MRT วชิรพยาบาล',
-        'MRT หอสมุดแห่งชาติ', 'MRT บางขุนพรหม', 'MRT สามเสน'
+        // MRT สายสีม่วงใต้ (ในอนาคต)
+        'MRT รัฐสภา', 'MRT ศรีย่าน', 'MRT วชิรพยาบาล', 'MRT หอสมุดแห่งชาติ',
+        'MRT บางขุนพรหม', 'MRT ผ่านฟ้าลีลาศ (อนุสาวรีย์ประชาธิปไตย)', 'MRT สามยอด',
+        'MRT สะพานพุทธ', 'MRT ประชาธิปก', 'MRT วงเวียนใหญ่', 'BTS วงเวียนใหญ่',
+        'MRT โรงพยาบาลสมเด็จพระปิ่นเกล้า (สำเหร่)', 'MRT ดาวคะนอง', 'MRT บางปะแก้ว',
+        'MRT บางปะกอก', 'MRT แยกประชาอุทิศ', 'MRT ราษฎร์บูรณะ', 'MRT พระประแดง', 'MRT ครุใน'
       ],
       'MRT สายสีเหลือง': [
         'MRT ลาดพร้าว', 'MRT ภาวนา', 'MRT โชคชัย 4', 'MRT ลาดพร้าว 71', 'MRT ลาดพร้าว 83',
@@ -4395,10 +4431,12 @@
       if (TRANSIT_LINES[line]) TRANSIT_LINES[line].forEach(st => FUTURE_STATIONS.add(st));
     });
     [
-      'MRT ผ่านฟ้าลีลาศ', 'MRT สะพานพุทธ', 'MRT ประชาธิปก', 'MRT สำเหร่', 'MRT ดาวคะนอง',
-      'MRT บางปะแก้ว', 'MRT บางปะกอก', 'MRT แยกประชาอุทิศ', 'MRT ราษฎร์บูรณะ', 'MRT พระประแดง',
-      'MRT ครุใน', 'MRT รัฐสภา', 'MRT ศรีย่าน', 'MRT วชิรพยาบาล', 'MRT หอสมุดแห่งชาติ',
-      'MRT บางขุนพรหม', 'MRT สามเสน', 'BTS ประชาธิปก'
+      'MRT รัฐสภา', 'MRT ศรีย่าน', 'MRT วชิรพยาบาล', 'MRT หอสมุดแห่งชาติ',
+      'MRT บางขุนพรหม', 'MRT ผ่านฟ้าลีลาศ (อนุสาวรีย์ประชาธิปไตย)',
+      'MRT สะพานพุทธ', 'MRT ประชาธิปก', 'MRT วงเวียนใหญ่',
+      'MRT โรงพยาบาลสมเด็จพระปิ่นเกล้า (สำเหร่)', 'MRT ดาวคะนอง', 'MRT บางปะแก้ว',
+      'MRT บางปะกอก', 'MRT แยกประชาอุทิศ', 'MRT ราษฎร์บูรณะ', 'MRT พระประแดง', 'MRT ครุใน',
+      'BTS ประชาธิปก'
     ].forEach(st => FUTURE_STATIONS.add(st));
 
     let AUTH = { users: [], current: null };
@@ -4413,12 +4451,9 @@
 
     function initFirebase() {
       return new Promise((resolve) => {
-        const sdkVer = '10.12.2';
-        const base = `https://www.gstatic.com/firebasejs/${sdkVer}`;
-
         Promise.all([
-          import(`${base}/firebase-app.js`),
-          import(`${base}/firebase-firestore.js`)
+          import('./lib/firebase-app.js'),
+          import('./lib/firebase-firestore.js')
         ]).then(([appMod, fsMod]) => {
           const { initializeApp, getApps } = appMod;
           const { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, writeBatch, onSnapshot } = fsMod;
@@ -5163,7 +5198,7 @@
         const s = localStorage.getItem(BACKUP_CONFIG_KEY);
         if (s) return JSON.parse(s);
       } catch (e) { }
-      return { enabled: false, emailTo: '', emailjsServiceId: '', emailjsTemplateId: '', emailjsPublicKey: '', intervalHours: 24, lastBackup: null };
+      return { enabled: false, emailTo: '', emailjsServiceId: '', emailjsTemplateId: '', emailjsPublicKey: '', googleDriveScriptUrl: '', intervalHours: 24, lastBackup: null };
     }
 
     function saveBackupConfig(cfg) {
@@ -5173,7 +5208,7 @@
     function initScheduledBackup() {
       if (_backupTimer) clearInterval(_backupTimer);
       const cfg = getBackupConfig();
-      if (!cfg.enabled || !cfg.emailTo) return;
+      if (!cfg.enabled || (!cfg.emailTo && !cfg.googleDriveScriptUrl)) return;
       // ตรวจว่าถึงเวลา backup หรือยัง
       checkAndRunBackup();
       // ตั้ง interval ทุก 30 นาทีเพื่อตรวจสอบ
@@ -5183,7 +5218,7 @@
 
     function checkAndRunBackup() {
       const cfg = getBackupConfig();
-      if (!cfg.enabled || !cfg.emailTo) return;
+      if (!cfg.enabled || (!cfg.emailTo && !cfg.googleDriveScriptUrl)) return;
       const now = Date.now();
       const lastBackup = cfg.lastBackup || 0;
       const intervalMs = (cfg.intervalHours || 24) * 60 * 60 * 1000;
@@ -5194,8 +5229,8 @@
 
     async function runAutoBackup(manual = false) {
       const cfg = getBackupConfig();
-      if (!cfg.emailTo) {
-        if (manual) alert('กรุณาตั้งค่าอีเมลปลายทางก่อน');
+      if (!cfg.emailTo && !cfg.googleDriveScriptUrl) {
+        if (manual) alert('กรุณาตั้งค่าอีเมลปลายทางหรือ Google Drive Web App URL ก่อน');
         return;
       }
       const payload = {
@@ -5212,8 +5247,40 @@
       cfg.lastBackup = Date.now();
       saveBackupConfig(cfg);
 
-      // ถ้ามี EmailJS config ส่งอีเมล
-      if (cfg.emailjsPublicKey && cfg.emailjsServiceId && cfg.emailjsTemplateId) {
+      let sendCount = 0;
+      let errorMsgs = [];
+
+      // 1. ส่งข้อมูลไป Google Drive (ถ้ามีตั้งค่าไว้)
+      if (cfg.googleDriveScriptUrl) {
+        try {
+          // ใช้ Content-Type text/plain เพื่อหลีกเลี่ยง CORS Preflight OPTIONS request ใน Google Apps Script
+          const response = await fetch(cfg.googleDriveScriptUrl, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+              'Content-Type': 'text/plain'
+            },
+            body: JSON.stringify({
+              filename: filename,
+              content: jsonStr
+            })
+          });
+          const resJson = await response.json();
+          if (resJson && resJson.status === 'success') {
+            sendCount++;
+            console.log('✅ Auto Backup to Google Drive success, fileId:', resJson.fileId);
+            showToast('📁 สำรองข้อมูลไป Google Drive สำเร็จ!', '#50c878');
+          } else {
+            errorMsgs.push('Google Drive: ' + (resJson.message || 'Unknown error'));
+          }
+        } catch (e) {
+          errorMsgs.push('Google Drive connection failed: ' + e.message);
+          console.warn('Google Drive backup fail:', e);
+        }
+      }
+
+      // 2. ถ้ามี EmailJS config ส่งอีเมล (ถ้ามีตั้งค่าไว้)
+      if (cfg.emailTo && cfg.emailjsPublicKey && cfg.emailjsServiceId && cfg.emailjsTemplateId) {
         try {
           // โหลด EmailJS SDK
           if (!window.emailjs) {
@@ -5236,23 +5303,29 @@
             customer_count: DB.customers.length,
             backup_time: new Date().toLocaleString('th-TH')
           });
+          sendCount++;
           if (manual) showToast('📧 ส่ง Backup ทางอีเมลแล้ว!', '#50c878');
           else showToast('📧 Auto Backup ส่งอีเมลแล้ว — ' + dateStr, '#50c878');
-          updateBackupStatus();
-          return;
         } catch (e) {
+          errorMsgs.push('EmailJS: ' + e.message);
           console.warn('EmailJS send fail:', e);
         }
       }
 
-      // Fallback: download file
-      const blob = new Blob([jsonStr], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(a.href);
-      if (manual) showToast('📥 Backup ดาวน์โหลดแล้ว', '#50c878');
+      // Fallback: ถ้าเป็นแมนนวลแต่อัปโหลดขึ้นคลาวด์ตัวไหนไม่ได้เลย ให้ดาวน์โหลดไฟล์ลงเครื่องแทน
+      if (manual && sendCount === 0) {
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        showToast('📥 ดาวน์โหลด Backup ลงเครื่องแล้ว (คลาวด์ไม่ได้ตั้งค่า/ล้มเหลว)', '#f0ad4e');
+        if (errorMsgs.length > 0 && manual) {
+          alert('ไม่สามารถอัปโหลดไปยังคลาวด์ได้:\n' + errorMsgs.join('\n'));
+        }
+      }
+
       updateBackupStatus();
     }
 
@@ -5263,6 +5336,7 @@
         emailjsServiceId: document.getElementById('bs_ejsService').value.trim(),
         emailjsTemplateId: document.getElementById('bs_ejsTemplate').value.trim(),
         emailjsPublicKey: document.getElementById('bs_ejsKey').value.trim(),
+        googleDriveScriptUrl: document.getElementById('bs_gdUrl').value.trim(),
         intervalHours: parseInt(document.getElementById('bs_interval').value) || 24,
         lastBackup: getBackupConfig().lastBackup
       };
@@ -5280,6 +5354,7 @@
       if (el('bs_ejsService')) el('bs_ejsService').value = cfg.emailjsServiceId || '';
       if (el('bs_ejsTemplate')) el('bs_ejsTemplate').value = cfg.emailjsTemplateId || '';
       if (el('bs_ejsKey')) el('bs_ejsKey').value = cfg.emailjsPublicKey || '';
+      if (el('bs_gdUrl')) el('bs_gdUrl').value = cfg.googleDriveScriptUrl || '';
       if (el('bs_interval')) el('bs_interval').value = cfg.intervalHours || 24;
       updateBackupStatus();
     }

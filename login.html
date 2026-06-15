@@ -640,12 +640,9 @@
   // Dynamically load Firebase SDK
   function initFirebase() {
     return new Promise((resolve) => {
-      const sdkVer = '10.12.2';
-      const base = `https://www.gstatic.com/firebasejs/${sdkVer}`;
-
       Promise.all([
-        import(`${base}/firebase-app.js`),
-        import(`${base}/firebase-firestore.js`)
+        import('./lib/firebase-app.js'),
+        import('./lib/firebase-firestore.js')
       ]).then(([appMod, fsMod]) => {
         const { initializeApp, getApps } = appMod;
         const { getFirestore } = fsMod;
