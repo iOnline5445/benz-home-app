@@ -420,23 +420,26 @@
 
     .header-tabs {
       display: flex;
-      gap: 2px;
+      gap: 6px;
       flex: 1;
       justify-content: center;
       flex-wrap: wrap;
     }
 
     .htab {
-      padding: 7px 14px;
-      border-radius: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
       cursor: pointer;
       font-size: 13px;
       font-weight: 500;
-      border: none;
+      border: 1px solid transparent;
       background: transparent;
       color: var(--text2);
-      transition: all .2s;
+      transition: all .2s ease;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .htab.active,

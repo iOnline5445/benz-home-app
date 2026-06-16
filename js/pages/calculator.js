@@ -6,9 +6,11 @@
       
       let html = '<option value="">-- ดึงราคาจากทรัพย์สิน (ระบุหรือไม่ก็ได้) --</option>';
       DB.assets.forEach((a, i) => {
-        const priceStr = a.price || '';
-        const loc = a.location ? ` | ${a.location}` : '';
-        html += `<option value="${i}">${a.name || 'ไม่มีชื่อ'}${loc} (${priceStr})</option>`;
+        if (a.status && a.status.includes('ขาย')) {
+          const priceStr = a.price || '';
+          const loc = a.location ? ` | ${a.location}` : '';
+          html += `<option value="${i}">${a.name || 'ไม่มีชื่อ'}${loc} (${priceStr})</option>`;
+        }
       });
       assetSel.innerHTML = html;
       
