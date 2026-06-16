@@ -1,0 +1,2158 @@
+    async function loadDB() {
+      if (_fbReady && _db) {
+        // ถ้า real-time sync ทำงานอยู่ onSnapshot จะ handle การอัพเดทเอง
+        // แต่โหลดครั้งแรกเพื่อให้ข้อมูลพร้อมทันที
+        if (!_realtimeSyncActive) {
+          const { collection, getDocs } = window._firestoreLib;
+          let anyFail = false;
+          for (const col of ['assets', 'agents', 'customers', 'mktQueue', 'mktScheduleSlots']) {
+            try {
+              const snap = await getDocs(collection(_db, col));
+              if (col === 'mktScheduleSlots') {
+                DB.mktScheduleSlots = snap.docs.map(d => d.data().time);
+              } else {
+                DB[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+              }
+            } catch (e) { console.warn('loadDB Firebase fail:', col, e); anyFail = true; }
+          }
+          if (anyFail) showToast('⚠️ Firebase โหลดบางส่วนไม่ได้ — ใช้ cache', '#e05050');
+          saveTolocalStorage();
+        }
+        // เปิด real-time sync (ถ้ายังไม่ได้เปิด)
+        startRealtimeSync();
+      } else {
+        // Fallback: โหลดจาก localStorage
+        loadFromlocalStorage();
+        showToast('📦 ใช้ข้อมูล offline (localStorage)', '#5090e0');
+      }
+      updateFirebaseStatus();
+      renderAssets(); renderAgents(); renderCustomers(); renderStats();
+      if (!_reminderInterval) {
+        _reminderInterval = setInterval(checkScheduledQueueReminders, 30000);
+      }
+    }
+
+    let _suppressSnapshot = false; // guard: suppress onSnapshot during our own write
+
+    async function saveItem(colName, item, id = null) {
+      if (!item.id) item.id = id || genId();
+      if (_fbReady && _db) {
+        try {
+          const { collection, doc, setDoc } = window._firestoreLib;
+          const ref = doc(collection(_db, colName), item.id);
+          _suppressSnapshot = true;        // block onSnapshot re-render while we write
+          await setDoc(ref, item);
+          // release after snapshot window; then do ONE clean render from Firebase
+          setTimeout(() => {
+            _suppressSnapshot = false;
+            // Re-sync from Firebase to ensure UI is accurate (no dupes, no missing)
+            if (_fbReady && _db && window._firestoreLib) {
+              const { collection: col2, getDocs: gd2 } = window._firestoreLib;
+              for (const c of ['assets', 'agents', 'customers']) {
+                gd2(col2(_db, c)).then(snap => {
+                  DB[c] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                }).catch(() => { });
+              }
+              setTimeout(() => {
+                saveTolocalStorage();
+                renderAssets(); renderAgents(); renderCustomers(); renderStats(); populateCbSelect();
+              }, 150);
+            }
+          }, 600);
+        } catch (e) {
+          _suppressSnapshot = false;
+          console.warn('saveItem Firebase fail:', e);
+          showToast('⚠️ Firebase บันทึกไม่ได้ — บันทึก offline', '#e05050');
+        }
+      }
+      saveTolocalStorage();
+      return item;
+    }
+
+    async function deleteItemFromDB(colName, id) {
+      if (_fbReady && _db && id) {
+        try {
+          const { collection, doc, deleteDoc } = window._firestoreLib;
+          await deleteDoc(doc(collection(_db, colName), id));
+        } catch (e) { console.warn('deleteItem Firebase fail:', e); }
+      }
+      saveTolocalStorage();
+    }
+
+    async function saveDB() {
+      if (_fbReady && _db) {
+        _suppressSnapshot = true; // block onSnapshot during batch write
+        for (const col of ['assets', 'agents', 'customers']) {
+          try {
+            const { collection, doc, setDoc, writeBatch } = window._firestoreLib;
+            const batch = writeBatch(_db);
+            DB[col].forEach(item => {
+              if (!item.id) item.id = genId();
+              const ref = doc(collection(_db, col), item.id);
+              batch.set(ref, item);
+            });
+            await batch.commit();
+          } catch (e) { console.warn('saveDB Firebase fail:', col, e); }
+        }
+        setTimeout(() => { _suppressSnapshot = false; }, 800);
+      }
+      saveTolocalStorage();
+    }
+
+    // ============================
+    // FIREBASE AUTH SYNC (Users collection)
+    // ============================
+    async function saveAuthToFirebase() {
+      if (!_fbReady || !_db) return;
+      try {
+        const { collection, doc, setDoc, writeBatch } = window._firestoreLib;
+        const batch = writeBatch(_db);
+        AUTH.users.forEach(u => {
+          // normalize email lowercase ก่อน save ขึ้น Firebase
+          const email = (u.email || '').toLowerCase().trim();
+          const safeId = email.replace(/[.@]/g, '_');
+          const ref = doc(collection(_db, 'users'), safeId);
+          batch.set(ref, { ...u, email });
+        });
+        await batch.commit();
+      } catch (e) { console.warn('saveAuthToFirebase fail:', e); }
+    }
+
+    async function loadAuthFromFirebase() {
+      if (!_fbReady || !_db) return false;
+      try {
+        const { collection, getDocs } = window._firestoreLib;
+        const snap = await getDocs(collection(_db, 'users'));
+        if (snap.docs.length > 0) {
+          const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          // normalize: lowercase email, กรองเฉพาะ user ที่มี email ถูกต้อง
+          const fbUsers = snap.docs.map(d => {
+            const u = d.data();
+            if (u.email) u.email = u.email.toLowerCase().trim();
+            return u;
+          }).filter(u => u.email && emailRe.test(u.email));
+
+          if (fbUsers.length > 0) {
+            AUTH.users = fbUsers;
+            // ตรวจ hasAdmin หลัง sync
+            const hasAdmin = AUTH.users.some(u => u.role === 'admin');
+            if (!hasAdmin) {
+              AUTH.users.unshift({ email: 'admin@benzhome.com', password: 'admin1234', displayname: 'ผู้ดูแลระบบ', role: 'admin', note: 'Super Admin', linkedAgentId: null });
+            }
+            // บันทึกลง localStorage (ไม่ sync กลับ Firebase เพื่อป้องกัน loop)
+            localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+            return true;
+          }
+        }
+      } catch (e) { console.warn('loadAuthFromFirebase fail:', e); }
+      return false;
+    }
+
+    function saveAuth() {
+      localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+      saveAuthToFirebase(); // async sync to Firebase
+    }
+
+    // บันทึกเฉพาะ localStorage ไม่ sync Firebase (ป้องกัน overwrite loop)
+    function saveAuthLocal() {
+      localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+    }
+
+    // ============================
+    // SESSION & REMEMBER KEYS — ต้องประกาศก่อน loadAuth() เรียก
+    // ============================
+    const REMEMBER_KEY = 'yb_remember';
+    const SESSION_KEY = 'yb_session';
+
+    function loadRemembered() {
+      try {
+        const s = localStorage.getItem(REMEMBER_KEY);
+        if (!s) return;
+        const { email, pw } = JSON.parse(s);
+        document.getElementById('loginUsername').value = email || '';
+        document.getElementById('loginPassword').value = pw || '';
+        document.getElementById('rememberMe').checked = true;
+      } catch (e) { }
+    }
+
+    function saveSession(user) {
+      try {
+        localStorage.setItem(SESSION_KEY, JSON.stringify({ email: (user.email || '').toLowerCase().trim(), pw: user.password }));
+      } catch (e) { }
+    }
+
+    function clearSession() {
+      localStorage.removeItem(SESSION_KEY);
+    }
+
+    // Helper: ทำ login จริง (ใช้ร่วมกันระหว่าง doLogin และ retry)
+    function performLogin(found, remember) {
+      // normalize email ก่อนทุกอย่าง
+      found = { ...found, email: (found.email || '').toLowerCase().trim() };
+      const email = found.email;
+      const pw = found.password;
+      document.getElementById('loginError').style.display = 'none';
+      if (remember) {
+        localStorage.setItem(REMEMBER_KEY, JSON.stringify({ email, pw }));
+      } else {
+        localStorage.removeItem(REMEMBER_KEY);
+      }
+      AUTH.current = found;
+      saveSession(found);
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('appShell').style.display = 'block';
+      document.getElementById('headerUserName').textContent = found.displayname || found.email;
+      const roleEl = document.getElementById('headerUserRole');
+      if (found.role === 'admin') { roleEl.textContent = '⭐ Admin'; roleEl.className = 'role role-admin'; }
+      else if (found.role === 'agent') { roleEl.textContent = '🏠 Agent'; roleEl.className = 'role role-agent'; }
+      else { roleEl.textContent = '👁️ Viewer'; roleEl.className = 'role role-viewer'; }
+      applyRoleAccess(found.role);
+      loadDB();
+      updateSettingsProfileUI();
+    }
+
+    function tryRestoreSession(fromFirebase) {
+      try {
+        const s = localStorage.getItem(SESSION_KEY);
+        if (!s) return false;
+        const raw = JSON.parse(s);
+        const email = (raw.email || '').toLowerCase().trim();
+        const pw = raw.pw;
+        const found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email && u.password === pw);
+        if (!found) {
+          if (fromFirebase) {
+            // Firebase sync เสร็จแล้ว ยังหา user ไม่เจอ = session ผิดจริง
+            clearSession(); return false;
+          }
+          if (!_fbReady) {
+            // ไม่มี Firebase + หาไม่เจอ = session ผิดจริง
+            clearSession(); return false;
+          }
+          // Firebase กำลังโหลด — รอก่อน อย่าลบ session
+          return false;
+        }
+        performLogin(found, false);
+        return true;
+      } catch (e) { clearSession(); return false; }
+    }
+
+    function loadAuth() {
+      try {
+        const s = localStorage.getItem('yb_auth');
+        if (s) {
+          const parsed = JSON.parse(s);
+          if (parsed.users) {
+            const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            parsed.users = parsed.users
+              .map(u => {
+                if (!u.email && u.username) u.email = u.username;
+                // normalize email lowercase
+                if (u.email) u.email = u.email.toLowerCase().trim();
+                return u;
+              })
+              .filter(u => u.email && emailRe.test(u.email));
+          }
+          AUTH = { users: parsed.users || [], current: null };
+        }
+      } catch (e) { console.warn('loadAuth error:', e); }
+      const hasAdmin = AUTH.users.some(u => u.role === 'admin');
+      if (!AUTH.users.length || !hasAdmin) {
+        AUTH.users = AUTH.users.filter(u => u.role !== 'admin');
+        AUTH.users.unshift({ email: 'admin@benzhome.com', password: 'admin1234', displayname: 'ผู้ดูแลระบบ', role: 'admin', note: 'Super Admin', linkedAgentId: null });
+        localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+      }
+    }
+
+    // โหลด auth ทันที จาก localStorage ก่อน
+    loadAuth();
+
+    // One-time migration: normalize email เป็น lowercase ทั้งหมดใน localStorage
+    // แก้ข้อมูลเก่าที่อาจเคย save email ตัวใหญ่/เล็กไม่สม่ำเสมอ
+    (function migrateEmailCase() {
+      try {
+        let changed = false;
+        AUTH.users = AUTH.users.map(u => {
+          const norm = (u.email || '').toLowerCase().trim();
+          if (norm !== u.email) { changed = true; return { ...u, email: norm }; }
+          return u;
+        });
+        if (changed) {
+          localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+          console.log('✅ Email migration done (lowercase)');
+        }
+      } catch (e) { }
+    })();
+
+    loadRemembered(); // โหลด remembered credentials (กรอก form)
+    // ลอง restore session ทันที (สำหรับ offline/localStorage mode)
+    // ถ้า Firebase active จะเรียก tryRestoreSession อีกครั้งหลัง sync
+    tryRestoreSession();
+
+    const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
+    const isFirebaseConfigured = FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY" && FIREBASE_CONFIG.apiKey !== "";
+
+    if (storageMode === 'firebase' && isFirebaseConfigured) {
+      initFirebase().then(async (ok) => {
+        if (ok) {
+          const synced = await loadAuthFromFirebase();
+          if (synced) console.log('✅ Auth synced from Firebase');
+          // ตรวจ hasAdmin อีกครั้งหลัง sync
+          const hasAdmin = AUTH.users.some(u => u.role === 'admin');
+          if (!hasAdmin) {
+            AUTH.users.unshift({ email: 'admin@benzhome.com', password: 'admin1234', displayname: 'ผู้ดูแลระบบ', role: 'admin', note: 'Super Admin', linkedAgentId: null });
+            saveAuth();
+          }
+          // เริ่ม real-time sync อัตโนมัติ
+          startRealtimeSync();
+          // เริ่มระบบ scheduled backup
+          initScheduledBackup();
+        }
+        updateFirebaseStatus();
+        if (!AUTH.current) {
+          tryRestoreSession(true); // true = fromFirebase sync เสร็จแล้ว ลบ session ได้ถ้าหาไม่เจอ
+        }
+      });
+    } else {
+      console.log('📴 Running in Offline Local Mode');
+      _fbReady = false;
+      updateFirebaseStatus();
+      initScheduledBackup();
+      if (!AUTH.current) {
+        tryRestoreSession(false);
+      }
+    }
+
+    function resetAuthData() {
+      // แสดง users ที่มีอยู่ก่อน เพื่อ debug
+      const userList = AUTH.users.map(u => u.email + ' [' + u.role + ']').join('\n') || '(ว่าง)';
+      if (!confirm('รีเซ็ตข้อมูล User ทั้งหมด?\n\nUsers ปัจจุบัน:\n' + userList + '\n\n(จะสร้าง admin default ใหม่ email: admin@benzhome.com / admin1234)')) return;
+      localStorage.removeItem('yb_auth');
+      localStorage.removeItem('yb_session');
+      AUTH = { users: [], current: null };
+      loadAuth();
+      document.getElementById('loginError').style.display = 'none';
+      document.getElementById('loginUsername').value = 'admin@benzhome.com';
+      document.getElementById('loginPassword').value = '';
+      alert('✅ รีเซ็ตแล้ว\nกรุณา login ใหม่ด้วย\nEmail: admin@benzhome.com\nPassword: admin1234');
+    }
+
+    // ========================================================
+    // UNIFIED SETTINGS HELPERS
+    // ========================================================
+    function switchSettingsTab(tabName, btn) {
+      const cur = AUTH.current;
+      const isAdmin = cur && cur.role === 'admin';
+      
+      const adminTabs = ['users', 'firebase', 'backup', 'csv', 'reset', 'quota'];
+      if (adminTabs.includes(tabName) && !isAdmin) {
+        alert('❌ ขออภัย เฉพาะผู้ดูแลระบบ (Admin) เท่านั้นที่สามารถเข้าถึงส่วนนี้ได้');
+        switchSettingsTab('profile');
+        return;
+      }
+
+      // Hide all sub-sections in settings
+      document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+      // Remove active class from all settings nav items
+      document.querySelectorAll('.snav-item').forEach(b => b.classList.remove('active'));
+      
+      // Show target sub-section
+      const target = document.getElementById('ssec-' + tabName);
+      if (target) target.classList.add('active');
+      
+      // Mark nav button active
+      if (btn) {
+        btn.classList.add('active');
+      } else {
+        const btnId = 'snav-' + tabName;
+        const el = document.getElementById(btnId);
+        if (el) el.classList.add('active');
+        else {
+          const profileBtn = document.querySelector('.snav-item[onclick*="profile"]');
+          if (profileBtn) profileBtn.classList.add('active');
+        }
+      }
+      
+      // Action when specific tabs are loaded
+      if (tabName === 'users') {
+        renderUsers();
+      } else if (tabName === 'firebase') {
+        loadFbConfigUI(true);
+      } else if (tabName === 'backup') {
+        loadBackupSettingsUI();
+        updateBackupStatus();
+      } else if (tabName === 'quota') {
+        loadQuotaSettingsUI();
+      }
+    }
+
+    // Load quota limit from localStorage or default to 5
+    let _dailyQuotaLimit = parseInt(localStorage.getItem('yb_quota_limit')) || 5;
+
+    function loadQuotaSettingsUI() {
+      const input = document.getElementById('quotaLimitInput');
+      if (input) input.value = _dailyQuotaLimit;
+    }
+
+    function saveQuotaLimit() {
+      const val = parseInt(document.getElementById('quotaLimitInput').value);
+      if (isNaN(val) || val < 1) {
+        alert('❌ กรุณากรอกจำนวนโควตาที่ถูกต้อง (ขั้นต่ำ 1)');
+        return;
+      }
+      _dailyQuotaLimit = val;
+      localStorage.setItem('yb_quota_limit', val);
+      alert('💾 บันทึกการตั้งค่าโควตาสำเร็จแล้ว: ' + val + ' เคสต่อวัน');
+    }
+
+    function updateSettingsProfileUI() {
+      const cur = AUTH.current;
+      if (!cur) return;
+      
+      const nameEl = document.getElementById('profileName');
+      const emailEl = document.getElementById('profileEmail');
+      const avatarEl = document.getElementById('profileAvatar');
+      
+      if (nameEl) nameEl.textContent = cur.displayname || 'ผู้ใช้งาน';
+      if (emailEl) emailEl.textContent = cur.email || '';
+      
+      if (avatarEl) {
+        const initial = (cur.displayname || cur.email || '?').charAt(0).toUpperCase();
+        avatarEl.textContent = initial;
+      }
+      
+      // Update storage mode radio checked status
+      const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
+      const rad = document.querySelector(`input[name="yb_storage_mode"][value="${storageMode}"]`);
+      if (rad) rad.checked = true;
+    }
+
+    function toggleStorageMode(mode) {
+      if (mode === 'firebase') {
+        const isFirebaseConfigured = FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY" && FIREBASE_CONFIG.apiKey !== "";
+        if (!isFirebaseConfigured) {
+          alert('⚠️ กรุณากรอก Firebase Configuration และเชื่อมต่อก่อนเปิดใช้งานโหมดคลาวด์');
+          const localRad = document.querySelector('input[name="yb_storage_mode"][value="local"]');
+          if (localRad) localRad.checked = true;
+          return;
+        }
+      }
+      localStorage.setItem('yb_storage_mode', mode);
+      showToast('💾 เปลี่ยนโหมดจัดเก็บข้อมูลเป็น: ' + (mode === 'local' ? 'Offline Local' : 'Firebase Cloud'), '#50c878');
+      
+      if (confirm('🔄 ระบบจำเป็นต้องโหลดหน้าเว็บใหม่เพื่อใช้โหมดจัดเก็บข้อมูลใหม่ ต้องการโหลดทันทีหรือไม่?')) {
+        location.reload();
+      }
+    }
+
+    function confirmSystemReset() {
+      const inp = document.getElementById('resetConfirmInput');
+      if (!inp) return;
+      if (inp.value !== 'CONFIRM') {
+        alert('❌ กรุณาพิมพ์คำว่า CONFIRM ให้ถูกต้องเพื่อยืนยัน');
+        return;
+      }
+      clearAllData();
+      inp.value = '';
+    }
+
+    // ============================
+    // SCHEDULED AUTO BACKUP
+    // ============================
+    const BACKUP_CONFIG_KEY = 'yb_backup_config';
+    let _backupTimer = null;
+
+    function getBackupConfig() {
+      try {
+        const s = localStorage.getItem(BACKUP_CONFIG_KEY);
+        if (s) return JSON.parse(s);
+      } catch (e) { }
+      return { enabled: false, googleDriveScriptUrl: '', intervalHours: 24, lastBackup: null };
+    }
+
+    function saveBackupConfig(cfg) {
+      localStorage.setItem(BACKUP_CONFIG_KEY, JSON.stringify(cfg));
+    }
+
+    function initScheduledBackup() {
+      if (_backupTimer) clearInterval(_backupTimer);
+      const cfg = getBackupConfig();
+      if (!cfg.enabled || !cfg.googleDriveScriptUrl) return;
+      // ตรวจว่าถึงเวลา backup หรือยัง
+      checkAndRunBackup();
+      // ตั้ง interval ทุก 30 นาทีเพื่อตรวจสอบ
+      _backupTimer = setInterval(checkAndRunBackup, 30 * 60 * 1000);
+      console.log('📅 Scheduled backup initialized, interval:', cfg.intervalHours, 'hours');
+    }
+
+    function checkAndRunBackup() {
+      const cfg = getBackupConfig();
+      if (!cfg.enabled || !cfg.googleDriveScriptUrl) return;
+      const now = Date.now();
+      const lastBackup = cfg.lastBackup || 0;
+      const intervalMs = (cfg.intervalHours || 24) * 60 * 60 * 1000;
+      if (now - lastBackup >= intervalMs) {
+        runAutoBackup();
+      }
+    }
+
+    async function runAutoBackup(manual = false) {
+      const cfg = getBackupConfig();
+      if (!cfg.googleDriveScriptUrl) {
+        if (manual) alert('กรุณาตั้งค่า Google Drive Web App URL ก่อน');
+        return;
+      }
+      const payload = {
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        DB: DB,
+        users: AUTH.users
+      };
+      const jsonStr = JSON.stringify(payload, null, 2);
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const filename = 'benzhome_backup_' + dateStr + '.json';
+
+      // บันทึกเวลา backup
+      cfg.lastBackup = Date.now();
+      saveBackupConfig(cfg);
+
+      let success = false;
+      let errorMsg = '';
+
+      // ส่งข้อมูลไป Google Drive
+      try {
+        // ใช้ Content-Type text/plain เพื่อหลีกเลี่ยง CORS Preflight OPTIONS request ใน Google Apps Script
+        const response = await fetch(cfg.googleDriveScriptUrl, {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'text/plain'
+          },
+          body: JSON.stringify({
+            filename: filename,
+            content: jsonStr
+          })
+        });
+        const resJson = await response.json();
+        if (resJson && resJson.status === 'success') {
+          success = true;
+          console.log('✅ Auto Backup to Google Drive success, fileId:', resJson.fileId);
+          showToast('📁 สำรองข้อมูลไป Google Drive สำเร็จ!', '#50c878');
+        } else {
+          errorMsg = resJson.message || 'Unknown error';
+        }
+      } catch (e) {
+        errorMsg = e.message;
+        console.warn('Google Drive backup fail:', e);
+      }
+
+      // Fallback: ถ้าเป็นแมนนวลแต่อัปโหลดขึ้น Google Drive ล้มเหลว ให้ดาวน์โหลดไฟล์ลงเครื่องแทน
+      if (manual && !success) {
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        showToast('📥 ดาวน์โหลด Backup ลงเครื่องแล้ว (อัปโหลดล้มเหลว)', '#f0ad4e');
+        if (errorMsg) {
+          alert('ไม่สามารถอัปโหลดไปยัง Google Drive ได้:\n' + errorMsg);
+        }
+      }
+
+      updateBackupStatus();
+    }
+
+    function saveBackupSettings() {
+      const cfg = {
+        enabled: document.getElementById('bs_enabled').checked,
+        googleDriveScriptUrl: document.getElementById('bs_gdUrl').value.trim(),
+        intervalHours: parseInt(document.getElementById('bs_interval').value) || 24,
+        lastBackup: getBackupConfig().lastBackup
+      };
+      saveBackupConfig(cfg);
+      initScheduledBackup();
+      showToast('✅ บันทึกการตั้งค่า Backup แล้ว', '#50c878');
+      updateBackupStatus();
+    }
+
+    function loadBackupSettingsUI() {
+      const cfg = getBackupConfig();
+      const el = id => document.getElementById(id);
+      if (el('bs_enabled')) el('bs_enabled').checked = cfg.enabled;
+      if (el('bs_gdUrl')) el('bs_gdUrl').value = cfg.googleDriveScriptUrl || '';
+      if (el('bs_interval')) el('bs_interval').value = cfg.intervalHours || 24;
+      updateBackupStatus();
+    }
+
+    function updateBackupStatus() {
+      const el = document.getElementById('bs_lastBackup');
+      if (!el) return;
+      const cfg = getBackupConfig();
+      if (cfg.lastBackup) {
+        el.textContent = 'Backup ล่าสุด: ' + new Date(cfg.lastBackup).toLocaleString('th-TH');
+      } else {
+        el.textContent = 'ยังไม่เคย Backup';
+      }
+    }
+
+    // ============================
+    // BACKUP & RESTORE
+    // ============================
+    function backupAll() {
+      const payload = {
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        DB: DB,
+        users: AUTH.users
+      };
+      downloadJSON(payload, `benzhome_backup_${new Date().toISOString().slice(0, 10)}.json`);
+    }
+
+    function backupUsers() {
+      const payload = { version: 2, exportedAt: new Date().toISOString(), users: AUTH.users };
+      downloadJSON(payload, `benzhome_users_${new Date().toISOString().slice(0, 10)}.json`);
+    }
+
+    function downloadJSON(obj, filename) {
+      const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    async function restoreBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const text = await file.text();
+      try {
+        const data = JSON.parse(text);
+        if (!data.version) { alert('ไฟล์ backup ไม่ถูกต้อง'); return; }
+        if (!confirm(`⚠️ Restore จากไฟล์: ${file.name}\nExported: ${data.exportedAt || 'ไม่ทราบ'}\nข้อมูลปัจจุบันจะถูกแทนที่ ยืนยัน?`)) return;
+        if (data.DB) {
+          DB.assets = data.DB.assets || [];
+          DB.agents = data.DB.agents || [];
+          DB.customers = data.DB.customers || [];
+          await saveDB();
+          // Push assets ด้วย (saveDB ทำ agents+customers แต่ไม่รวม assets)
+          if (_fbReady && _db) {
+            const { collection, doc, setDoc, writeBatch } = window._firestoreLib;
+            const batch = writeBatch(_db);
+            DB.assets.forEach(item => {
+              if (!item.id) item.id = genId();
+              const ref = doc(collection(_db, 'assets'), item.id);
+              batch.set(ref, item);
+            });
+            await batch.commit();
+          }
+          saveTolocalStorage();
+        }
+        if (data.users) {
+          AUTH.users = data.users;
+          saveAuth();
+        }
+        renderAssets(); renderAgents(); renderCustomers(); renderUsers(); renderStats();
+        showToast('✅ Restore สำเร็จ!', '#50c878');
+      } catch (e) { alert('Restore ไม่ได้: ' + e.message); }
+      event.target.value = '';
+    }
+
+    async function forceSyncToFirebase() {
+      if (!_fbReady || !_db) { alert('Firebase ยังไม่ได้เชื่อมต่อ'); return; }
+      if (!confirm('⬆️ Push ข้อมูล local ทั้งหมดไปทับ Firebase?')) return;
+      const { collection, doc, setDoc, writeBatch } = window._firestoreLib;
+      for (const col of ['assets', 'agents', 'customers']) {
+        const batch = writeBatch(_db);
+        DB[col].forEach(item => {
+          if (!item.id) item.id = genId();
+          const ref = doc(collection(_db, col), item.id);
+          batch.set(ref, item);
+        });
+        await batch.commit();
+      }
+      await saveAuthToFirebase();
+      showToast('✅ Push ไป Firebase สำเร็จ!', '#50c878');
+    }
+
+    async function forceSyncFromFirebase() {
+      if (!_fbReady || !_db) { alert('Firebase ยังไม่ได้เชื่อมต่อ'); return; }
+      if (!confirm('⬇️ Pull ข้อมูลจาก Firebase ทับ local?')) return;
+      await loadDB();
+      await loadAuthFromFirebase();
+      renderUsers();
+      showToast('✅ Pull จาก Firebase สำเร็จ!', '#50c878');
+    }
+
+    // ============================
+    // LOGIN / LOGOUT
+    // ============================
+    function toggleLoginPw() {
+      const inp = document.getElementById('loginPassword');
+      const btn = document.getElementById('togglePwBtn');
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.textContent = '🙈';
+        btn.title = 'ซ่อนรหัสผ่าน';
+      } else {
+        inp.type = 'password';
+        btn.textContent = '👁️';
+        btn.title = 'แสดงรหัสผ่าน';
+      }
+    }
+
+
+
+    function doLogin() {
+      const email = document.getElementById('loginUsername').value.trim().toLowerCase();
+      const pw = document.getElementById('loginPassword').value;
+      const errEl = document.getElementById('loginError');
+      const remember = document.getElementById('rememberMe').checked;
+
+      // debug: log users ที่มีอยู่ (ไม่แสดง password)
+      console.log('🔐 Login attempt:', email, '| Users in AUTH:', AUTH.users.map(u => u.email + '[' + u.role + ']'));
+
+      // ตรวจสอบ AUTH.users ปัจจุบัน (case-insensitive email)
+      let found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email && u.password === pw);
+
+      if (!found) {
+        // ลอง reload จาก localStorage อีกครั้ง (กรณี AUTH อาจยังไม่ sync)
+        loadAuth();
+        found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email && u.password === pw);
+        console.log('🔄 After reload, found:', found ? found.email : 'none', '| Total users:', AUTH.users.length);
+      }
+
+      if (!found) {
+        errEl.style.display = 'flex';
+        console.warn('❌ Login failed. Users available:', AUTH.users.map(u => u.email));
+        return;
+      }
+
+      performLogin(found, remember);
+    }
+
+    function doLogout() {
+      if (!confirm('ยืนยันออกจากระบบ?')) return;
+      AUTH.current = null;
+      clearSession(); // ลบ session — reload จะไม่ auto-login
+      // stop realtime sync
+      if (typeof stopRealtimeSync === 'function') stopRealtimeSync();
+      document.getElementById('appShell').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
+      // restore remembered credentials (or clear if not remembered)
+      loadRemembered();
+      if (!document.getElementById('rememberMe').checked) {
+        document.getElementById('loginUsername').value = '';
+        document.getElementById('loginPassword').value = '';
+      }
+    }
+
+    // ============================
+    // ROLE-BASED ACCESS CONTROL
+    // ============================
+    function applyRoleAccess(role) {
+      const isAdmin = role === 'admin';
+      const isAgent = role === 'agent';
+      const isViewer = role === 'viewer';
+
+      // Desktop header tabs
+      const tabAgents = document.getElementById('tabAgents');
+      const tabCustomers = document.getElementById('tabCustomers');
+      const tabSettings = document.getElementById('tabSettings');
+      const tabClipboard = document.getElementById('tabClipboard');
+      const tabMarketing = document.getElementById('tabMarketing');
+      const tabCommission = document.getElementById('tabCommission');
+      if (tabAgents) tabAgents.style.display = isAdmin ? '' : 'none';
+      if (tabCustomers) tabCustomers.style.display = (isAdmin || isAgent) ? '' : 'none';
+      if (tabSettings) tabSettings.style.display = ''; // visible to all
+      if (tabClipboard) tabClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
+      if (tabMarketing) tabMarketing.style.display = (isAdmin || isAgent) ? '' : 'none';
+      if (tabCommission) tabCommission.style.display = (isAdmin || isAgent) ? '' : 'none';
+
+      // Settings admin-only items
+      document.querySelectorAll('.settings-nav .admin-only').forEach(el => {
+        el.style.display = isAdmin ? '' : 'none';
+      });
+
+      // Bottom nav: show/hide based on role
+      const bnavCustomers = document.getElementById('bnav-customers');
+      const bnavClipboard = document.getElementById('bnav-clipboard');
+      const bnavMarketing = document.getElementById('bnav-marketing');
+      // ลูกค้า: admin + agent → แสดงใน bottom nav ตรงๆ (ไม่ซ่อน)
+      if (bnavCustomers) bnavCustomers.style.display = (isAdmin || isAgent) ? '' : 'none';
+      // ClipB: admin + agent
+      if (bnavClipboard) bnavClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
+      // Auto-Post: admin + agent
+      if (bnavMarketing) bnavMarketing.style.display = (isAdmin || isAgent) ? '' : 'none';
+      // ถ้า viewer — shift nav: ทรัพย์สิน + ••• เพิ่มเติม (ตั้งค่า) เท่านั้น
+      // nav-more always visible (handled in buildMoreDrawer)
+
+      // Build "More" drawer items based on role
+      buildMoreDrawer(role);
+
+      // Admin-only panels
+      const clearDataPanel = document.getElementById('clearDataPanel');
+      if (clearDataPanel) clearDataPanel.style.display = isAdmin ? '' : 'none';
+
+      // Import/Export panels - Admin only
+      const importPanel = document.getElementById('importPanel');
+      const exportPanel = document.getElementById('exportPanel');
+      const btnImportCustomerCSV = document.getElementById('btnImportCustomerCSV');
+      if (importPanel) importPanel.style.display = isAdmin ? '' : 'none';
+      if (exportPanel) exportPanel.style.display = isAdmin ? '' : 'none';
+      if (btnImportCustomerCSV) btnImportCustomerCSV.style.display = isAdmin ? '' : 'none';
+
+      // Agent can edit/add, but cannot delete
+      window._canEdit = (isAdmin || isAgent);
+      window._canDelete = isAdmin; // Only admin can delete
+
+      // Helper: ตรวจสอบสิทธิ์แก้ไขทรัพย์สินแบบ per-item (เจ้าของโพสต์หรือ admin เท่านั้น)
+      window._canEditAsset = function(asset) {
+        if (!AUTH.current) return false;
+        if (AUTH.current.role === 'admin') return true;
+        // เจ้าของโพสต์ (ตรวจจาก creatorEmail)
+        if (asset.creatorEmail && AUTH.current.email) {
+          return asset.creatorEmail.toLowerCase() === AUTH.current.email.toLowerCase();
+        }
+        // fallback: ตรวจจาก poster name ถ้าไม่มี creatorEmail (data เก่า)
+        if (asset.poster && AUTH.current.displayname) {
+          return asset.poster === AUTH.current.displayname;
+        }
+        return false;
+      };
+      window._canDeleteAsset = function(asset) {
+        if (!AUTH.current) return false;
+        if (AUTH.current.role === 'admin') return true;
+        // เจ้าของโพสต์สามารถลบได้
+        if (asset.creatorEmail && AUTH.current.email) {
+          return asset.creatorEmail.toLowerCase() === AUTH.current.email.toLowerCase();
+        }
+        return false;
+      };
+
+      if (window.innerWidth <= 768) {
+        const titleEl = document.getElementById('mobileSectionTitle');
+        if (titleEl) { titleEl.textContent = _sectionTitles['assets'] || ''; titleEl.style.display = 'block'; }
+      }
+      const btnAddAsset = document.getElementById('btnAddAsset');
+      const btnAddCustomer = document.getElementById('btnAddCustomer');
+      if (btnAddAsset) btnAddAsset.style.display = (isAdmin || isAgent) ? '' : 'none';
+      if (btnAddCustomer) btnAddCustomer.style.display = (isAdmin || isAgent) ? '' : 'none';
+
+      // Ensure more drawer is hidden (closed) on login
+      closeMoreDrawer();
+    }
+
+    // Build More drawer menu based on role
+    function buildMoreDrawer(role) {
+      const isAdmin = role === 'admin';
+      const isAgent = role === 'agent';
+      const container = document.getElementById('moreDrawerItems');
+      if (!container) return;
+
+      const items = [];
+      if (isAdmin || isAgent) {
+        items.push({ icon: '💰', label: 'คำนวณค่าคอม', sub: 'คำนวณส่วนแบ่งค่าคอมมิชชั่น', tab: 'commission' });
+      }
+      if (isAdmin) {
+        items.push({ icon: '👤', label: 'Agent', sub: 'จัดการรายชื่อ Agent', tab: 'agents' });
+        items.push({ icon: '⚙️', label: 'ตั้งค่าระบบ', sub: 'ผู้ใช้, Firebase, Backup, CSV', tab: 'settings' });
+      } else {
+        items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'บัญชีของฉัน & ข้อมูลระบบ', tab: 'settings' });
+      }
+
+      container.innerHTML = items.map(it => `
+        <button onclick="switchTab('${it.tab}',null);updateBnav('${it.tab}');closeMoreDrawer();"
+          style="display:flex;align-items:center;gap:14px;width:100%;background:transparent;border:none;
+                 padding:14px 12px;border-radius:14px;cursor:pointer;font-family:inherit;
+                 color:var(--text);text-align:left;-webkit-tap-highlight-color:transparent;
+                 transition:background .15s;"
+          onmouseover="this.style.background='var(--dark3)'" onmouseout="this.style.background='transparent'">
+          <span style="font-size:28px;width:40px;text-align:center;flex-shrink:0;">${it.icon}</span>
+          <span style="flex:1;">
+            <span style="display:block;font-size:17px;font-weight:700;">${it.label}</span>
+            <span style="display:block;font-size:12px;color:var(--text3);margin-top:2px;">${it.sub || ''}</span>
+          </span>
+          <span style="color:var(--text3);font-size:20px;font-weight:300;">›</span>
+        </button>
+      `).join('');
+
+      // Always show the More button (even for viewer - for ตั้งค่า)
+      const moreBtn = document.getElementById('bnav-more');
+      if (moreBtn) moreBtn.style.display = '';
+    }
+
+    function toggleMoreDrawer() {
+      const overlay = document.getElementById('moreDrawerOverlay');
+      const drawer = document.getElementById('moreDrawer');
+      const isOpen = drawer.style.display !== 'none';
+      if (isOpen) {
+        closeMoreDrawer();
+      } else {
+        overlay.style.display = 'block';
+        drawer.style.display = 'block';
+        // animate in
+        drawer.style.transform = 'translateY(20px)';
+        drawer.style.opacity = '0';
+        drawer.style.transition = 'transform .22s cubic-bezier(.4,0,.2,1), opacity .2s';
+        requestAnimationFrame(() => {
+          drawer.style.transform = 'translateY(0)';
+          drawer.style.opacity = '1';
+        });
+        // mark more button active
+        const moreBtn = document.getElementById('bnav-more');
+        if (moreBtn) moreBtn.classList.add('active');
+      }
+    }
+
+    function closeMoreDrawer() {
+      const overlay = document.getElementById('moreDrawerOverlay');
+      const drawer = document.getElementById('moreDrawer');
+      drawer.style.display = 'none';
+      overlay.style.display = 'none';
+      const moreBtn = document.getElementById('bnav-more');
+      if (moreBtn) moreBtn.classList.remove('active');
+    }
+
+    // ============================
+    // TABS
+    // ============================
+    const _sectionTitles = {
+      assets: '🏠 ทรัพย์สิน',
+      agents: '👤 Agent',
+      customers: '🤝 ลูกค้า',
+      clipboard: '📋 ClipB',
+      marketing: '🚀 Auto-Post',
+      settings: '⚙️ ตั้งค่า'
+    };
+
+    function updateBnav(t) {
+      // Reset all bnav buttons (only real buttons, not hidden spans)
+      document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+      // Mark the closest visible button active
+      // For sub-tabs (agents, users, iedata) — mark "more" button active
+      const mainTabs = ['assets', 'customers', 'clipboard', 'marketing'];
+      const targetId = mainTabs.includes(t) ? 'bnav-' + t : 'bnav-more';
+      const el = document.getElementById(targetId);
+      if (el) el.classList.add('active');
+      // update mobile section title
+      const titleEl = document.getElementById('mobileSectionTitle');
+      if (titleEl) {
+        titleEl.textContent = _sectionTitles[t] || '';
+        titleEl.style.display = window.innerWidth <= 768 ? 'block' : 'none';
+      }
+    }
+    function switchTab(t, btn) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.htab').forEach(b => b.classList.remove('active'));
+      const sec = document.getElementById('sec-' + t);
+      if (sec) sec.classList.add('active');
+      if (btn) btn.classList.add('active');
+      updateBnav(t);
+      if (t === 'assets') { renderAssets(); renderStats(); }
+      if (t === 'agents') renderAgents();
+      if (t === 'customers') renderCustomers();
+      if (t === 'clipboard') populateCbSelect();
+      if (t === 'marketing') {
+        populateMktSelect();
+        requestNotificationPermission();
+        switchMktSubtab(_activeMktSubtab || 'composer');
+      }
+      if (t === 'commission') {
+        initCommissionTab();
+      }
+      if (t === 'commission') {
+      initCommissionTab();
+      }
+      if (t === 'settings') {
+      switchSettingsTab('profile');
+      updateSettingsProfileUI();
+      }
+    }
+
+    // ============================
+    // STATS
+    // ============================
+    function setAssetView(v) {
+      _assetView = v;
+      _assetPage = 1;
+      // highlight active btn
+      ['card', 'table'].forEach(x => {
+        const b = document.getElementById('btnAssetView' + x.charAt(0).toUpperCase() + x.slice(1));
+        if (b) b.style.background = (x === v) ? 'var(--gold)' : '';
+        if (b) b.style.color = (x === v) ? '#1a1208' : '';
+      });
+      renderAssets();
+    }
+
+    // ===== SEARCHABLE SELECT DECORATOR =====
+    function initSearchableSelect(selectId, placeholderText = 'พิมพ์เพื่อค้นหา...') {
+      const selectEl = document.getElementById(selectId);
+      if (!selectEl) return;
+
+      if (selectEl.dataset.searchableInitialized) return;
+      selectEl.dataset.searchableInitialized = "true";
+
+      // Hide native select
+      selectEl.style.display = 'none';
+
+      // Create container
+      const container = document.createElement('div');
+      container.className = 'searchable-select-container';
+      if (selectEl.style.cssText) {
+        container.style.cssText = selectEl.style.cssText;
+        container.style.display = 'inline-flex';
+      }
+      container.style.position = 'relative';
+
+      // Create input
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'searchable-select-input';
+      input.placeholder = placeholderText;
+      input.disabled = selectEl.disabled;
+      input.autocomplete = 'off';
+
+      // Create arrow
+      const arrow = document.createElement('span');
+      arrow.className = 'searchable-select-arrow';
+      arrow.innerHTML = '▼';
+
+      // Create dropdown
+      const dropdown = document.createElement('div');
+      dropdown.className = 'searchable-select-dropdown';
+      dropdown.style.display = 'none';
+
+      container.appendChild(input);
+      container.appendChild(arrow);
+      container.appendChild(dropdown);
+
+      selectEl.parentNode.insertBefore(container, selectEl.nextSibling);
+
+      let highlightedIndex = -1;
+
+      function setHighlighted(index) {
+        const visibleOptions = Array.from(dropdown.querySelectorAll('.searchable-select-option')).filter(el => el.style.display !== 'none');
+        dropdown.querySelectorAll('.searchable-select-option').forEach(el => el.classList.remove('highlighted'));
+        
+        if (visibleOptions.length === 0) {
+          highlightedIndex = -1;
+          return;
+        }
+        
+        if (index >= visibleOptions.length) index = 0;
+        if (index < 0) index = visibleOptions.length - 1;
+        
+        highlightedIndex = index;
+        const target = visibleOptions[highlightedIndex];
+        if (target) {
+          target.classList.add('highlighted');
+          target.scrollIntoView({ block: 'nearest' });
+        }
+      }
+
+      function rebuildOptions() {
+        dropdown.innerHTML = '';
+        const children = selectEl.children;
+        
+        for (let i = 0; i < children.length; i++) {
+          const child = children[i];
+          if (child.tagName === 'OPTGROUP') {
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'searchable-select-group-header';
+            headerDiv.textContent = child.label;
+            dropdown.appendChild(headerDiv);
+            
+            const groupOpts = child.children;
+            for (let j = 0; j < groupOpts.length; j++) {
+              createOptionDiv(groupOpts[j]);
+            }
+          } else if (child.tagName === 'OPTION') {
+            createOptionDiv(child);
+          }
+        }
+        updateInputValue();
+      }
+
+      function createOptionDiv(opt) {
+        const optDiv = document.createElement('div');
+        optDiv.className = 'searchable-select-option';
+        optDiv.textContent = opt.textContent;
+        optDiv.dataset.value = opt.value;
+        
+        if (opt.value === selectEl.value) {
+          optDiv.classList.add('selected');
+        }
+
+        if (typeof FUTURE_STATIONS !== 'undefined' && FUTURE_STATIONS.has(opt.value)) {
+          optDiv.classList.add('future-station');
+        }
+
+        optDiv.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          selectOption(opt.value, opt.textContent);
+        });
+
+        dropdown.appendChild(optDiv);
+      }
+
+      function selectOption(value, text) {
+        selectEl.value = value;
+        input.value = text;
+        dropdown.style.display = 'none';
+        container.classList.remove('open');
+        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+
+      function updateInputValue() {
+        const selectedOpt = selectEl.options[selectEl.selectedIndex];
+        input.value = selectedOpt ? selectedOpt.textContent : '';
+        dropdown.querySelectorAll('.searchable-select-option').forEach(div => {
+          if (div.dataset.value === selectEl.value) {
+            div.classList.add('selected');
+          } else {
+            div.classList.remove('selected');
+          }
+        });
+      }
+
+      function filterOptions(searchTerm) {
+        const children = dropdown.children;
+        let lastHeader = null;
+        let visibleCountInGroup = 0;
+        
+        for (let i = 0; i < children.length; i++) {
+          const child = children[i];
+          if (child.classList.contains('searchable-select-group-header')) {
+            if (lastHeader) {
+              lastHeader.style.display = visibleCountInGroup > 0 ? '' : 'none';
+            }
+            lastHeader = child;
+            visibleCountInGroup = 0;
+            child.style.display = 'none';
+          } else if (child.classList.contains('searchable-select-option')) {
+            const text = child.textContent.toLowerCase();
+            if (text.includes(searchTerm.toLowerCase())) {
+              child.style.display = '';
+              visibleCountInGroup++;
+            } else {
+              child.style.display = 'none';
+            }
+          }
+        }
+        if (lastHeader) {
+          lastHeader.style.display = visibleCountInGroup > 0 ? '' : 'none';
+        }
+        setHighlighted(0);
+      }
+
+      // Input events
+      input.addEventListener('focus', () => {
+        if (selectEl.disabled) return;
+        dropdown.style.display = 'block';
+        container.classList.add('open');
+        Array.from(dropdown.children).forEach(child => {
+          child.style.display = '';
+        });
+        setHighlighted(-1);
+        setTimeout(() => input.select(), 50);
+      });
+
+      input.addEventListener('blur', () => {
+        setTimeout(() => {
+          dropdown.style.display = 'none';
+          container.classList.remove('open');
+          updateInputValue();
+        }, 150);
+      });
+
+      input.addEventListener('input', () => {
+        filterOptions(input.value);
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (dropdown.style.display === 'none') {
+          if (e.key === 'ArrowDown' || e.key === 'Enter') {
+            dropdown.style.display = 'block';
+            container.classList.add('open');
+            setHighlighted(0);
+            e.preventDefault();
+          }
+          return;
+        }
+
+        const visibleOptions = Array.from(dropdown.querySelectorAll('.searchable-select-option')).filter(el => el.style.display !== 'none');
+
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setHighlighted(highlightedIndex + 1);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setHighlighted(highlightedIndex - 1);
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (highlightedIndex >= 0 && highlightedIndex < visibleOptions.length) {
+            const opt = visibleOptions[highlightedIndex];
+            selectOption(opt.dataset.value, opt.textContent);
+          }
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          dropdown.style.display = 'none';
+          container.classList.remove('open');
+          updateInputValue();
+          input.blur();
+        }
+      });
+
+      // Toggle arrow
+      arrow.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (selectEl.disabled) return;
+        if (dropdown.style.display === 'none') {
+          input.focus();
+        } else {
+          input.blur();
+        }
+      });
+
+      // Dynamic option list updates
+      const observer = new MutationObserver(() => {
+        rebuildOptions();
+      });
+      observer.observe(selectEl, { childList: true, subtree: true });
+
+      // Attribute changes (disabled)
+      const attrObserver = new MutationObserver((mutations) => {
+        mutations.forEach(mutation => {
+          if (mutation.attributeName === 'disabled') {
+            input.disabled = selectEl.disabled;
+            if (selectEl.disabled) {
+              container.classList.add('disabled');
+              dropdown.style.display = 'none';
+              container.classList.remove('open');
+            } else {
+              container.classList.remove('disabled');
+            }
+          }
+        });
+      });
+      attrObserver.observe(selectEl, { attributes: true });
+
+      // Intercept property setter for 'value'
+      const originalDescriptor = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+      Object.defineProperty(selectEl, 'value', {
+        get: function() {
+          return originalDescriptor.get.call(this);
+        },
+        set: function(val) {
+          originalDescriptor.set.call(this, val);
+          updateInputValue();
+        },
+        configurable: true
+      });
+
+      rebuildOptions();
+      if (selectEl.disabled) {
+        container.classList.add('disabled');
+      }
+    }
+
+    function initAllSearchableSelects() {
+      initSearchableSelect('filterStartStation', 'สถานีเริ่มต้น');
+      initSearchableSelect('filterEndStation', 'สถานีสิ้นสุด');
+      initSearchableSelect('filterCustStartStation', 'สถานีเริ่มต้น');
+      initSearchableSelect('filterCustEndStation', 'สถานีสิ้นสุด');
+      initSearchableSelect('a_bts', '-- เลือกสถานี --');
+      initSearchableSelect('cu_stationStart', 'ไม่ระบุ');
+      initSearchableSelect('cu_stationEnd', 'ไม่ระบุ');
+    }
+
+    // Auto-calculate when start date changes
+    document.addEventListener('DOMContentLoaded', function () {
+      const startDateEl = document.getElementById('a_reservationDate');
+      if (startDateEl) {
+        startDateEl.addEventListener('change', calculateReservationEnd);
+      }
+      populateTrainLineSelects();
+      populateAssetBtsSelect();
+      initAllSearchableSelects();
+    });
+
+    function renderUsers() {
+      const tb = document.getElementById('userTable');
+      const ml = document.getElementById('userMList');
+
+      if (!AUTH.users.length) {
+        tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีผู้ใช้</td></tr>`;
+        if (ml) ml.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีผู้ใช้</div>`;
+        return;
+      }
+
+      // Desktop table
+      tb.innerHTML = AUTH.users.map((u, i) => {
+        const isMe = AUTH.current && AUTH.current.username === u.email;
+        const linkedAgent = u.linkedAgentId ? (DB.agents.find(a => a.id === u.linkedAgentId) || null) : null;
+        return `<tr>
+          <td style="color:var(--text3)">${i + 1}</td>
+          <td style="font-weight:600;font-size:13px">${u.email || '-'}${isMe ? ` <span style="font-size:11px;color:var(--gold)">(คุณ)</span>` : ''}<br>
+            <span style="font-weight:400;color:var(--text3);font-size:12px">${u.displayname || ''}</span></td>
+          <td>${u.displayname || '-'}</td>
+          <td>${_roleBadge(u.role)}</td>
+          <td style="font-size:12px">${linkedAgent ? `<span style="color:var(--green)">✅ ${linkedAgent.name}</span>` : '<span style="color:var(--text3)">—</span>'}</td>
+          <td style="font-size:12px;color:var(--text3)">${u.note || '-'}</td>
+          <td><div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm" onclick="editUser(${i})">✏️ แก้ไข</button>
+            ${!isMe ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">🗑️</button>` : ''}
+          </div></td>
+        </tr>`;
+      }).join('');
+
+      // Mobile card list
+      if (ml) ml.innerHTML = AUTH.users.map((u, i) => {
+        const isMe = AUTH.current && AUTH.current.username === u.email;
+        const linkedAgent = u.linkedAgentId ? (DB.agents.find(a => a.id === u.linkedAgentId) || null) : null;
+        return `<div class="m-card">
+          <span class="m-card-num">#${i + 1}</span>
+          <div class="m-card-top">
+            <div style="flex:1;padding-right:40px">
+              <div class="m-card-name">${u.displayname || u.email}${isMe ? ' <span style="font-size:12px;color:var(--gold)">(คุณ)</span>' : ''}</div>
+              <div class="m-card-sub" style="font-size:12px">${u.email || ''}</div>
+            </div>
+            ${_roleBadge(u.role)}
+          </div>
+          ${linkedAgent ? `<div class="m-card-row"><span class="m-card-label">🏠 Agent</span><span class="m-card-val" style="color:var(--green)">✅ ${linkedAgent.name}</span></div>` : ''}
+          ${u.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="color:var(--text2);font-size:13px">${u.note}</span></div>` : ''}
+          <div class="m-card-actions">
+            <button class="btn btn-outline" onclick="editUser(${i})">✏️ แก้ไข</button>
+            ${!isMe ? `<button class="btn btn-danger" onclick="deleteUser(${i})">🗑️ ลบ</button>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function toggleLinkedAgent() {
+      const role = document.getElementById('u_role').value;
+      const row = document.getElementById('linkedAgentRow');
+      row.style.display = role === 'agent' ? '' : 'none';
+    }
+
+    function populateLinkedAgentSelect(currentId) {
+      const sel = document.getElementById('u_linkedAgent');
+      sel.innerHTML = '<option value="">— ไม่เชื่อมกับ Agent —</option>';
+      DB.agents.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id || a.name;
+        opt.textContent = a.name + (a.company ? ` (${a.company})` : '');
+        if (a.id === currentId || a.name === currentId) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+
+    function saveUser() {
+      const email = document.getElementById('u_email').value.trim().toLowerCase();
+      const pw = document.getElementById('u_password').value;
+      const dname = document.getElementById('u_displayname').value.trim();
+      const role = document.getElementById('u_role').value;
+      const note = document.getElementById('u_note').value.trim();
+      const linked = document.getElementById('u_linkedAgent').value;
+
+      if (!email) { alert('กรุณาใส่อีเมล'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('รูปแบบอีเมลไม่ถูกต้อง'); return; }
+
+      if (editMode.idx >= 0) {
+        const u = AUTH.users[editMode.idx];
+        u.email = email;
+        u.displayname = dname;
+        u.role = role;
+        u.note = note;
+        u.linkedAgentId = linked || null;
+        if (pw) u.password = pw;
+      } else {
+        if (!pw || pw.length < 6) { alert('Password ต้องมีอย่างน้อย 6 ตัวอักษร'); return; }
+        if (AUTH.users.find(x => x.email === email)) { alert('อีเมลนี้มีในระบบแล้ว'); return; }
+        AUTH.users.push({ email, password: pw, displayname: dname, role, note, linkedAgentId: linked || null });
+      }
+      saveAuth(); closeModal('user'); renderUsers();
+    }
+
+    function editUser(i) {
+      const u = AUTH.users[i];
+      document.getElementById('modalUserTitle').textContent = '✏️ แก้ไขผู้ใช้';
+      document.getElementById('u_email').value = u.email || '';
+      document.getElementById('u_password').value = '';
+      document.getElementById('u_displayname').value = u.displayname || '';
+      document.getElementById('u_role').value = u.role || 'viewer';
+      document.getElementById('u_note').value = u.note || '';
+      document.getElementById('u_pw_hint').style.display = 'inline';
+      populateLinkedAgentSelect(u.linkedAgentId || '');
+      toggleLinkedAgent();
+      editMode = { type: 'user', idx: i };
+      document.getElementById('modalUser').classList.add('open');
+    }
+
+    function deleteUser(i) {
+      if (!confirm(`ยืนยันลบ user "${AUTH.users[i].email}"?`)) return;
+      AUTH.users.splice(i, 1); saveAuth(); renderUsers();
+    }
+
+    function doChangePw() {
+      const oldPw = document.getElementById('cp_old').value;
+      const newPw = document.getElementById('cp_new').value;
+      const con = document.getElementById('cp_confirm').value;
+      const errEl = document.getElementById('cp_error');
+      const cur = AUTH.current;
+      if (cur.password !== oldPw) { errEl.textContent = 'รหัสผ่านปัจจุบันไม่ถูกต้อง'; errEl.style.display = 'block'; return; }
+      if (!newPw || newPw.length < 6) { errEl.textContent = 'รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร'; errEl.style.display = 'block'; return; }
+      if (newPw !== con) { errEl.textContent = 'รหัสผ่านใหม่ไม่ตรงกัน'; errEl.style.display = 'block'; return; }
+      errEl.style.display = 'none';
+      const idx = AUTH.users.findIndex(u => u.email === cur.username);
+      if (idx >= 0) { AUTH.users[idx].password = newPw; AUTH.current.password = newPw; }
+      saveAuth(); closeModal('changePw');
+      alert('✅ เปลี่ยนรหัสผ่านสำเร็จ');
+    }
+
+    // ============================
+    // MODALS
+    // ============================
+    function openModal(t) {
+      const modalId = 'modal' + t.charAt(0).toUpperCase() + t.slice(1);
+      document.getElementById(modalId).classList.add('open');
+      if (t !== 'user') editMode = { type: t, idx: -1 };
+      if (t === 'asset') {
+        document.getElementById('modalAssetTitle').textContent = '🏠 เพิ่มทรัพย์สิน';
+        // Clear all fields
+        ['a_name', 'a_location', 'a_price', 'a_roomtype', 'a_area', 'a_floor', 'a_link', 'a_map', 'a_linkpic', 'a_postdate', 'a_updatedate', 'a_contact', 'a_note', 'a_reservationDate', 'a_reservationEndDate', 'a_bts', 'a_rentStartDate', 'a_rentPeriod', 'a_rentPeriodCustom', 'a_rentEndDate'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        document.getElementById('a_status').value = 'เช่า';
+        document.getElementById('a_type').value = 'คอนโด';
+        document.getElementById('a_careContract').value = 'ยังไม่ทำ';
+        document.getElementById('a_careRepair').value = 'ไม่มี';
+        document.getElementById('a_careRent').value = 'ยังไม่เก็บ';
+        document.getElementById('a_reservationPeriod').value = '';
+        document.getElementById('a_active_available').checked = true;
+        
+        // Reset deal type radio
+        const dealSoldEl = document.getElementById('a_deal_sold');
+        if (dealSoldEl) dealSoldEl.checked = true;
+        
+        toggleReservationFields();
+        // Set today's date
+        const today = new Date().toISOString().slice(0, 10);
+        document.getElementById('a_postdate').value = today;
+        document.getElementById('a_updatedate').value = today;
+        // Auto-set ผู้โพสต์เป็นชื่อผู้ใช้งานปัจจุบัน
+        const currentUserName = AUTH.current ? (AUTH.current.displayname || AUTH.current.email || '') : '';
+        populatePosterSelect(currentUserName);
+      }
+      if (t === 'agent') {
+        document.getElementById('modalAgentTitle').textContent = '👤 เพิ่ม Agent';
+        ['ag_name', 'ag_company', 'ag_tel', 'ag_fb', 'ag_email', 'ag_line', 'ag_linelink', 'ag_bank'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        document.getElementById('ag_coagent').value = 'รับ';
+      }
+      if (t === 'customer') {
+        document.getElementById('modalCustomerTitle').textContent = '🤝 เพิ่มลูกค้า';
+        ['cu_name', 'cu_budget', 'cu_area', 'cu_floor', 'cu_contact', 'cu_linkpost', 'cu_note', 'cu_line', 'cu_stationStart', 'cu_stationEnd'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        onCustModalTrainLineChange();
+      }
+      if (t === 'user') {
+        document.getElementById('modalUserTitle').textContent = '👤 เพิ่มผู้ใช้งาน';
+        document.getElementById('u_email').value = '';
+        document.getElementById('u_password').value = '';
+        document.getElementById('u_displayname').value = '';
+        document.getElementById('u_role').value = 'agent';
+        document.getElementById('u_note').value = '';
+        document.getElementById('u_pw_hint').style.display = 'none';
+        populateLinkedAgentSelect('');
+        toggleLinkedAgent();
+        editMode = { type: 'user', idx: -1 };
+      }
+    }
+    function closeModal(t) { document.getElementById('modal' + t.charAt(0).toUpperCase() + t.slice(1)).classList.remove('open'); }
+
+    // ============================
+    // SAVE ASSET
+    // ============================
+    async function saveAsset() {
+      const activeVal = document.querySelector('input[name="a_listingActive"]:checked');
+      const a = {
+        name: v('a_name'), location: v('a_location'), bts: v('a_bts'), status: v('a_status'), type: v('a_type'),
+        price: v('a_price'), roomtype: v('a_roomtype'), area: v('a_area'), floor: v('a_floor'),
+        link: v('a_link'), map: v('a_map'), linkpic: v('a_linkpic'), postdate: v('a_postdate'), updatedate: v('a_updatedate'),
+        contact: v('a_contact'), poster: v('a_poster'), note: v('a_note'),
+        listingActive: activeVal ? activeVal.value : 'available',
+        careContract: v('a_careContract') || 'ยังไม่ทำ',
+        careRepair: v('a_careRepair') || 'ไม่มี',
+        careRent: v('a_careRent') || 'ยังไม่เก็บ'
+      };
+
+      // Reset / Initialize deal & reservation fields
+      a.reservationDate = '';
+      a.reservationPeriod = '';
+      a.reservationEndDate = '';
+      a.closedDealType = '';
+      a.rentStartDate = '';
+      a.rentPeriod = '';
+      a.rentPeriodCustom = '';
+      a.rentEndDate = '';
+
+      // เพิ่มข้อมูลการจอง (ถ้าเลือกสถานะ "จอง")
+      if (a.listingActive === 'reserved') {
+        a.reservationDate = v('a_reservationDate');
+        a.reservationPeriod = v('a_reservationPeriod');
+        a.reservationEndDate = v('a_reservationEndDate');
+      } else if (a.listingActive === 'sold') {
+        // เพิ่มข้อมูลการปิดดีลขาย/เช่า (ถ้าเลือกสถานะ "ขาย/เช่าไปแล้ว")
+        const closedTypeEl = document.querySelector('input[name="a_closedDealType"]:checked');
+        a.closedDealType = closedTypeEl ? closedTypeEl.value : 'sold';
+        if (a.closedDealType === 'rented') {
+          a.rentStartDate = v('a_rentStartDate');
+          a.rentPeriod = v('a_rentPeriod');
+          a.rentPeriodCustom = v('a_rentPeriodCustom');
+          a.rentEndDate = v('a_rentEndDate');
+        }
+      }
+
+      if (!a.name) { alert('❌ กรุณาใส่ชื่อโครงการ'); return; }
+      if (!a.link) { alert('❌ กรุณาใส่ Link โครงการ/Facebook'); return; }
+      if (editMode.idx >= 0) {
+        const existing = DB.assets[editMode.idx];
+        // ตรวจสอบสิทธิ์: เฉพาะเจ้าของโพสต์หรือ admin เท่านั้นถึงจะแก้ไขได้
+        if (!window._canEditAsset(existing)) {
+          alert('🔒 ไม่สามารถแก้ไขได้ — คุณไม่ใช่เจ้าของโพสต์นี้\nเฉพาะ Admin หรือผู้โพสต์เดิมเท่านั้นถึงจะแก้ไขได้');
+          closeModal('asset');
+          return;
+        }
+        a.id = existing.id || genId();
+        // รักษา creatorEmail เดิมไว้
+        a.creatorEmail = existing.creatorEmail || '';
+        await saveItem('assets', a, a.id);
+        if (!_realtimeSyncActive) {
+          DB.assets[editMode.idx] = a;
+          saveTolocalStorage();
+          renderAssets(); populateCbSelect();
+        }
+      } else {
+        // ตรวจสอบโควตารายวันสำหรับ Agent
+        if (AUTH.current && AUTH.current.role !== 'admin') {
+          const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+          const userEmail = AUTH.current.email ? AUTH.current.email.toLowerCase() : '';
+          
+          // นับเคสที่เอเจนต์คนนี้สร้างขึ้นในวันนี้
+          const todayCount = DB.assets.filter(item => {
+            const isSameUser = item.creatorEmail && item.creatorEmail.toLowerCase() === userEmail;
+            const isSameDay = item.postdate && item.postdate === todayStr;
+            return isSameUser && isSameDay;
+          }).length;
+          
+          if (todayCount >= _dailyQuotaLimit) {
+            alert(`🚨 โควตาลงประกาศฟรีของคุณเต็มแล้ว (${_dailyQuotaLimit} เคสต่อวัน) กรุณาติดต่อแอดมินเพื่อขยายโควตา`);
+            return;
+          }
+        }
+
+        // สร้างใหม่: บันทึก creatorEmail ของผู้สร้าง
+        a.creatorEmail = AUTH.current ? AUTH.current.email : '';
+        const saved = await saveItem('assets', a);
+        if (!_realtimeSyncActive) {
+          DB.assets.push(saved);
+          saveTolocalStorage();
+          renderAssets(); populateCbSelect();
+        }
+      }
+      closeModal('asset');
+      if (!_realtimeSyncActive) { renderStats(); }
+    }
+    // ============================
+    // SAVE AGENT
+    // ============================
+    async function saveAgent() {
+      const a = { name: v('ag_name'), company: v('ag_company'), coagent: v('ag_coagent'), tel: v('ag_tel'), fb: v('ag_fb'), email: v('ag_email'), line: v('ag_line'), linelink: v('ag_linelink'), bank: v('ag_bank') };
+      if (!a.name) { alert('กรุณาใส่ชื่อ Agent'); return; }
+      if (editMode.idx >= 0) {
+        const existing = DB.agents[editMode.idx];
+        a.id = existing.id || genId();
+        await saveItem('agents', a, a.id);
+        if (!_realtimeSyncActive) {
+          DB.agents[editMode.idx] = a;
+          renderAgents(); populateCbAgentSelect();
+        }
+      } else {
+        const saved = await saveItem('agents', a);
+        if (!_realtimeSyncActive) {
+          DB.agents.push(saved);
+          renderAgents(); populateCbAgentSelect();
+        }
+      }
+      closeModal('agent');
+      if (!_realtimeSyncActive) { saveTolocalStorage(); }
+      if (document.getElementById('modalAsset').classList.contains('open')) populatePosterSelect(document.getElementById('a_poster').value);
+    }
+    // ============================
+    // SAVE CUSTOMER
+    // ============================
+    async function saveCustomer() {
+      const a = { name: v('cu_name'), status: v('cu_status'), type: v('cu_type'), budget: v('cu_budget'), area: v('cu_area'), floor: v('cu_floor'), contact: v('cu_contact'), linkpost: v('cu_linkpost'), note: v('cu_note'), line: v('cu_line'), stationStart: v('cu_stationStart'), stationEnd: v('cu_stationEnd') };
+      if (!a.name || !a.linkpost) { alert('กรุณาใส่ชื่อลูกค้าและ Link Post'); return; }
+      if (editMode.idx >= 0) {
+        const existing = DB.customers[editMode.idx];
+        a.id = existing.id || genId();
+        await saveItem('customers', a, a.id);
+        if (!_realtimeSyncActive) {
+          DB.customers[editMode.idx] = a;
+          renderCustomers();
+        }
+      } else {
+        const saved = await saveItem('customers', a);
+        if (!_realtimeSyncActive) {
+          DB.customers.push(saved);
+          renderCustomers();
+        }
+      }
+      closeModal('customer');
+      if (!_realtimeSyncActive) { saveTolocalStorage(); }
+    }
+    // ============================
+    // DELETE
+    // ============================
+    async function deleteItem(type, idx) {
+      const item = DB[type][idx];
+      // ตรวจสอบสิทธิ์ลบทรัพย์สิน: เฉพาะเจ้าของโพสต์หรือ admin
+      if (type === 'assets' && !window._canDeleteAsset(item)) {
+        alert('🔒 ไม่สามารถลบได้ — คุณไม่ใช่เจ้าของโพสต์นี้\nโพสต์โดย: ' + (item.poster || 'ไม่ระบุ'));
+        return;
+      }
+      if (!confirm('ยืนยันลบ?')) return;
+      // BUG FIX: ถ้า item ไม่มี id (data เก่าที่ import มาโดยไม่มี id) ให้ assign id ก่อน delete จาก Firebase
+      if (!item.id) item.id = genId();
+      await deleteItemFromDB(type, item.id);
+      DB[type].splice(idx, 1);
+      saveTolocalStorage();
+      renderAssets(); renderAgents(); renderCustomers(); renderStats();
+    }
+
+    // ============================
+    // HELPERS
+    // ============================
+    // ============================
+    // CLIPBOARD
+    // ============================
+    function populateCbSelect() {
+      // just refresh the hidden select & rebuild dropdown items list
+      // the actual dropdown is rendered by filterCbAssets()
+      const searchEl = document.getElementById('cbAssetSearch');
+      const hiddenEl = document.getElementById('cbAssetSelect');
+      if (!searchEl || !hiddenEl) return;
+      // If current value still valid keep it, else reset
+      const curIdx = hiddenEl.value;
+      if (curIdx !== '' && (!DB.assets[parseInt(curIdx)] || !DB.assets[parseInt(curIdx)].name)) {
+        hiddenEl.value = '';
+        searchEl.value = '';
+        generateClipboard();
+      }
+      populateCbAgentSelect();
+      if (typeof populateMktSelect === 'function') {
+        populateMktSelect();
+      }
+    }
+
+    // --- Searchable asset dropdown helpers ---
+    function getCbAssetItems(query) {
+      const q = (query || '').toLowerCase().trim();
+      return DB.assets
+        .map((a, i) => ({ a, i }))
+        .filter(({ a }) => {
+          const la = a.listingActive || 'available';
+          if (la === 'sold') return false; // hide sold by default
+          if (!q) return true;
+          return (a.name || '').toLowerCase().includes(q) || (a.location || '').toLowerCase().includes(q) || (a.bts || '').toLowerCase().includes(q) || (a.status || '').toLowerCase().includes(q);
+        })
+        .sort((x, y) => {
+          const dx = parseDateVal(x.a.postdate);
+          const dy = parseDateVal(y.a.postdate);
+          if (dx !== dy) return dy - dx;
+          return y.i - x.i;
+        });
+    }
+
+    function openCbDropdown() {
+      filterCbAssets();
+      document.getElementById('cbAssetDropdown').style.display = 'block';
+    }
+    function closeCbDropdown() {
+      const dd = document.getElementById('cbAssetDropdown');
+      if (dd) dd.style.display = 'none';
+    }
+    function filterCbAssets() {
+      const q = document.getElementById('cbAssetSearch').value;
+      const dd = document.getElementById('cbAssetDropdown');
+      if (!dd) return;
+      const items = getCbAssetItems(q);
+      if (!items.length) {
+        dd.innerHTML = `<div style="padding:12px 16px;color:var(--text3);font-size:13px;">ไม่พบทรัพย์สิน</div>`;
+      } else {
+        dd.innerHTML = items.map(({ a, i }) => {
+          const la = a.listingActive || 'available';
+          const laTag = la === 'reserved' ? ` <span style="font-size:10px;background:rgba(201,168,76,0.2);color:var(--gold);border-radius:3px;padding:1px 5px;">จอง</span>` :
+                        la === 'sold' ? (a.closedDealType === 'rented' ? ` <span style="font-size:10px;background:rgba(80,200,120,0.2);color:var(--green);border-radius:3px;padding:1px 5px;">เช่าแล้ว</span>` : ` <span style="font-size:10px;background:rgba(224,80,80,0.2);color:var(--red);border-radius:3px;padding:1px 5px;">ขายแล้ว</span>`) : '';
+          return `<div class="cb-asset-item" onclick="selectCbAsset(${i},'${(a.name || '').replace(/'/g, "\\'")} (${a.status || ''})')"
+            style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border2);font-size:13px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:600;color:var(--text)">${a.name || '(ไม่มีชื่อ)'}${laTag}</span>
+            <span style="color:var(--text3);font-size:12px;">${a.status || ''} · ${a.location || ''}</span>
+          </div>`;
+        }).join('');
+      }
+      dd.style.display = 'block';
+    }
+    function selectCbAsset(idx, label) {
+      document.getElementById('cbAssetSearch').value = label;
+      document.getElementById('cbAssetSelect').value = idx;
+      document.getElementById('cbAssetDropdown').style.display = 'none';
+      generateClipboard();
+    }
+    function populateCbAgentSelect() {
+      const sel = document.getElementById('cbAgentSelect');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">-- ใช้ข้อมูลติดต่อจากทรัพย์สิน --</option>' +
+        DB.agents.map((ag, i) => `<option value="${i}">${ag.name || 'ไม่มีชื่อ'}${ag.company ? ' (' + ag.company + ')' : ''}</option>`).join('');
+    }
+    function populatePosterSelect(currentVal) {
+      const sel = document.getElementById('a_poster');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">-- เลือก Agent --</option>' +
+        DB.agents.map(ag => `<option value="${ag.name || ''}"${(ag.name && ag.name === currentVal) ? ' selected' : ''}>${ag.name || 'ไม่มีชื่อ'}${ag.company ? ' (' + ag.company + ')' : ''}</option>`).join('');
+      if (currentVal && !DB.agents.find(ag => ag.name === currentVal)) {
+        // value exists but not in list (old data) — add as option
+        sel.innerHTML += `<option value="${currentVal}" selected>${currentVal}</option>`;
+      }
+      // Disable the select if the logged-in user is not an admin
+      if (AUTH.current && AUTH.current.role !== 'admin') {
+        sel.disabled = true;
+      } else {
+        sel.disabled = false;
+      }
+    }
+    function onCbAgentChange() {
+      const agIdx = document.getElementById('cbAgentSelect').value;
+      const preview = document.getElementById('cbAgentPreview');
+      if (agIdx === '') {
+        preview.style.display = 'none';
+      } else {
+        const ag = DB.agents[parseInt(agIdx)];
+        let html = `<span style="color:var(--gold);font-weight:600;">👤 ${ag.name || ''}</span>`;
+        if (ag.company) html += ` &nbsp;<span style="color:var(--text3)">${ag.company}</span>`;
+        html += '<br>';
+        if (ag.tel) html += `📞 ${ag.tel} &nbsp;`;
+        if (ag.line) html += `💬 Line: ${ag.line} &nbsp;`;
+        if (ag.linelink) html += `🔗 <a href="${ag.linelink}" style="color:var(--blue)">${ag.linelink}</a>`;
+        preview.innerHTML = html;
+        preview.style.display = 'block';
+      }
+      generateClipboard();
+    }
+    function getContactForClip(asset) {
+      const agIdx = document.getElementById('cbAgentSelect').value;
+      if (agIdx !== '') {
+        const ag = DB.agents[parseInt(agIdx)];
+        let c = '';
+        if (ag.name) c += ag.name;
+        if (ag.tel) c += (c ? ' ' : '') + ag.tel;
+        if (ag.line) c += (c ? ' | ' : '') + `Line: ${ag.line}`;
+        return c || asset.contact || '';
+      }
+      return asset.contact || '';
+    }
+    function generateClipboard() {
+      const idx = document.getElementById('cbAssetSelect').value;
+      const out = document.getElementById('cbOutput');
+      if (idx === '') { out.textContent = 'เลือกทรัพย์สินเพื่อสร้าง Clipboard...'; return; }
+      const a = DB.assets[parseInt(idx)];
+      const contactOverride = getContactForClip(a);
+      const lineAtInfo = getLineAtForClip();
+      out.textContent = buildClipText(a, document.getElementById('cbTemplate').value,
+        document.getElementById('cbContact').checked, document.getElementById('cbLink').checked,
+        document.getElementById('cbMap').checked, document.getElementById('cbNote').checked,
+        contactOverride, document.getElementById('cbLineAt').checked ? lineAtInfo : '',
+        document.getElementById('cbLinkPic').checked);
+    }
+    function getLineAtForClip() {
+      const agIdx = document.getElementById('cbAgentSelect').value;
+      if (agIdx !== '') {
+        const ag = DB.agents[parseInt(agIdx)];
+        if (ag.linelink) return ag.linelink;
+        if (ag.line) return ag.line;
+      }
+      return '';
+    }
+    function buildClipText(a, tmpl, showContact, showLink, showMap, showNote, contactOverride, lineAt, showLinkPic) {
+      const contact = (contactOverride !== undefined) ? contactOverride : (a.contact || '');
+      const st = a.status === 'ขาย' ? 'For Sale!! 🏷️' : a.status === 'เช่า' ? 'For Rent!! 🏠' : 'For Sale / Rent!! 🏷️🏠';
+      if (tmpl === 'short') {
+        let t = `${st}\n📌 ${a.name || ''}`;
+        if (a.price) t += `\n💰 ${a.price}`;
+        if (a.roomtype) t += `\n🛏️ ${a.roomtype}`;
+        if (a.area) t += ` | 📐 ${a.area}`;
+        if (a.floor) t += ` | 🏗️ ${a.floor}`;
+        if (a.location) t += `\n📍 ทำเล: ${a.location}`;
+        if (a.bts) t += `\n🚇 รถไฟฟ้า: ${a.bts}`;
+        if (showContact && contact) t += `\n📞 ${contact}`;
+        if (lineAt) t += `\n💚 Line@ : ${lineAt}`;
+        if (showLink && a.link) t += `\n🔗 ${a.link}`;
+        if (showLinkPic && a.linkpic) t += `\n🖼️ รูปภาพ: ${a.linkpic}`;
+        return t;
+      }
+      if (tmpl === 'fb') {
+        let t = `✨ ${st}\n━━━━━━━━━━━━━━━━━━━━\n🏢 ${a.name || ''}\n`;
+        if (a.location) t += `📍 ทำเล: ${a.location}\n`;
+        if (a.bts) t += `🚇 รถไฟฟ้า: ${a.bts}\n`;
+        t += `━━━━━━━━━━━━━━━━━━━━\n`;
+        if (a.price) t += `💰 ราคา: ${a.price}\n`;
+        if (a.type) t += `🏗️ ประเภท: ${a.type}\n`;
+        if (a.roomtype) t += `🛏️ ห้อง: ${a.roomtype}\n`;
+        if (a.area) t += `📐 ขนาด: ${a.area}\n`;
+        if (a.floor) t += `🏢 ชั้น: ${a.floor}\n`;
+        if (showNote && a.note) t += `\n📝 รายละเอียด:\n${a.note}\n`;
+        t += `━━━━━━━━━━━━━━━━━━━━\n`;
+        if (showContact && contact) t += `📞 สนใจติดต่อ: ${contact}\n`;
+        if (lineAt) t += `💚 Line@ : ${lineAt}\n`;
+        if (showLink && a.link) t += `🔗 ${a.link}\n`;
+        if (showMap && a.map) t += `📍 Map: ${a.map}\n`;
+        if (showLinkPic && a.linkpic) t += `🖼️ ดูรูปภาพ: ${a.linkpic}\n`;
+        t += `\n#อสังหา #คอนโด #${a.status || ''} #รับจัดหาที่พักอาศัยคอนโด #BenzHomeAgency`;
+        return t;
+      }
+      if (tmpl === 'line') {
+        let t = `🔔 ${st}\n\n🏡 ${a.name || ''}\n`;
+        if (a.price) t += `💰 ราคา: ${a.price}\n`;
+        if (a.roomtype || a.area) t += `📋 ${[a.roomtype, a.area].filter(Boolean).join(' | ')}\n`;
+        if (a.floor) t += `🔢 ${a.floor}\n`;
+        if (a.location) t += `📌 ทำเล: ${a.location}\n`;
+        if (a.bts) t += `🚇 รถไฟฟ้า: ${a.bts}\n`;
+        if (showNote && a.note) t += `\n${a.note}\n`;
+        if (showContact && contact) t += `\n📞 ${contact}`;
+        if (lineAt) t += `\n💚 Line@ : ${lineAt}`;
+        if (showLink && a.link) t += `\n${a.link}`;
+        if (showMap && a.map) t += `\n${a.map}`;
+        if (showLinkPic && a.linkpic) t += `\n🖼️ ${a.linkpic}`;
+        return t;
+      }
+      let t = `🏆 ${st}\nประกาศ${a.status === 'ขาย' ? 'ขาย' : a.status === 'เช่า' ? 'เช่า' : 'ขาย/เช่า'}${a.type || ''} ${a.name || ''}\n\n`;
+      if (a.price) t += `💰 ราคา ${a.price}\n`;
+      if (a.roomtype) t += `🛏️ ${a.roomtype}\n`;
+      if (a.area) t += `📐 ขนาด ${a.area}\n`;
+      if (a.floor) t += `🏢 ${a.floor}\n`;
+      if (a.location) t += `📍 ทำเล: ${a.location}\n`;
+      if (a.bts) t += `🚇 รถไฟฟ้า: ${a.bts}\n`;
+      if (showNote && a.note) t += `\n📝 รายละเอียด:\n${a.note}\n`;
+      if (showContact && contact) t += `\n📞 สนใจโทร/ไลน์: ${contact}\n`;
+      if (lineAt) t += `💚 Line@ : ${lineAt}\n`;
+      if (showLink && a.link) t += `🔗 ${a.link}\n`;
+      if (showMap && a.map) t += `📍 Map: ${a.map}\n`;
+      if (showLinkPic && a.linkpic) t += `🖼️ ดูรูปภาพ: ${a.linkpic}\n`;
+      return t;
+    }
+
+    // ============================
+    // EXPORT CSV
+    // ============================
+    const CSV_HEADERS = {
+      assets: ['No', 'ชื่อโครงการ', 'ทำเล', 'สถานะ', 'ประเภท', 'ราคา', 'ประเภทห้อง', 'ขนาด', 'ชั้นตึก', 'Contact', 'Link', 'Map', 'วันที่โพสต์', 'วันที่อัปเดต', 'หมายเหตุ', 'Link Pic', 'ผู้โพสต์'],
+      agents: ['No', 'ชื่อAgent', 'บริษัท', 'Co-Agent', 'เบอร์', 'Facebook', 'E-Mail', 'LineID', 'LinkLine', 'เลขบัญชี'],
+      customers: ['No', 'ชื่อลูกค้า/โครงการ', 'สถานะ', 'ประเภท', 'งบประมาณ', 'ขนาดห้อง', 'ชั้น', 'Contact', 'Note', 'Link Post']
+    };
+
+    function exportCSV(type) {
+      if (type === 'all') {
+        // Export all 3 separately
+        exportCSV('assets'); exportCSV('agents'); exportCSV('customers');
+        return;
+      }
+      let rows = [], fname = '';
+      if (type === 'assets') {
+        rows = DB.assets.map((a, i) => [i + 1, a.name, a.location, a.status, a.type, a.price, a.roomtype, a.area, a.floor, a.contact, a.link, a.map, a.postdate, a.updatedate, a.note, a.linkpic, a.poster].map(csvEscape).join(','));
+        fname = 'yb_assets.csv';
+      } else if (type === 'agents') {
+        rows = DB.agents.map((a, i) => [i + 1, a.name, a.company, a.coagent, a.tel, a.fb, a.email, a.line, a.linelink, a.bank].map(csvEscape).join(','));
+        fname = 'yb_agents.csv';
+      } else if (type === 'customers') {
+        rows = DB.customers.map((a, i) => [i + 1, a.name, a.status, a.type, a.budget, a.area, a.floor, a.contact, a.note, a.linkpost].map(csvEscape).join(','));
+        fname = 'yb_customers.csv';
+      }
+      const content = [CSV_HEADERS[type].map(csvEscape).join(','), ...rows].join('\n');
+      downloadCSV(content, fname);
+    }
+
+    // ============================
+    // IMPORT CSV
+    // ============================
+    function importCSV(event, type) {
+      const file = event.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async e => {
+        try {
+          const { headers, rows } = parseCSV(e.target.result);
+          if (!headers.length) { alert('ไฟล์ว่างหรือรูปแบบไม่ถูกต้อง'); return; }
+
+          // BUG FIX: หยุด real-time listener ชั่วคราวระหว่าง import
+          // เพื่อป้องกัน onSnapshot ดึงข้อมูลเก่าจาก Firebase มาทับก่อน push เสร็จ
+          const wasRealtime = _realtimeSyncActive;
+          if (wasRealtime) stopRealtimeSync();
+
+          let imported = 0;
+          const today = new Date().toISOString().slice(0, 10);
+
+          if (type === 'assets') {
+            const hi = n => headers.findIndex(h => h === n);
+            const iName = hi('ชื่อโครงการ'), iLoc = hi('ทำเล'), iSt = hi('สถานะ'), iTy = hi('ประเภท'),
+              iPr = hi('ราคา'), iRm = hi('ประเภทห้อง'), iAr = hi('ขนาด'), iFl = hi('ชั้นตึก'),
+              iCt = hi('Contact'), iLk = hi('Link'), iMp = hi('Map'), iPd = hi('วันที่โพสต์'), iUd = hi('วันที่อัปเดต'), iNt = hi('หมายเหตุ'),
+              iLp = hi('Link Pic'), iPo = hi('ผู้โพสต์');
+            rows.forEach(r => {
+              if (r.length < 2) return;
+              const a = {
+                id: genId(), // BUG FIX: assign id ทันที ป้องกัน duplicate
+                name: iName >= 0 ? r[iName] : '', location: iLoc >= 0 ? r[iLoc] : '', status: iSt >= 0 ? r[iSt] : 'ขาย',
+                type: iTy >= 0 ? r[iTy] : 'คอนโด', price: iPr >= 0 ? r[iPr] : '', roomtype: iRm >= 0 ? r[iRm] : '',
+                area: iAr >= 0 ? r[iAr] : '', floor: iFl >= 0 ? r[iFl] : '', contact: iCt >= 0 ? r[iCt] : '',
+                link: iLk >= 0 ? r[iLk] : '', map: iMp >= 0 ? r[iMp] : '', postdate: iPd >= 0 ? r[iPd] : today,
+                updatedate: iUd >= 0 ? r[iUd] : today, note: iNt >= 0 ? r[iNt] : '',
+                linkpic: iLp >= 0 ? r[iLp] : '', poster: iPo >= 0 ? r[iPo] : '',
+                listingActive: 'available'
+              };
+              if (a.name) { DB.assets.push(a); imported++; }
+            });
+          } else if (type === 'agents') {
+            const hi = n => headers.findIndex(h => h === n);
+            const iNm = hi('ชื่อAgent'), iCo = hi('บริษัท'), iCa = hi('Co-Agent'), iTl = hi('เบอร์'),
+              iFb = hi('Facebook'), iEm = hi('E-Mail'), iLn = hi('LineID'), iLl = hi('LinkLine'), iBk = hi('เลขบัญชี');
+            rows.forEach(r => {
+              if (r.length < 2) return;
+              const a = {
+                id: genId(), // BUG FIX: assign id ทันที
+                name: iNm >= 0 ? r[iNm] : '', company: iCo >= 0 ? r[iCo] : '', coagent: iCa >= 0 ? r[iCa] : 'ไม่รับ',
+                tel: iTl >= 0 ? r[iTl] : '', fb: iFb >= 0 ? r[iFb] : '', email: iEm >= 0 ? r[iEm] : '',
+                line: iLn >= 0 ? r[iLn] : '', linelink: iLl >= 0 ? r[iLl] : '', bank: iBk >= 0 ? r[iBk] : ''
+              };
+              if (a.name) { DB.agents.push(a); imported++; }
+            });
+          } else if (type === 'customers') {
+            const hi = n => headers.findIndex(h => h === n);
+            const iNm = hi('ชื่อลูกค้า/โครงการ'), iSt = hi('สถานะ'), iTy = hi('ประเภท'), iBd = hi('งบประมาณ'),
+              iAr = hi('ขนาดห้อง'), iFl = hi('ชั้น'), iCt = hi('Contact'), iNt = hi('Note'), iLk = hi('Link Post');
+            rows.forEach(r => {
+              if (r.length < 2) return;
+              const a = {
+                id: genId(), // BUG FIX: assign id ทันที
+                name: iNm >= 0 ? r[iNm] : '', status: iSt >= 0 ? r[iSt] : '', type: iTy >= 0 ? r[iTy] : '',
+                budget: iBd >= 0 ? r[iBd] : '', area: iAr >= 0 ? r[iAr] : '', floor: iFl >= 0 ? r[iFl] : '',
+                contact: iCt >= 0 ? r[iCt] : '', note: iNt >= 0 ? r[iNt] : '', linkpost: iLk >= 0 ? r[iLk] : ''
+              };
+              if (a.name) { DB.customers.push(a); imported++; }
+            });
+          }
+
+          // BUG FIX: save ก่อน แล้วค่อย re-enable realtime sync
+          await saveDB();
+          saveTolocalStorage();
+
+          // re-enable realtime sync หลัง push เสร็จ
+          if (wasRealtime) {
+            setTimeout(() => startRealtimeSync(), 1500);
+          }
+
+          showToast(`✅ Import สำเร็จ! นำเข้า ${imported} รายการ`, '#50c878');
+          renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); renderStats();
+        } catch (err) { alert('เกิดข้อผิดพลาด: ' + err.message); }
+      };
+      reader.readAsText(file, 'UTF-8');
+      event.target.value = '';
+    }
+
+    // ============================
+    // CLEAR ALL
+    // ============================
+    async function clearAllData() {
+      if (AUTH.current?.role !== 'admin') { alert('เฉพาะ Admin เท่านั้น'); return; }
+      if (!confirm('⚠️ ยืนยันลบข้อมูลทั้งหมด?\nการกระทำนี้ไม่สามารถย้อนกลับได้')) return;
+      DB = { assets: [], agents: [], customers: [] };
+      saveTolocalStorage();
+      if (_fbReady && _db) {
+        try {
+          const { collection, getDocs, writeBatch, doc } = window._firestoreLib;
+          for (const col of ['assets', 'agents', 'customers']) {
+            const snap = await getDocs(collection(_db, col));
+            const batch = writeBatch(_db);
+            snap.docs.forEach(d => batch.delete(doc(collection(_db, col), d.id)));
+            if (snap.docs.length > 0) await batch.commit();
+          }
+        } catch (e) { console.warn('clearAllData Firebase fail:', e); }
+      }
+      renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); renderStats();
+      showToast('🗑️ ลบข้อมูลทั้งหมดแล้ว', '#e05050');
+    }
+
+    // ============================
+    // THEME PANEL
+    // ============================
+    const THEME_COLORS = ['dark', 'dark-navy', 'dark-purple', 'light', 'vibrant', 'ocean', 'sakura', 'forest', 'sunset'];
+    const FONT_MAP = {
+      'Sarabun': "'Sarabun', sans-serif",
+      'Prompt': "'Prompt', sans-serif",
+      'Kanit': "'Kanit', sans-serif",
+      'Noto Sans': "'Noto Sans Thai', sans-serif"
+    };
+    const SIZE_MAP = { S: '13px', M: '14px', L: '15px', XL: '16px' };
+
+    let TP = {
+      color: 'light', font: 'Sarabun', fontSize: 14, radius: 10,
+      btnSize: 'M', shadow: true, anim: true, border: true
+    };
+
+    function loadTP() {
+      try { const s = localStorage.getItem('yb_tp'); if (s) TP = { ...TP, ...JSON.parse(s) }; } catch (e) { }
+    }
+    function saveTP() { localStorage.setItem('yb_tp', JSON.stringify(TP)); }
+
+    function applyTP() {
+      const root = document.documentElement;
+      // Color theme
+      root.setAttribute('data-theme', TP.color);
+      // Font
+      root.style.setProperty('--body-font', FONT_MAP[TP.font] || FONT_MAP['Sarabun']);
+      document.body.style.fontFamily = FONT_MAP[TP.font] || FONT_MAP['Sarabun'];
+      // Font size
+      root.style.setProperty('--base-font-size', TP.fontSize + 'px');
+      document.body.style.fontSize = TP.fontSize + 'px';
+      // Radius
+      root.style.setProperty('--radius', TP.radius + 'px');
+      // Button size
+      const bfs = SIZE_MAP[TP.btnSize] || '14px';
+      root.style.setProperty('--btn-font-size', bfs);
+      document.querySelectorAll('.btn:not(.btn-sm)').forEach(b => { b.style.fontSize = bfs; });
+      // Shadow toggle
+      if (!TP.shadow) {
+        root.style.setProperty('--shadow', 'none');
+        root.style.setProperty('--card-hover-shadow', 'transparent');
+      } else {
+        root.style.removeProperty('--shadow');
+        root.style.removeProperty('--card-hover-shadow');
+      }
+      // Animation toggle
+      document.querySelectorAll('.card').forEach(c => {
+        c.style.transition = TP.anim ? '' : 'none';
+      });
+      // Border toggle
+      document.querySelectorAll('.card').forEach(c => {
+        c.style.borderColor = TP.border ? '' : 'transparent';
+      });
+    }
+
+    function syncTPUI() {
+      // color
+      THEME_COLORS.forEach(c => {
+        const el = document.getElementById('tpColor-' + c);
+        if (el) el.classList.toggle('active', c === TP.color);
+      });
+      // font
+      ['Sarabun', 'Prompt', 'Kanit', 'Noto Sans'].forEach(f => {
+        const el = document.getElementById('tpFont-' + f);
+        if (el) el.classList.toggle('active', f === TP.font);
+      });
+      // sliders
+      const fsEl = document.getElementById('tpFontSize');
+      const rEl = document.getElementById('tpRadius');
+      if (fsEl) { fsEl.value = TP.fontSize; document.getElementById('tpFontSizeVal').textContent = TP.fontSize + 'px'; }
+      if (rEl) { rEl.value = TP.radius; document.getElementById('tpRadiusVal').textContent = TP.radius + 'px'; }
+      // btn size
+      ['S', 'M', 'L', 'XL'].forEach(s => {
+        const el = document.getElementById('tpSize-' + s);
+        if (el) el.classList.toggle('active', s === TP.btnSize);
+      });
+      // toggles
+      const tog = (id, val) => { const el = document.getElementById(id); if (el) el.classList.toggle('on', val); };
+      tog('tpToggleShadow', TP.shadow);
+      tog('tpToggleAnim', TP.anim);
+      tog('tpToggleBorder', TP.border);
+    }
+
+    function openThemePanel() {
+      syncTPUI();
+      document.getElementById('themePanel').classList.add('open');
+      document.getElementById('themePanelOverlay').classList.add('open');
+    }
+    function closeThemePanel() {
+      document.getElementById('themePanel').classList.remove('open');
+      document.getElementById('themePanelOverlay').classList.remove('open');
+    }
+
+    function tpSelectColor(c) { TP.color = c; syncTPUI(); applyTP(); }
+    function tpSelectFont(f) { TP.font = f; syncTPUI(); applyTP(); }
+    function tpSelectSize(s) { TP.btnSize = s; syncTPUI(); applyTP(); }
+    function tpApplySize() {
+      TP.fontSize = parseInt(document.getElementById('tpFontSize').value);
+      TP.radius = parseInt(document.getElementById('tpRadius').value);
+      document.getElementById('tpFontSizeVal').textContent = TP.fontSize + 'px';
+      document.getElementById('tpRadiusVal').textContent = TP.radius + 'px';
+      applyTP();
+    }
+    function tpToggle(key) {
+      const map = { shadow: 'tpToggleShadow', anim: 'tpToggleAnim', border: 'tpToggleBorder' };
+      TP[key] = !TP[key];
+      const el = document.getElementById(map[key]);
+      if (el) el.classList.toggle('on', TP[key]);
+      applyTP();
+    }
+    function tpSave() {
+      saveTP();
+      closeThemePanel();
+      // show brief toast
+      const t = document.createElement('div');
+      t.textContent = '✅ บันทึก Theme แล้ว!';
+      Object.assign(t.style, {
+        position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+        background: 'var(--gold)', color: '#0D0D0D', padding: '10px 22px',
+        borderRadius: '30px', fontWeight: '700', fontSize: '14px', zIndex: '9999',
+        boxShadow: '0 4px 20px rgba(0,0,0,.4)', transition: 'opacity .4s'
+      });
+      document.body.appendChild(t);
+      setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 1800);
+    }
+    function tpReset() {
+      TP = { color: 'light', font: 'Sarabun', fontSize: 14, radius: 10, btnSize: 'M', shadow: true, anim: true, border: true };
+      syncTPUI(); applyTP(); saveTP();
+    }
+
+    // Legacy setTheme kept for login screen buttons
+    function setTheme(theme) { TP.color = theme; applyTP(); saveTP(); }
+    function importSampleData() {
+      if (!confirm('โหลดข้อมูลตัวอย่าง? (ข้อมูลจะถูกเพิ่มเข้ามา)')) return;
+      const today = new Date().toISOString().slice(0, 10);
+      const sample = {
+        assets: [
+          { name: 'บ้านกลางเมือง พระราม 9', location: 'พระราม 9', status: 'เช่า', type: 'ทาวน์โฮม', price: '45,000 บาท/เดือน', roomtype: '3 ห้องนอน, 2 ห้องน้ำ', area: '152 ตร.ม.', floor: '3 ชั้น', link: 'https://www.facebook.com/share/p/1Dj9Ja8WGq/', map: 'https://maps.app.goo.gl/p3RExr2hWfMjjk366', contact: 'คุณแบ็ท 064-654-9935', note: 'มัดจำ 2 เดือน + ค่าเช่าล่วงหน้า 1 เดือน เฟอร์นิเจอร์ครบ', postdate: today, updatedate: today, linkpic: '', poster: 'Benz' },
+          { name: 'IDEO พระราม 9', location: 'Rama 9 - Asoke', status: 'เช่า/ขาย', type: 'คอนโด', price: '19,000 บาท/เดือน | ขาย 3.99 ล้าน', roomtype: '1 ห้องนอน 1 ห้องน้ำ', area: '31.6 ตร.ม.', floor: 'ชั้น 15', link: 'https://www.facebook.com/share/p/1CE33PWtn5/', map: '', contact: 'แพรว มาโร 082-243-5968', note: 'เฟอร์นิเจอร์ครบ พร้อมเข้าอยู่', postdate: today, updatedate: today, linkpic: '', poster: 'Benz' },
+          { name: 'The Saint Residences', location: 'อโศก', status: 'เช่า', type: 'คอนโด', price: '24,000 บาท/เดือน', roomtype: '2 ห้องนอน 1 ห้องน้ำ', area: '44 ตร.ม.', floor: 'ตึก A ชั้น 34', link: 'https://www.facebook.com/share/p/1HQiSPZeVM/', map: 'https://maps.app.goo.gl/1PJeweuHxXZ1X9uS9', contact: 'คุณณัฐพล (เบนซ์) 098-256-5995', note: 'ฟรีแม่บ้านเดือนละ 1 ครั้ง วิวสวย ทิศเหนือ', postdate: today, updatedate: today, linkpic: '', poster: 'Benz' },
+          { name: 'ศุภาลัย เวอเรนด้า พระราม 9', location: 'พระราม 9', status: 'เช่า/ขาย', type: 'คอนโด', price: '17,000/เดือน | ขาย 3.49 ล้าน', roomtype: '1 ห้องนอน 1 ห้องน้ำ', area: '41.5 ตร.ม.', floor: 'ชั้น 29 ตึก A', link: '', map: 'https://maps.app.goo.gl/yvx9U2EXFqJYMZMd9', contact: 'มิ้น 084-366-7190 Line: imint1988', note: 'ราคาลดพิเศษ พร้อมเข้าอยู่ทันที', postdate: today, updatedate: today, linkpic: '', poster: 'Benz' },
+          { name: 'Lumpini Suite Phetchaburi', location: 'เพชรบุรี-อโศก', status: 'เช่า', type: 'คอนโด', price: '12,500 บาท/เดือน', roomtype: '1 ห้องนอน 1 ห้องน้ำ', area: '28 ตร.ม.', floor: 'ชั้น 8', link: '', map: '', contact: 'คุณเบนซ์ 084-152-9289', note: 'ใกล้ BTS Phetchaburi เดิน 3 นาที', postdate: today, updatedate: today, linkpic: '', poster: 'Benz' },
+          { name: 'บ้านเดี่ยว หมู่บ้านธาราทอง', location: 'ลาดพร้าว', status: 'ขาย', type: 'บ้านเดี่ยว', price: '8,500,000 บาท', roomtype: '3 ห้องนอน 2 ห้องน้ำ', area: '200 ตร.ม. ที่ดิน 60 ตร.ว.', floor: '2 ชั้น', link: '', map: '', contact: 'คุณอรุณ 081-234-5678', note: 'สภาพดี ตกแต่งใหม่ ลานจอดรถ 2 คัน', postdate: today, updatedate: today, linkpic: '', poster: 'Benz' },
+        ],
+        agents: [
+          { name: 'กรองเกียรติ (เบนซ์)', company: 'BENZ HOME Agency', coagent: 'รับ', tel: '084-152-9289', fb: 'BENZ HOME Agency', email: 'online.ibnn@gmail.com', line: '54445', linelink: '@677ubanx', bank: 'กสิกรไทย# 054-154-0849' },
+          { name: 'สมหญิง (หญิง)', company: 'BENZ HOME Agency', coagent: 'รับ', tel: '081-999-8888', fb: '', email: '', line: 'ying_agent', linelink: '', bank: 'ไทยพาณิชย์# 123-456-789' },
+        ],
+        customers: [
+          { name: 'คุณวิทยา สุขดี', status: 'กำลังหา', type: 'เช่า', budget: '15,000-20,000/เดือน', area: '30-45 ตร.ม.', floor: '10+', contact: '081-111-2222', note: 'ต้องการใกล้ BTS/MRT พระราม 9 หรืออโศก', linkpost: '' },
+          { name: 'คุณมาลี รักสวย', status: 'ตัดสินใจ', type: 'ซื้อ', budget: '3-5 ล้านบาท', area: '35-50 ตร.ม.', floor: 'ไม่จำกัด', contact: '089-333-4444 Line: malee_r', note: 'ชอบโครงการใหม่ มีสระว่ายน้ำ', linkpost: '' },
+          { name: 'คุณธนา พรหมดี', status: 'ปิดดีล', type: 'เช่า', budget: '25,000/เดือน', area: '40-60 ตร.ม.', floor: 'สูง', contact: 'Line: thana_p', note: 'เช่า The Saint Residences แล้ว', linkpost: '' },
+        ]
+      };
+      DB.assets = [...DB.assets, ...sample.assets];
+      DB.agents = [...DB.agents, ...sample.agents];
+      DB.customers = [...DB.customers, ...sample.customers];
+      saveDB(); renderAssets(); renderAgents(); renderCustomers(); populateCbSelect(); renderStats();
+      alert(`✅ โหลดข้อมูลตัวอย่างแล้ว!\n🏠 ${sample.assets.length} ทรัพย์สิน\n👤 ${sample.agents.length} Agent\n🤝 ${sample.customers.length} ลูกค้า`);
+    }
+
+    // ==========================================
+    // COMMISSION CALCULATOR LOGIC
+    // ==========================================
+    let calcMode = 'addon'; // 'addon' or 'net'
+    

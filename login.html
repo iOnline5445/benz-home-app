@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>เข้าสู่ระบบ — BENZ HOME Agency</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Kanit:wght@300;400;500;600;700&family=Noto+Serif+Thai:wght@400;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ===== THEME VARIABLES (Matched with index.html) ===== */
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #E8C97A;
+      --gold-dark: #9A7530;
+      --dark: #0D0D0D;
+      --dark2: #1A1A1A;
+      --dark3: #252525;
+      --dark4: #303030;
+      --text: #F0EDE6;
+      --text2: #B8B0A0;
+      --text3: #7A7060;
+      --accent: #C9A84C;
+      --red: #E05050;
+      --green: #50C878;
+      --blue: #5090E0;
+      --border: rgba(201, 168, 76, 0.2);
+      --border2: rgba(201, 168, 76, 0.08);
+      --radius: 12px;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      --login-bg1: #0D0D0D;
+      --login-bg2: #1A1408;
+    }
+
+    [data-theme="light"] {
+      --gold: #C07800;
+      --gold-light: #E09000;
+      --gold-dark: #9A5E00;
+      --dark: #FAF8F2;
+      --dark2: #FFFFFF;
+      --dark3: #F3F0E8;
+      --dark4: #EAE6DA;
+      --text: #1A1506;
+      --text2: #5A5040;
+      --text3: #9A8E78;
+      --accent: #C07800;
+      --red: #D93025;
+      --green: #1E8E3E;
+      --blue: #1967D2;
+      --border: rgba(192, 120, 0, 0.22);
+      --border2: rgba(192, 120, 0, 0.09);
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+      --login-bg1: #FAF8F2;
+      --login-bg2: #EDE8D8;
+    }
+
+    [data-theme="vibrant"] {
+      --gold: #E8500A;
+      --gold-light: #FF6B2B;
+      --gold-dark: #C03E00;
+      --dark: #FFF5F0;
+      --dark2: #FFFFFF;
+      --dark3: #FFF0E8;
+      --dark4: #FFE5D5;
+      --text: #1A0A00;
+      --text2: #5A3020;
+      --text3: #A0704A;
+      --accent: #E8500A;
+      --red: #D93025;
+      --green: #1E8E3E;
+      --blue: #1967D2;
+      --border: rgba(232, 80, 10, 0.22);
+      --border2: rgba(232, 80, 10, 0.09);
+      --shadow: 0 20px 60px rgba(232, 80, 10, 0.1);
+      --login-bg1: #FFF5F0;
+      --login-bg2: #FFE8D8;
+    }
+
+    [data-theme="ocean"] {
+      --gold: #0077CC;
+      --gold-light: #2299EE;
+      --gold-dark: #005BA0;
+      --dark: #F0F8FF;
+      --dark2: #FFFFFF;
+      --dark3: #E8F4FF;
+      --dark4: #D5ECFF;
+      --text: #00172A;
+      --text2: #1A4A6A;
+      --text3: #5A8AAA;
+      --accent: #0077CC;
+      --red: #D93025;
+      --green: #1E8E3E;
+      --blue: #0077CC;
+      --border: rgba(0, 119, 204, 0.22);
+      --border2: rgba(0, 119, 204, 0.09);
+      --shadow: 0 20px 60px rgba(0, 119, 204, 0.1);
+      --login-bg1: #F0F8FF;
+      --login-bg2: #D5ECFF;
+    }
+
+    [data-theme="sakura"] {
+      --gold: #CC2A6A;
+      --gold-light: #EE4488;
+      --gold-dark: #AA1850;
+      --dark: #FFF5F9;
+      --dark2: #FFFFFF;
+      --dark3: #FFEEF5;
+      --dark4: #FFE0EE;
+      --text: #1A0010;
+      --text2: #6A2040;
+      --text3: #B06080;
+      --accent: #CC2A6A;
+      --red: #D93025;
+      --green: #1E8E3E;
+      --blue: #1967D2;
+      --border: rgba(204, 42, 106, 0.22);
+      --border2: rgba(204, 42, 106, 0.09);
+      --shadow: 0 20px 60px rgba(204, 42, 106, 0.1);
+      --login-bg1: #FFF5F9;
+      --login-bg2: #FFE0EE;
+    }
+
+    [data-theme="forest"] {
+      --gold: #1A7A40;
+      --gold-light: #28A855;
+      --gold-dark: #0F5E2E;
+      --dark: #F2FBF5;
+      --dark2: #FFFFFF;
+      --dark3: #E8F8EE;
+      --dark4: #D5F0DE;
+      --text: #001A08;
+      --text2: #1A5030;
+      --text3: #508060;
+      --accent: #1A7A40;
+      --red: #D93025;
+      --green: #1A7A40;
+      --blue: #1967D2;
+      --border: rgba(26, 122, 64, 0.22);
+      --border2: rgba(26, 122, 64, 0.09);
+      --shadow: 0 20px 60px rgba(26, 122, 64, 0.1);
+      --login-bg1: #F2FBF5;
+      --login-bg2: #D5F0DE;
+    }
+
+    [data-theme="sunset"] {
+      --gold: #7B2FBE;
+      --gold-light: #9B4FDE;
+      --gold-dark: #5E1E9A;
+      --dark: #F8F0FF;
+      --dark2: #FFFFFF;
+      --dark3: #F2E8FF;
+      --dark4: #E8D5FF;
+      --text: #0E001A;
+      --text2: #3A1060;
+      --text3: #7A50A0;
+      --accent: #7B2FBE;
+      --red: #D93025;
+      --green: #1E8E3E;
+      --blue: #1967D2;
+      --border: rgba(123, 47, 190, 0.22);
+      --border2: rgba(123, 47, 190, 0.09);
+      --shadow: 0 20px 60px rgba(123, 47, 190, 0.12);
+      --login-bg1: #F8F0FF;
+      --login-bg2: #E8D5FF;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background: linear-gradient(135deg, var(--login-bg1) 0%, var(--login-bg2) 50%, var(--login-bg1) 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-x: hidden;
+      transition: background .3s, color .3s;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      margin: auto;
+    }
+
+    .login-box {
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 36px;
+      box-shadow: var(--shadow);
+      transition: background-color .3s, border-color .3s;
+      position: relative;
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-logo .icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+      display: block;
+      filter: drop-shadow(0 4px 10px rgba(201, 168, 76, 0.15));
+    }
+
+    .login-logo h1 {
+      font-family: 'Noto Serif Thai', serif;
+      font-size: 26px;
+      color: var(--gold);
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+
+    .login-logo p {
+      color: var(--text3);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .login-field {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .login-field label {
+      display: block;
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .login-field input {
+      width: 100%;
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 16px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      min-height: 52px;
+    }
+
+    .login-field input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12);
+    }
+
+    .toggle-pw-btn {
+      position: absolute;
+      right: 14px;
+      background: transparent;
+      border: none;
+      color: var(--text3);
+      cursor: pointer;
+      font-size: 20px;
+      padding: 4px;
+      user-select: none;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .toggle-pw-btn:hover {
+      color: var(--text2);
+    }
+
+    .options-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+
+    .remember-me {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: var(--text2);
+      user-select: none;
+    }
+
+    .remember-me input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      border: none;
+      border-radius: var(--radius);
+      color: var(--dark);
+      font-family: inherit;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(154, 117, 48, 0.2);
+    }
+
+    .login-btn:hover {
+      opacity: .95;
+    }
+
+    .login-btn:active {
+      transform: scale(0.98);
+    }
+
+    .login-error {
+      background: rgba(224, 80, 80, 0.08);
+      border: 1px solid rgba(224, 80, 80, 0.2);
+      color: var(--red);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    /* ===== CONNECTION BADGE ===== */
+    .mode-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      position: absolute;
+      top: -15px;
+      right: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border: 1px solid var(--border);
+    }
+    
+    .mode-cloud {
+      background: rgba(80, 200, 120, 0.15);
+      color: var(--green);
+    }
+
+    .mode-local {
+      background: rgba(80, 144, 224, 0.15);
+      color: var(--blue);
+    }
+
+    /* ===== THEME SWITCHER BAR ===== */
+    .theme-bar {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    .theme-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      position: relative;
+      transition: transform .2s, border-color .2s;
+    }
+
+    .theme-btn:hover {
+      transform: scale(1.15);
+    }
+
+    .theme-btn.active {
+      border-color: var(--text);
+      transform: scale(1.15);
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(0,0,0,0.15);
+      border-top-color: var(--dark);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .login-box {
+        padding: 30px 24px;
+      }
+      .login-logo h1 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-container">
+  <div class="login-box">
+    <!-- Mode badge -->
+    <div id="modeBadge" class="mode-badge mode-local">
+      <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;"></span>
+      <span id="modeText">Offline Local</span>
+    </div>
+
+    <div class="login-logo">
+      <span class="icon">🏠</span>
+      <h1>BENZ HOME</h1>
+      <p>ระบบจัดการอสังหาริมทรัพย์ — Agent Portal</p>
+    </div>
+
+    <!-- Error message container -->
+    <div class="login-error" id="loginError">
+      <span>⚠️</span>
+      <span id="errorText">อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง</span>
+    </div>
+
+    <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+      <div class="login-field">
+        <label for="loginUsername">อีเมลผู้ใช้งาน</label>
+        <input type="email" id="loginUsername" placeholder="yourname@benzhome.com" required autocomplete="email">
+      </div>
+
+      <div class="login-field">
+        <label for="loginPassword">รหัสผ่าน</label>
+        <div class="input-wrapper">
+          <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+          <button type="button" class="toggle-pw-btn" id="togglePwBtn" onclick="togglePasswordVisibility()" title="แสดงรหัสผ่าน">👁️</button>
+        </div>
+      </div>
+
+      <div class="options-row">
+        <label class="remember-me">
+          <input type="checkbox" id="rememberMe">
+          จำฉันในระบบ
+        </label>
+      </div>
+
+      <button type="submit" class="login-btn" id="loginSubmitBtn">
+        <span class="spinner" id="loginSpinner"></span>
+        <span id="btnText">เข้าสู่ระบบ</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Theme selector bar -->
+  <div class="theme-bar">
+    <button class="theme-btn" id="t-dark" style="background:#0D0D0D;" onclick="setThemeStyle('dark')" title="Dark Mode"></button>
+    <button class="theme-btn" id="t-light" style="background:#FAF8F2;" onclick="setThemeStyle('light')" title="Light (เบจทอง)"></button>
+    <button class="theme-btn" id="t-vibrant" style="background:#FFF5F0;" onclick="setThemeStyle('vibrant')" title="Vibrant (ส้ม)"></button>
+    <button class="theme-btn" id="t-ocean" style="background:#F0F8FF;" onclick="setThemeStyle('ocean')" title="Ocean (ฟ้าทะเล)"></button>
+    <button class="theme-btn" id="t-sakura" style="background:#FFF5F9;" onclick="setThemeStyle('sakura')" title="Sakura (ชมพู)"></button>
+    <button class="theme-btn" id="t-forest" style="background:#F2FBF5;" onclick="setThemeStyle('forest')" title="Forest (เขียว)"></button>
+    <button class="theme-btn" id="t-sunset" style="background:#F8F0FF;" onclick="setThemeStyle('sunset')" title="Sunset (ม่วง)"></button>
+  </div>
+</div>
+
+<script>
+  // ============================
+  // FIREBASE CONFIG (Match index.html)
+  // ============================
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBLQmKVKnLcmQgIRm-WsNOKhvW44nDz9Lg",
+    authDomain: "benz-home-db.firebaseapp.com",
+    projectId: "benz-home-db",
+    storageBucket: "benz-home-db.firebasestorage.app",
+    messagingSenderId: "4014891413",
+    appId: "1:4014891413:web:9d0a4435a45f3a4f1bd69c"
+  };
+
+  // Overwrite default config with saved one if available
+  (function applySavedFbConfig() {
+    try {
+      const s = localStorage.getItem('yb_fb_config');
+      if (s) {
+        const cfg = JSON.parse(s);
+        if (cfg.apiKey && cfg.apiKey !== 'YOUR_API_KEY') {
+          Object.assign(FIREBASE_CONFIG, cfg);
+        }
+      }
+    } catch (e) { }
+  })();
+
+  // Core Auth state
+  let AUTH = { users: [], current: null };
+  let _fbReady = false;
+  let _db = null;
+
+  // ============================
+  // INITIALIZATION
+  // ============================
+  window.onload = function() {
+    // 1. Sync & apply visual theme
+    initVisualTheme();
+
+    // 2. Check for active session. If exists, redirect to index.html immediately.
+    if (checkActiveSession()) {
+      window.location.href = 'index.html';
+      return;
+    }
+
+    // 3. Load remembered inputs
+    loadRemembered();
+
+    // 4. Load users from localStorage (instant load fallback)
+    loadLocalAuth();
+
+    // 5. Update Connection UI
+    updateConnectionModeUI();
+
+    // 6. Connect to Firebase in the background
+    const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
+    const isFirebaseConfigured = FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY" && FIREBASE_CONFIG.apiKey !== "";
+    
+    if (storageMode === 'firebase' && isFirebaseConfigured) {
+      initFirebase().then(async (ok) => {
+        if (ok) {
+          await syncAuthFromFirebase();
+        }
+        updateConnectionModeUI();
+      });
+    }
+  };
+
+  // ============================
+  // LOGIC FUNCTIONS
+  // ============================
+  
+  function checkActiveSession() {
+    try {
+      const s = localStorage.getItem('yb_session');
+      if (s) {
+        const raw = JSON.parse(s);
+        if (raw.email && raw.pw) return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  function loadRemembered() {
+    try {
+      const s = localStorage.getItem('yb_remember');
+      if (s) {
+        const { email, pw } = JSON.parse(s);
+        document.getElementById('loginUsername').value = email || '';
+        document.getElementById('loginPassword').value = pw || '';
+        document.getElementById('rememberMe').checked = true;
+      }
+    } catch (e) {}
+  }
+
+  function loadLocalAuth() {
+    try {
+      const s = localStorage.getItem('yb_auth');
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (parsed.users) AUTH.users = parsed.users;
+      }
+    } catch (e) {}
+    
+    // Fallback default admin
+    ensureDefaultAdmin();
+  }
+
+  function ensureDefaultAdmin() {
+    const hasAdmin = AUTH.users.some(u => u.role === 'admin');
+    if (!AUTH.users.length || !hasAdmin) {
+      AUTH.users = AUTH.users.filter(u => u.role !== 'admin');
+      AUTH.users.unshift({
+        email: 'admin@benzhome.com',
+        password: 'admin1234',
+        displayname: 'ผู้ดูแลระบบ',
+        role: 'admin',
+        note: 'Super Admin',
+        linkedAgentId: null
+      });
+      localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+    }
+  }
+
+  function updateConnectionModeUI() {
+    const badge = document.getElementById('modeBadge');
+    const txt = document.getElementById('modeText');
+    const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
+
+    if (storageMode === 'local') {
+      badge.className = 'mode-badge mode-local';
+      txt.textContent = 'Offline (Local Mode)';
+    } else if (_fbReady) {
+      badge.className = 'mode-badge mode-cloud';
+      txt.textContent = 'Online Cloud';
+    } else {
+      badge.className = 'mode-badge mode-local';
+      txt.style.color = 'var(--red)';
+      txt.textContent = 'Offline (Connecting...)';
+    }
+  }
+
+  // Dynamically load Firebase SDK
+  function initFirebase() {
+    return new Promise((resolve) => {
+      // ถ้ารันบน Chrome Extension ให้โหลดจากโฟลเดอร์ lib ในเครื่อง (เพื่อความปลอดภัย CSP)
+      // ถ้ารันบนเว็บปกติ (เช่น GitHub Pages / localhost) ให้โหลดผ่าน CDN ของ Google ตามเดิม
+      const isExtension = window.location.protocol === 'chrome-extension:';
+      const sdkVer = '10.12.2';
+      const base = isExtension ? './lib' : `https://www.gstatic.com/firebasejs/${sdkVer}`;
+
+      Promise.all([
+        import(`${base}/firebase-app.js`),
+        import(`${base}/firebase-firestore.js`)
+      ]).then(([appMod, fsMod]) => {
+        const { initializeApp, getApps } = appMod;
+        const { getFirestore } = fsMod;
+
+        const existingApps = getApps();
+        const app = existingApps.length > 0 ? existingApps[0] : initializeApp(FIREBASE_CONFIG);
+        _db = getFirestore(app);
+        window._db = _db;
+        window._firestoreLib = fsMod;
+        _fbReady = true;
+        resolve(true);
+      }).catch(err => {
+        console.warn('Firebase load failed in login page, falling back to local mode.', err);
+        resolve(false);
+      });
+    });
+  }
+
+  async function syncAuthFromFirebase() {
+    if (!_fbReady || !_db) return;
+    try {
+      const { collection, getDocs } = window._firestoreLib;
+      const snap = await getDocs(collection(_db, 'users'));
+      if (snap.docs.length > 0) {
+        const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const fbUsers = snap.docs.map(d => {
+          const u = d.data();
+          if (u.email) u.email = u.email.toLowerCase().trim();
+          return u;
+        }).filter(u => u.email && emailRe.test(u.email));
+
+        if (fbUsers.length > 0) {
+          AUTH.users = fbUsers;
+          ensureDefaultAdmin();
+          localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+          console.log('✅ Users synced from Firebase Cloud successfully.');
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load users from Firebase:', e);
+    }
+  }
+
+  // ============================
+  // FORM SUBMISSION
+  // ============================
+  async function handleLoginSubmit(event) {
+    event.preventDefault();
+    
+    const emailInput = document.getElementById('loginUsername').value.trim().toLowerCase();
+    const pwInput = document.getElementById('loginPassword').value;
+    const rememberMe = document.getElementById('rememberMe').checked;
+    
+    const errEl = document.getElementById('loginError');
+    const spinner = document.getElementById('loginSpinner');
+    const btnText = document.getElementById('btnText');
+    const submitBtn = document.getElementById('loginSubmitBtn');
+    
+    errEl.style.display = 'none';
+    spinner.style.display = 'inline-block';
+    btnText.textContent = 'กำลังตรวจสอบ...';
+    submitBtn.disabled = true;
+
+    // Simulate small latency to prevent brute force and show smooth premium feedback
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    // Try finding in current local auth list
+    let found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === emailInput && u.password === pwInput);
+
+    // If not found locally, and Firebase is ready, trigger a live resync check
+    if (!found && _fbReady) {
+      await syncAuthFromFirebase();
+      found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === emailInput && u.password === pwInput);
+    }
+
+    if (!found) {
+      // Login failed
+      errEl.style.display = 'flex';
+      spinner.style.display = 'none';
+      btnText.textContent = 'เข้าสู่ระบบ';
+      submitBtn.disabled = false;
+      return;
+    }
+
+    // Login successful
+    try {
+      // Normalize session user object
+      const userSession = {
+        email: found.email.toLowerCase().trim(),
+        password: found.password,
+        displayname: found.displayname || found.email,
+        role: found.role || 'viewer',
+        linkedAgentId: found.linkedAgentId || null
+      };
+
+      // Save session
+      localStorage.setItem('yb_session', JSON.stringify({ email: userSession.email, pw: userSession.password }));
+      
+      // Save remember key
+      if (rememberMe) {
+        localStorage.setItem('yb_remember', JSON.stringify({ email: userSession.email, pw: userSession.password }));
+      } else {
+        localStorage.removeItem('yb_remember');
+      }
+
+      // Success feedback & redirect
+      btnText.textContent = 'เข้าสู่ระบบสำเร็จ!';
+      submitBtn.style.background = 'linear-gradient(135deg, var(--green), #40B868)';
+      
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 400);
+
+    } catch (e) {
+      errEl.style.display = 'flex';
+      document.getElementById('errorText').textContent = 'เกิดข้อผิดพลาดในการบันทึกเซสชัน';
+      spinner.style.display = 'none';
+      btnText.textContent = 'เข้าสู่ระบบ';
+      submitBtn.disabled = false;
+    }
+  }
+
+  // Password visibility helper
+  function togglePasswordVisibility() {
+    const pwInput = document.getElementById('loginPassword');
+    const toggleBtn = document.getElementById('togglePwBtn');
+    
+    if (pwInput.type === 'password') {
+      pwInput.type = 'text';
+      toggleBtn.textContent = '🙈';
+      toggleBtn.title = 'ซ่อนรหัสผ่าน';
+    } else {
+      pwInput.type = 'password';
+      toggleBtn.textContent = '👁️';
+      toggleBtn.title = 'แสดงรหัสผ่าน';
+    }
+  }
+
+  // ============================
+  // THEME MANAGEMENT
+  // ============================
+  function initVisualTheme() {
+    let activeTheme = 'dark'; // default
+    try {
+      const s = localStorage.getItem('yb_tp');
+      if (s) {
+        const tp = JSON.parse(s);
+        if (tp.color) activeTheme = tp.color;
+      } else {
+        // Migration fallback for old theme key
+        const old = localStorage.getItem('yb_theme');
+        if (old) activeTheme = old;
+      }
+    } catch (e) {}
+
+    applyTheme(activeTheme);
+  }
+
+  function applyTheme(themeName) {
+    document.documentElement.setAttribute('data-theme', themeName);
+    
+    // Highlight theme button in switcher
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    const activeBtn = document.getElementById('t-' + themeName);
+    if (activeBtn) activeBtn.classList.add('active');
+  }
+
+  function setThemeStyle(themeName) {
+    applyTheme(themeName);
+    
+    // Save theme selection locally to preserve visual state
+    try {
+      let tp = { color: themeName, font: 'Sarabun', fontSize: 14, radius: 10, btnSize: 'M', shadow: true, anim: true, border: true };
+      const s = localStorage.getItem('yb_tp');
+      if (s) {
+        tp = Object.assign(JSON.parse(s), { color: themeName });
+      }
+      localStorage.setItem('yb_tp', JSON.stringify(tp));
+      localStorage.setItem('yb_theme', themeName); // backward-compatibility
+    } catch (e) {}
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+# Archive and Backup Folders (Unused Data)
+bin-app/
+*.zip
+*.csv
+*backup*.html
+
+# Scratch/Temporary developer files
+unmatched_thai.txt
+temp_check.js
+stations_data.md
+
+# OS specific files
+.DS_Store
+Thumbs.db
