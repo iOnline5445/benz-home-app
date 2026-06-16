@@ -419,6 +419,22 @@
         const initial = (cur.displayname || cur.email || '?').charAt(0).toUpperCase();
         avatarEl.textContent = initial;
       }
+
+      // Update drawer user profile (for mobile views)
+      const dNameEl = document.getElementById('drawerUserName');
+      const dRoleEl = document.getElementById('drawerUserRole');
+      const dAvatarEl = document.getElementById('drawerAvatar');
+      
+      if (dNameEl) dNameEl.textContent = cur.displayname || 'ผู้ใช้งาน';
+      if (dRoleEl) {
+        if (cur.role === 'admin') dRoleEl.textContent = '⭐ Admin';
+        else if (cur.role === 'agent') dRoleEl.textContent = '🏠 Agent';
+        else dRoleEl.textContent = '👁️ Viewer';
+      }
+      if (dAvatarEl) {
+        const initial = (cur.displayname || cur.email || '?').charAt(0).toUpperCase();
+        dAvatarEl.textContent = initial;
+      }
       
       // Update storage mode radio checked status
       const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
