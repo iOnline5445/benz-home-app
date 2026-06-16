@@ -468,6 +468,13 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .user-badge:hover {
+      border-color: var(--gold);
+      background: var(--dark4);
     }
 
     .user-badge .role {
