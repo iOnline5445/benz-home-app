@@ -2906,10 +2906,11 @@
       gap: 16px;
     }
     .calc-card {
-      background: linear-gradient(135deg, var(--dark2) 0%, #1e1912 100%);
+      background: linear-gradient(135deg, var(--dark2) 0%, var(--dark3) 100%);
       border: 2px solid var(--gold);
       border-radius: 12px;
       padding: 24px;
+      color: var(--text);
       box-shadow: 0 4px 25px rgba(212,175,55,0.15);
       position: sticky;
       top: 20px;
@@ -2951,7 +2952,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid var(--border2);
       padding: 12px 0;
       font-size: 14px;
     }

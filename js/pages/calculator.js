@@ -220,10 +220,10 @@
           const amount = commissionAmount * (pct / 100);
           
           splitsHtml += `
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+            <tr style="border-bottom: 1px solid var(--border2);">
               <td style="padding: 8px 0;">
                 <span style="font-weight:600; display:block;">${name}</span>
-                <span style="font-size:10px; color:var(--text3);">ธนาคาร: ${bank}</span>
+                <span style="font-size:10px; color:var(--text2);">ธนาคาร: ${bank}</span>
               </td>
               <td style="padding: 8px 0; text-align:right; font-weight:600;">${pct}%</td>
               <td style="padding: 8px 0; text-align:right; color:var(--gold); font-weight:600;">${fmt(amount)}</td>
@@ -231,7 +231,7 @@
           `;
         });
         
-        if (tb) tb.innerHTML = splitsHtml || '<tr><td colspan="3" style="text-align:center; padding:12px; color:var(--text3);">กรุณาเพิ่มสัดส่วนส่วนแบ่ง</td></tr>';
+        if (tb) tb.innerHTML = splitsHtml || '<tr><td colspan="3" style="text-align:center; padding:12px; color:var(--text2);">กรุณาเพิ่มสัดส่วนส่วนแบ่ง</td></tr>';
         
         const totalShareEl = document.getElementById('outSplitsTotalShare');
         if (totalShareEl) {
