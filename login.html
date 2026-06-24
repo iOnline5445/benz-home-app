@@ -354,6 +354,31 @@
       40%, 80% { transform: translateX(6px); }
     }
 
+    /* ===== GUEST REQUEST BUTTON ===== */
+    .guest-request-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 48px;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--gold);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all .2s;
+      cursor: pointer;
+      box-sizing: border-box;
+      gap: 6px;
+    }
+    .guest-request-link:hover {
+      background: var(--dark3);
+      border-color: var(--gold);
+    }
+
     /* ===== CONNECTION BADGE ===== */
     .mode-badge {
       display: inline-flex;
@@ -482,6 +507,13 @@
         <span id="btnText">เข้าสู่ระบบ</span>
       </button>
     </form>
+
+    <div style="margin-top: 24px; text-align: center; border-top: 1px solid var(--border2); padding-top: 20px;">
+      <span style="font-size: 13px; color: var(--text3); display: block; margin-bottom: 10px;">สำหรับลูกค้าที่ต้องการฝากหาบ้าน/คอนโด</span>
+      <a href="request.html" class="guest-request-link">
+        🏡 ฝากหาทรัพย์สิน (ไม่ต้องเข้าสู่ระบบ)
+      </a>
+    </div>
   </div>
 
   <!-- Theme selector bar -->
