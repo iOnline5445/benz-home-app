@@ -323,3 +323,24 @@
       editMode = { type: 'customer', idx: i };
       document.getElementById('modalCustomer').classList.add('open');
     }
+
+    function copyGuestRequestLink() {
+      let url = window.location.href.split('?')[0].split('#')[0];
+      if (url.endsWith('index.html')) {
+        url = url.replace('index.html', 'request.html');
+      } else if (url.endsWith('/')) {
+        url = url + 'request.html';
+      } else {
+        const lastSlash = url.lastIndexOf('/');
+        url = url.substring(0, lastSlash + 1) + 'request.html';
+      }
+      navigator.clipboard.writeText(url).then(() => {
+        if (typeof showToast === 'function') {
+          showToast('📋 คัดลอกลิงก์ฝากหาทรัพย์สำหรับส่งให้ลูกค้าแล้ว!', '#50c878');
+        } else {
+          alert('📋 คัดลอกลิงก์สำเร็จ:\n' + url);
+        }
+      }).catch(() => {
+        alert('คัดลอกลิงก์ส่งลูกค้า:\n' + url);
+      });
+    }
