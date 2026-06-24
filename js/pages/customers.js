@@ -267,7 +267,7 @@
         if (tbWrap) tbWrap.style.display = '';
         if (!tb) return;
         if (!paged.length) {
-          tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">ไม่พบลูกค้าที่ตรงกับเงื่อนไข</td></tr>';
+          tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text3)">ไม่พบลูกค้าที่ตรงกับเงื่อนไข</td></tr>';
           return;
         }
         tb.innerHTML = paged.map(a => {
@@ -281,7 +281,8 @@
             <td style="color:var(--gold)">${a.budget || '-'}</td>
             <td>${a.contact || '-'}</td>
             <td style="font-size:12px">${a.linkpost ? `<a href="${a.linkpost}" target="_blank" style="color:var(--blue)">🔗 Link</a>` : '-'}</td>
-            <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.targetDate ? `📅 ${a.targetDate} | ` : ''}${a.note || '-'}</td>
+            <td style="font-size:12px;color:var(--gold);font-weight:600">${a.targetDate || '-'}</td>
+            <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.note || '-'}</td>
             <td><div style="display:flex;gap:5px">
               ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editCustomer(${ri})">✏️</button>` : ''}
               ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${ri})">🗑️</button>` : ''}
