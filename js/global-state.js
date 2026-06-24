@@ -146,3 +146,59 @@
     // FIREBASE INIT
     // ============================
     let _unsubscribeListeners = []; // เก็บ real-time listeners เพื่อ unsubscribe ได้
+
+    // ============================
+    // THEME & CUSTOMIZATION STATE
+    // ============================
+    const THEME_COLORS = ['dark', 'dark-navy', 'dark-purple', 'light', 'vibrant', 'ocean', 'sakura', 'forest'];
+    const FONT_MAP = {
+      'Sarabun': "'Sarabun', sans-serif",
+      'Prompt': "'Prompt', sans-serif",
+      'Kanit': "'Kanit', sans-serif",
+      'Noto Sans': "'Noto Sans Thai', sans-serif"
+    };
+    const SIZE_MAP = { S: '13px', M: '14px', L: '15px', XL: '16px' };
+
+    let TP = {
+      color: 'light', font: 'Sarabun', fontSize: 14, radius: 10,
+      btnSize: 'M', shadow: true, anim: true, border: true
+    };
+
+    function loadTP() {
+      try { const s = localStorage.getItem('yb_tp'); if (s) TP = { ...TP, ...JSON.parse(s) }; } catch (e) { }
+    }
+    function saveTP() { localStorage.setItem('yb_tp', JSON.stringify(TP)); }
+
+    function applyTP() {
+      const root = document.documentElement;
+      // Color theme
+      root.setAttribute('data-theme', TP.color);
+      // Font
+      root.style.setProperty('--body-font', FONT_MAP[TP.font] || FONT_MAP['Sarabun']);
+      document.body.style.fontFamily = FONT_MAP[TP.font] || FONT_MAP['Sarabun'];
+      // Font size
+      root.style.setProperty('--base-font-size', TP.fontSize + 'px');
+      document.body.style.fontSize = TP.fontSize + 'px';
+      // Radius
+      root.style.setProperty('--radius', TP.radius + 'px');
+      // Button size
+      const bfs = SIZE_MAP[TP.btnSize] || '14px';
+      root.style.setProperty('--btn-font-size', bfs);
+      document.querySelectorAll('.btn:not(.btn-sm)').forEach(b => { b.style.fontSize = bfs; });
+      // Shadow toggle
+      if (!TP.shadow) {
+        root.style.setProperty('--shadow', 'none');
+        root.style.setProperty('--card-hover-shadow', 'transparent');
+      } else {
+        root.style.removeProperty('--shadow');
+        root.style.removeProperty('--card-hover-shadow');
+      }
+      // Animation toggle
+      document.querySelectorAll('.card').forEach(c => {
+        c.style.transition = TP.anim ? '' : 'none';
+      });
+      // Border toggle
+      document.querySelectorAll('.card').forEach(c => {
+        c.style.borderColor = TP.border ? '' : 'transparent';
+      });
+    }
