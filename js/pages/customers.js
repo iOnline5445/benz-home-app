@@ -334,6 +334,8 @@
         const lastSlash = url.lastIndexOf('/');
         url = url.substring(0, lastSlash + 1) + 'request.html';
       }
+      // Add cache buster to force browser to load fresh page code from server
+      url = url + '?v=' + Date.now();
       navigator.clipboard.writeText(url).then(() => {
         if (typeof showToast === 'function') {
           showToast('📋 คัดลอกลิงก์ฝากหาทรัพย์สำหรับส่งให้ลูกค้าแล้ว!', '#50c878');
