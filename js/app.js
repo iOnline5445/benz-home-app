@@ -311,6 +311,9 @@
         if (!AUTH.current) {
           tryRestoreSession(true); // true = fromFirebase sync เสร็จแล้ว ลบ session ได้ถ้าหาไม่เจอ
         }
+        if (!AUTH.current) {
+          window.location.href = 'login.html';
+        }
       });
     } else {
       console.log('📴 Running in Offline Local Mode');
@@ -319,6 +322,9 @@
       initScheduledBackup();
       if (!AUTH.current) {
         tryRestoreSession(false);
+      }
+      if (!AUTH.current) {
+        window.location.href = 'login.html';
       }
     }
 
@@ -753,14 +759,9 @@
       clearSession(); // ลบ session — reload จะไม่ auto-login
       // stop realtime sync
       if (typeof stopRealtimeSync === 'function') stopRealtimeSync();
-      document.getElementById('appShell').style.display = 'none';
-      document.getElementById('loginScreen').style.display = 'flex';
-      // restore remembered credentials (or clear if not remembered)
-      loadRemembered();
-      if (!document.getElementById('rememberMe').checked) {
-        document.getElementById('loginUsername').value = '';
-        document.getElementById('loginPassword').value = '';
-      }
+      
+      // Go to login.html
+      window.location.href = 'login.html';
     }
 
     // ============================

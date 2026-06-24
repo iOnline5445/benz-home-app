@@ -233,10 +233,10 @@
           <input type="text" id="cu_contact" placeholder="ชื่อเล่น, เบอร์โทร, Line ID หรืออีเมลสำหรับติดต่อกลับ" required>
         </div>
 
-        <!-- กำหนดวันที่ต้องการ * -->
-        <div class="form-group mandatory">
-          <label for="cu_targetDate">วันที่ต้องการทรัพย์ / ต้องการย้ายเข้า</label>
-          <input type="date" id="cu_targetDate" required>
+        <!-- กำหนดวันที่ต้องการ (ไม่บังคับ) -->
+        <div class="form-group">
+          <label for="cu_targetDate">วันที่ต้องการทรัพย์ / ต้องการย้ายเข้า (ถ้ามี)</label>
+          <input type="date" id="cu_targetDate">
         </div>
 
         <!-- Note / ความต้องการพิเศษ -->
@@ -333,7 +333,7 @@
       const targetDate = document.getElementById('cu_targetDate').value;
       const contact = document.getElementById('cu_contact').value.trim();
       
-      if (!name || !targetDate || !contact) {
+      if (!name || !contact) {
         alert('❌ กรุณากรอกข้อมูลในช่องที่จำเป็น (*) ให้ครบถ้วน');
         return;
       }
