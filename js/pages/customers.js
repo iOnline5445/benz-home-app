@@ -229,6 +229,7 @@
                 </span>
               </div>
               ` : ''}
+              ${a.targetDate ? `<div class="m-card-row"><span class="m-card-label">📅 วันที่ต้องการ</span><span class="m-card-val" style="color:var(--gold);font-weight:600;">${a.targetDate}</span></div>` : ''}
               ${a.contact ? `<div class="m-card-row"><span class="m-card-label">📞 Contact</span><span class="m-card-val">${a.contact}</span></div>` : ''}
               ${a.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${a.note}</span></div>` : ''}
               <div class="m-card-actions">
@@ -259,7 +260,7 @@
             <td style="color:var(--gold)">${a.budget || '-'}</td>
             <td>${a.contact || '-'}</td>
             <td style="font-size:12px">${a.linkpost ? `<a href="${a.linkpost}" target="_blank" style="color:var(--blue)">🔗 Link</a>` : '-'}</td>
-            <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.note || '-'}</td>
+            <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.targetDate ? `📅 ${a.targetDate} | ` : ''}${a.note || '-'}</td>
             <td><div style="display:flex;gap:5px">
               ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editCustomer(${ri})">✏️</button>` : ''}
               ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${ri})">🗑️</button>` : ''}
@@ -294,6 +295,7 @@
               </span>
             </div>
             ` : ''}
+            ${a.targetDate ? `<div class="m-card-row"><span class="m-card-label">📅 วันที่ต้องการ</span><span class="m-card-val" style="color:var(--gold);font-weight:600;">${a.targetDate}</span></div>` : ''}
             ${a.contact ? `<div class="m-card-row"><span class="m-card-label">📞 Contact</span><span class="m-card-val">${a.contact}</span></div>` : ''}
             ${a.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${a.note}</span></div>` : ''}
             <div class="m-card-actions">
@@ -317,6 +319,7 @@
       onCustModalTrainLineChange();
       setV('cu_stationStart', a.stationStart);
       setV('cu_stationEnd', a.stationEnd);
+      setV('cu_targetDate', a.targetDate || '');
       editMode = { type: 'customer', idx: i };
       document.getElementById('modalCustomer').classList.add('open');
     }

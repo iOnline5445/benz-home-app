@@ -1466,7 +1466,7 @@
       }
       if (t === 'customer') {
         document.getElementById('modalCustomerTitle').textContent = '🤝 เพิ่มลูกค้า';
-        ['cu_name', 'cu_budget', 'cu_area', 'cu_floor', 'cu_contact', 'cu_linkpost', 'cu_note', 'cu_line', 'cu_stationStart', 'cu_stationEnd'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        ['cu_name', 'cu_budget', 'cu_area', 'cu_floor', 'cu_contact', 'cu_linkpost', 'cu_note', 'cu_line', 'cu_stationStart', 'cu_stationEnd', 'cu_targetDate'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
         onCustModalTrainLineChange();
       }
       if (t === 'user') {
@@ -1606,8 +1606,8 @@
     // SAVE CUSTOMER
     // ============================
     async function saveCustomer() {
-      const a = { name: v('cu_name'), status: v('cu_status'), type: v('cu_type'), budget: v('cu_budget'), area: v('cu_area'), floor: v('cu_floor'), contact: v('cu_contact'), linkpost: v('cu_linkpost'), note: v('cu_note'), line: v('cu_line'), stationStart: v('cu_stationStart'), stationEnd: v('cu_stationEnd') };
-      if (!a.name || !a.linkpost) { alert('กรุณาใส่ชื่อลูกค้าและ Link Post'); return; }
+      const a = { name: v('cu_name'), status: v('cu_status'), type: v('cu_type'), budget: v('cu_budget'), area: v('cu_area'), floor: v('cu_floor'), contact: v('cu_contact'), linkpost: v('cu_linkpost'), note: v('cu_note'), line: v('cu_line'), stationStart: v('cu_stationStart'), stationEnd: v('cu_stationEnd'), targetDate: v('cu_targetDate') };
+      if (!a.name) { alert('กรุณากรอกชื่อโครงการหรือชื่อลูกค้า'); return; }
       if (editMode.idx >= 0) {
         const existing = DB.customers[editMode.idx];
         a.id = existing.id || genId();

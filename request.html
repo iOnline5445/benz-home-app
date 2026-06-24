@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ฝากหาทรัพย์สิน - BenzHome Agency</title>
+  <meta name="description" content="ฝากความต้องการหาเช่า/ซื้อทรัพย์สิน คอนโด บ้าน ทาวน์โฮม อาคารพาณิชย์ หรือที่ดิน กับ BenzHome Agency">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    body {
+      background: var(--dark);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      font-family: inherit;
+    }
+    .request-container {
+      width: 100%;
+      max-width: 650px;
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: var(--shadow);
+    }
+    .request-header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .request-logo {
+      height: 60px;
+      width: auto;
+      margin-bottom: 12px;
+    }
+    .request-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--gold);
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+    .request-subtitle {
+      font-size: 14px;
+      color: var(--text2);
+    }
+    .form-group.mandatory label::after {
+      content: " *";
+      color: var(--red);
+    }
+    .success-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 20px;
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+    .success-card {
+      background: var(--dark2);
+      border: 2px solid var(--green);
+      border-radius: 20px;
+      padding: 40px 30px;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 10px 40px rgba(80, 200, 120, 0.15);
+      transform: scale(0.9);
+      animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    .success-icon {
+      font-size: 60px;
+      margin-bottom: 20px;
+      animation: pulse 1.5s infinite;
+    }
+    .success-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--green);
+      margin-bottom: 12px;
+    }
+    .success-text {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes popIn {
+      to { transform: scale(1); }
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+    @media (max-width: 768px) {
+      .request-container {
+        padding: 20px;
+      }
+      .request-title {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="request-container">
+    <div class="request-header">
+      <img class="request-logo" src="icon.png" alt="BenzHome Agency Logo">
+      <h1 class="request-title">🏡 ฝากหาทรัพย์สิน</h1>
+      <p class="request-subtitle">กรอกความต้องการหาเช่า/ซื้อทรัพย์สินของคุณ เจ้าหน้าที่จะติดต่อกลับโดยเร็วที่สุด</p>
+    </div>
+
+    <form id="requestForm">
+      <div class="form-grid">
+        
+        <!-- ชื่อลูกค้า/ชื่อโครงการ -->
+        <div class="form-group full mandatory">
+          <label for="cu_name">ชื่อผู้ฝากหา / ชื่อโครงการที่สนใจ</label>
+          <input type="text" id="cu_name" placeholder="ชื่อ-นามสกุล หรือชื่อโครงการที่สนใจ" required autocomplete="name">
+        </div>
+
+        <!-- สถานะ เช่า/ขาย -->
+        <div class="form-group">
+          <label for="cu_status">สถานะความต้องการ</label>
+          <select id="cu_status">
+            <option value="เช่า">เช่า</option>
+            <option value="ขาย">ซื้อ (ขาย)</option>
+            <option value="เช่า/ขาย">เช่า หรือ ซื้อ ก็ได้</option>
+          </select>
+        </div>
+
+        <!-- ประเภททรัพย์ -->
+        <div class="form-group">
+          <label for="cu_type">ประเภททรัพย์สิน</label>
+          <select id="cu_type">
+            <option value="คอนโด">คอนโด</option>
+            <option value="บ้านเดี่ยว">บ้านเดี่ยว</option>
+            <option value="ทาวน์โฮม">ทาวน์โฮม</option>
+            <option value="อาคารพาณิชย์">อาคารพาณิชย์</option>
+            <option value="ที่ดิน">ที่ดิน</option>
+          </select>
+        </div>
+
+        <!-- งบประมาณ -->
+        <div class="form-group">
+          <label for="cu_budget">งบประมาณ</label>
+          <input type="text" id="cu_budget" placeholder="เช่น 3 ล้าน หรือ 20,000/เดือน">
+        </div>
+
+        <!-- ขนาดห้อง -->
+        <div class="form-group">
+          <label for="cu_area">ขนาดพื้นที่ / ขนาดห้อง</label>
+          <input type="text" id="cu_area" placeholder="เช่น 30-50 ตร.ม.">
+        </div>
+
+        <!-- ชั้นที่ต้องการ -->
+        <div class="form-group">
+          <label for="cu_floor">ชั้นที่ต้องการ (ถ้ามี)</label>
+          <input type="text" id="cu_floor" placeholder="เช่น ชั้น 10+, หรือ ชั้นเตี้ย">
+        </div>
+
+        <!-- ลิงก์โปรไฟล์ Facebook -->
+        <div class="form-group">
+          <label for="cu_linkpost">ลิงก์โปรไฟล์ Facebook (ถ้ามี)</label>
+          <input type="url" id="cu_linkpost" placeholder="https://facebook.com/... (ลิงก์โปรไฟล์ของคุณ)">
+        </div>
+
+        <!-- ข้อมูลรถไฟฟ้า -->
+        <div class="form-group full">
+          <label for="cu_line">แนวรถไฟฟ้าที่สนใจ (ถ้ามี)</label>
+          <select id="cu_line" onchange="onTransitLineChange()">
+            <option value="">ไม่ระบุ</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="cu_stationStart">สถานีเริ่มต้น</label>
+          <select id="cu_stationStart" disabled>
+            <option value="">ไม่ระบุ</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="cu_stationEnd">สถานีสิ้นสุด</label>
+          <select id="cu_stationEnd" disabled>
+            <option value="">ไม่ระบุ</option>
+          </select>
+        </div>
+
+        <!-- ข้อมูลติดต่อกลับ * -->
+        <div class="form-group mandatory">
+          <label for="cu_contact">ข้อมูลการติดต่อ (เบอร์โทร / Line ID / อีเมล)</label>
+          <input type="text" id="cu_contact" placeholder="ชื่อเล่น, เบอร์โทร, Line ID หรืออีเมลสำหรับติดต่อกลับ" required>
+        </div>
+
+        <!-- กำหนดวันที่ต้องการ * -->
+        <div class="form-group mandatory">
+          <label for="cu_targetDate">วันที่ต้องการทรัพย์ / ต้องการย้ายเข้า</label>
+          <input type="date" id="cu_targetDate" required>
+        </div>
+
+        <!-- Note / ความต้องการพิเศษ -->
+        <div class="form-group full">
+          <label for="cu_note">ความต้องการเพิ่มเติม / ข้อมูลอื่นๆ</label>
+          <textarea id="cu_note" rows="3" placeholder="ระบุความต้องการเพิ่มเติม เช่น ต้องการเลี้ยงสัตว์ได้, มีที่จอดรถ, ทิศห้อง, วิว..."></textarea>
+        </div>
+
+      </div>
+
+      <div style="margin-top:25px; display:flex; gap:10px;">
+        <button type="submit" id="submitBtn" class="btn btn-primary" style="flex:1; justify-content:center; padding:12px; font-size:16px;">💾 ส่งข้อมูลการฝากหาทรัพย์</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Success Overlay -->
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-card">
+      <div class="success-icon">✅</div>
+      <h2 class="success-title">ส่งข้อมูลสำเร็จ!</h2>
+      <p class="success-text">เราได้รับข้อมูลความต้องการฝากหาทรัพย์สินของคุณแล้ว เจ้าหน้าที่ของ BenzHome Agency จะรีบดำเนินการหาทรัพย์และติดต่อกลับโดยเร็วที่สุดครับ</p>
+      <button class="btn btn-primary" onclick="closeSuccessOverlay()" style="width:100%; justify-content:center;">ตกลง</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/global-state.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script>
+    // Global elements needed by firebase-config.js (stubs to prevent reference errors)
+    window.renderAssets = () => {};
+    window.renderStats = () => {};
+    window.renderAgents = () => {};
+    window.renderCustomers = () => {};
+    window.renderMktQueue = () => {};
+    window.renderMktSlots = () => {};
+    window.updateMktQueueBadge = () => {};
+    window.updateSyncBadge = () => {};
+    window.populateCbSelect = () => {};
+    window.updateFirebaseStatus = () => {};
+    window.showToast = (msg, color) => console.log('Toast:', msg, color);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Initialize Firebase connection
+      const connected = await initFirebase();
+      console.log('Firebase ready status:', connected);
+
+      // 2. Populate Train lines
+      populateTransitLines();
+
+      // 3. Setup targetDate input default to today or empty
+      const today = new Date().toISOString().slice(0, 10);
+      document.getElementById('cu_targetDate').min = today;
+
+      // 4. Setup form submit listener
+      document.getElementById('requestForm').addEventListener('submit', handleFormSubmit);
+    });
+
+    function populateTransitLines() {
+      const lineSel = document.getElementById('cu_line');
+      if (!lineSel) return;
+      lineSel.innerHTML = '<option value="">ไม่ระบุ</option>';
+      Object.keys(TRANSIT_LINES).forEach(name => {
+        lineSel.innerHTML += `<option value="${name}">${name}</option>`;
+      });
+    }
+
+    function onTransitLineChange() {
+      const line = document.getElementById('cu_line').value;
+      const startSel = document.getElementById('cu_stationStart');
+      const endSel = document.getElementById('cu_stationEnd');
+      
+      startSel.innerHTML = '<option value="">ไม่ระบุ</option>';
+      endSel.innerHTML = '<option value="">ไม่ระบุ</option>';
+      
+      if (line && TRANSIT_LINES[line]) {
+        startSel.disabled = false;
+        endSel.disabled = false;
+        TRANSIT_LINES[line].forEach(st => {
+          startSel.innerHTML += `<option value="${st}">${st}</option>`;
+          endSel.innerHTML += `<option value="${st}">${st}</option>`;
+        });
+      } else {
+        startSel.disabled = true;
+        endSel.disabled = true;
+      }
+    }
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      
+      const name = document.getElementById('cu_name').value.trim();
+      const targetDate = document.getElementById('cu_targetDate').value;
+      const contact = document.getElementById('cu_contact').value.trim();
+      
+      if (!name || !targetDate || !contact) {
+        alert('❌ กรุณากรอกข้อมูลในช่องที่จำเป็น (*) ให้ครบถ้วน');
+        return;
+      }
+      
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = '⏳ กำลังบันทึกข้อมูล...';
+      
+      // Simple custom id generator
+      const genId = () => 'C' + Date.now() + Math.random().toString(36).substr(2, 5);
+      const docId = genId();
+
+      const data = {
+        id: docId,
+        name: name,
+        status: document.getElementById('cu_status').value,
+        type: document.getElementById('cu_type').value,
+        budget: document.getElementById('cu_budget').value.trim(),
+        area: document.getElementById('cu_area').value.trim(),
+        floor: document.getElementById('cu_floor').value.trim(),
+        contact: contact,
+        linkpost: document.getElementById('cu_linkpost').value.trim(), // Facebook Profile Link
+        note: document.getElementById('cu_note').value.trim(),
+        line: document.getElementById('cu_line').value,
+        stationStart: document.getElementById('cu_stationStart').value,
+        stationEnd: document.getElementById('cu_stationEnd').value,
+        targetDate: targetDate,
+        createdAt: new Date().toISOString()
+      };
+      
+      try {
+        if (window._fbReady && window._db && window._firestoreLib) {
+          // Save to Firestore 'customers' collection
+          const { collection, doc, setDoc } = window._firestoreLib;
+          const ref = doc(collection(window._db, 'customers'), docId);
+          await setDoc(ref, data);
+        } else {
+          // Fallback to offline localStorage
+          let localDb = { assets: [], agents: [], customers: [], mktQueue: [] };
+          try {
+            const raw = localStorage.getItem('yb_db');
+            if (raw) localDb = JSON.parse(raw);
+          } catch(e) {}
+          if (!localDb.customers) localDb.customers = [];
+          localDb.customers.push(data);
+          localStorage.setItem('yb_db', JSON.stringify(localDb));
+        }
+        
+        // Show Success popup
+        document.getElementById('successOverlay').style.display = 'flex';
+        
+      } catch (err) {
+        console.error('Submit error:', err);
+        alert('❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '💾 ส่งข้อมูลการฝากหาทรัพย์';
+      }
+    }
+
+    function closeSuccessOverlay() {
+      document.getElementById('successOverlay').style.display = 'none';
+      document.getElementById('requestForm').reset();
+      onTransitLineChange(); // reset station selects
+    }
+  </script>
+</body>
+</html>
