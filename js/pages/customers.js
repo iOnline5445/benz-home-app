@@ -176,8 +176,29 @@
         return mQ && mPrice && mStation;
       });
 
-      // Sort: Newest first (highest index in DB.customers)
-      list.sort((x, y) => DB.customers.indexOf(y) - DB.customers.indexOf(x));
+      function getTimestampFromId(id) {
+        if (!id) return 0;
+        if (id.startsWith('C')) {
+          const numStr = id.slice(1).match(/^\d+/);
+          return numStr ? parseInt(numStr[0], 10) : 0;
+        }
+        const base36Str = id.substring(0, 8);
+        const parsed = parseInt(base36Str, 36);
+        if (!isNaN(parsed) && parsed > 1000000000000) {
+          return parsed;
+        }
+        return 0;
+      }
+
+      // Sort: Newest first (by parsed timestamp, with index fallback)
+      list.sort((x, y) => {
+        const tx = getTimestampFromId(x.id);
+        const ty = getTimestampFromId(y.id);
+        if (tx !== ty) {
+          return ty - tx;
+        }
+        return DB.customers.indexOf(y) - DB.customers.indexOf(x);
+      });
 
       const totalPages = Math.max(1, Math.ceil(list.length / _custPageSize));
       if (_custPage > totalPages) _custPage = totalPages;

@@ -342,8 +342,8 @@
       submitBtn.disabled = true;
       submitBtn.textContent = '⏳ กำลังบันทึกข้อมูล...';
       
-      // Simple custom id generator
-      const genId = () => 'C' + Date.now() + Math.random().toString(36).substr(2, 5);
+      // Standard ID generator matching the main app
+      const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
       const docId = genId();
 
       const data = {
