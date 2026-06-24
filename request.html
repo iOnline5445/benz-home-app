@@ -365,7 +365,7 @@
       };
       
       try {
-        if (window._fbReady && window._db && window._firestoreLib) {
+        if (_fbReady && window._db && window._firestoreLib) {
           // Save to Firestore 'customers' collection
           const { collection, doc, setDoc } = window._firestoreLib;
           const ref = doc(collection(window._db, 'customers'), docId);
