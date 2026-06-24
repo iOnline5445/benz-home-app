@@ -2009,7 +2009,7 @@
     // ============================
     // THEME PANEL
     // ============================
-    const THEME_COLORS = ['dark', 'dark-navy', 'dark-purple', 'light', 'vibrant', 'ocean', 'sakura', 'forest', 'sunset'];
+    const THEME_COLORS = ['dark', 'dark-navy', 'dark-purple', 'light', 'vibrant', 'ocean', 'sakura', 'forest'];
     const FONT_MAP = {
       'Sarabun': "'Sarabun', sans-serif",
       'Prompt': "'Prompt', sans-serif",

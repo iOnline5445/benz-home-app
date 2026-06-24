@@ -142,26 +142,48 @@
       --login-bg2: #D5F0DE;
     }
 
-    [data-theme="sunset"] {
-      --gold: #7B2FBE;
-      --gold-light: #9B4FDE;
-      --gold-dark: #5E1E9A;
-      --dark: #F8F0FF;
-      --dark2: #FFFFFF;
-      --dark3: #F2E8FF;
-      --dark4: #E8D5FF;
-      --text: #0E001A;
-      --text2: #3A1060;
-      --text3: #7A50A0;
-      --accent: #7B2FBE;
-      --red: #D93025;
-      --green: #1E8E3E;
-      --blue: #1967D2;
-      --border: rgba(123, 47, 190, 0.22);
-      --border2: rgba(123, 47, 190, 0.09);
-      --shadow: 0 20px 60px rgba(123, 47, 190, 0.12);
-      --login-bg1: #F8F0FF;
-      --login-bg2: #E8D5FF;
+    [data-theme="dark-navy"] {
+      --gold: #64FFDA;
+      --gold-light: #52E0C4;
+      --gold-dark: #14B8A6;
+      --dark: #0A192F;
+      --dark2: #112240;
+      --dark3: #233554;
+      --dark4: #1E2D4A;
+      --text: #E6F1FF;
+      --text2: #8892B0;
+      --text3: #495670;
+      --accent: #64FFDA;
+      --red: #FF6B6B;
+      --green: #50C878;
+      --blue: #4DABF7;
+      --border: rgba(100, 255, 218, 0.22);
+      --border2: rgba(100, 255, 218, 0.09);
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      --login-bg1: #0A192F;
+      --login-bg2: #020C1B;
+    }
+
+    [data-theme="dark-purple"] {
+      --gold: #D0BFFF;
+      --gold-light: #E5D9F2;
+      --gold-dark: #A580FF;
+      --dark: #120A1A;
+      --dark2: #1D1128;
+      --dark3: #2A1B38;
+      --dark4: #38244A;
+      --text: #F3E8FF;
+      --text2: #C4B5FD;
+      --text3: #8B5CF6;
+      --accent: #D0BFFF;
+      --red: #FB7185;
+      --green: #4ADE80;
+      --blue: #60A5FA;
+      --border: rgba(208, 191, 255, 0.22);
+      --border2: rgba(208, 191, 255, 0.09);
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      --login-bg1: #120A1A;
+      --login-bg2: #0A0510;
     }
 
     * {
@@ -518,13 +540,14 @@
 
   <!-- Theme selector bar -->
   <div class="theme-bar">
-    <button class="theme-btn" id="t-dark" style="background:#0D0D0D;" onclick="setThemeStyle('dark')" title="Dark Mode"></button>
-    <button class="theme-btn" id="t-light" style="background:#FAF8F2;" onclick="setThemeStyle('light')" title="Light (เบจทอง)"></button>
-    <button class="theme-btn" id="t-vibrant" style="background:#FFF5F0;" onclick="setThemeStyle('vibrant')" title="Vibrant (ส้ม)"></button>
-    <button class="theme-btn" id="t-ocean" style="background:#F0F8FF;" onclick="setThemeStyle('ocean')" title="Ocean (ฟ้าทะเล)"></button>
-    <button class="theme-btn" id="t-sakura" style="background:#FFF5F9;" onclick="setThemeStyle('sakura')" title="Sakura (ชมพู)"></button>
-    <button class="theme-btn" id="t-forest" style="background:#F2FBF5;" onclick="setThemeStyle('forest')" title="Forest (เขียว)"></button>
-    <button class="theme-btn" id="t-sunset" style="background:#F8F0FF;" onclick="setThemeStyle('sunset')" title="Sunset (ม่วง)"></button>
+    <button class="theme-btn" id="t-dark" style="background:#0D0D0D; border-color:#C9A84C;" onclick="setThemeStyle('dark')" title="มืดทอง (Dark Gold)"></button>
+    <button class="theme-btn" id="t-dark-navy" style="background:#0A192F; border-color:#64FFDA;" onclick="setThemeStyle('dark-navy')" title="ฟ้ามืด (Navy Blue)"></button>
+    <button class="theme-btn" id="t-dark-purple" style="background:#120A1A; border-color:#D0BFFF;" onclick="setThemeStyle('dark-purple')" title="ม่วงมืด (Midnight Purple)"></button>
+    <button class="theme-btn" id="t-light" style="background:#FAF8F2; border-color:#C07800;" onclick="setThemeStyle('light')" title="เบจทอง (Beige Gold)"></button>
+    <button class="theme-btn" id="t-vibrant" style="background:#FFF5F0; border-color:#E8500A;" onclick="setThemeStyle('vibrant')" title="ส้มไฟ (Vibrant Orange)"></button>
+    <button class="theme-btn" id="t-ocean" style="background:#F0F8FF; border-color:#0077CC;" onclick="setThemeStyle('ocean')" title="ฟ้าทะเล (Ocean Blue)"></button>
+    <button class="theme-btn" id="t-sakura" style="background:#FFF5F9; border-color:#CC2A6A;" onclick="setThemeStyle('sakura')" title="ชมพูซากุระ (Sakura Pink)"></button>
+    <button class="theme-btn" id="t-forest" style="background:#F2FBF5; border-color:#1A7A40;" onclick="setThemeStyle('forest')" title="เขียวมิ้นต์ (Forest Green)"></button>
   </div>
 </div>
 

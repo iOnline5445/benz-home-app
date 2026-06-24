@@ -250,6 +250,11 @@
       <div style="margin-top:25px; display:flex; gap:10px;">
         <button type="submit" id="submitBtn" class="btn btn-primary" style="flex:1; justify-content:center; padding:12px; font-size:16px;">💾 ส่งข้อมูลการฝากหาทรัพย์</button>
       </div>
+      <div style="margin-top: 20px; text-align: center; border-top: 1px solid var(--border2); padding-top: 15px;">
+        <a href="login.html" style="color: var(--text2); text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; transition: color 0.2s;" onmouseover="this.style.color='var(--gold)';" onmouseout="this.style.color='var(--text2)';">
+          ⬅️ ย้อนกลับหน้าเข้าใช้งานระบบ (Login)
+        </a>
+      </div>
     </form>
   </div>
 
@@ -364,6 +369,7 @@
         createdAt: new Date().toISOString()
       };
       
+      try {
         let isCloud = false;
         if (_fbReady && window._db && window._firestoreLib) {
           // Save to Firestore 'customers' collection
