@@ -258,7 +258,7 @@
     <div class="success-card">
       <div class="success-icon">✅</div>
       <h2 class="success-title">ส่งข้อมูลสำเร็จ!</h2>
-      <p class="success-text">เราได้รับข้อมูลความต้องการฝากหาทรัพย์สินของคุณแล้ว เจ้าหน้าที่ของ BenzHome Agency จะรีบดำเนินการหาทรัพย์และติดต่อกลับโดยเร็วที่สุดครับ</p>
+      <p class="success-text" id="successText">เราได้รับข้อมูลความต้องการฝากหาทรัพย์สินของคุณแล้ว เจ้าหน้าที่ของ BenzHome Agency จะรีบดำเนินการหาทรัพย์และติดต่อกลับโดยเร็วที่สุดครับ</p>
       <button class="btn btn-primary" onclick="closeSuccessOverlay()" style="width:100%; justify-content:center;">ตกลง</button>
     </div>
   </div>
@@ -364,12 +364,13 @@
         createdAt: new Date().toISOString()
       };
       
-      try {
+        let isCloud = false;
         if (_fbReady && window._db && window._firestoreLib) {
           // Save to Firestore 'customers' collection
           const { collection, doc, setDoc } = window._firestoreLib;
           const ref = doc(collection(window._db, 'customers'), docId);
           await setDoc(ref, data);
+          isCloud = true;
         } else {
           // Fallback to offline localStorage
           let localDb = { assets: [], agents: [], customers: [], mktQueue: [] };
@@ -382,7 +383,15 @@
           localStorage.setItem('yb_db', JSON.stringify(localDb));
         }
         
-        // Show Success popup
+        // Show Success popup with storage mode status
+        const textEl = document.getElementById('successText');
+        if (textEl) {
+          if (isCloud) {
+            textEl.innerHTML = `เราได้รับข้อมูลความต้องการฝากหาทรัพย์สินของคุณแล้ว (บันทึกข้อมูลเข้าระบบ Cloud เรียบร้อย)<br><br>เจ้าหน้าที่ของ BenzHome Agency จะรีบดำเนินการหาทรัพย์และติดต่อกลับโดยเร็วที่สุดครับ`;
+          } else {
+            textEl.innerHTML = `<span style="color:var(--red); font-weight:bold;">⚠️ ระบบบันทึกแบบ Offline ในเครื่องเนื่องจากไม่ได้ต่อ Firebase</span><br>ข้อมูลได้รับการบันทึกบนเครื่องนี้แล้ว เจ้าหน้าที่จะซิงค์ข้อมูลภายหลังเมื่อทำการเชื่อมต่อครับ`;
+          }
+        }
         document.getElementById('successOverlay').style.display = 'flex';
         
       } catch (err) {
