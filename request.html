@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th" data-theme="dark">
+<html lang="th" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="css/styles.css">
   <style>
     body {
-      background: var(--dark);
+      background: radial-gradient(circle at top, #FFFDFC 0%, #FAF5EA 100%);
       color: var(--text);
       display: flex;
       justify-content: center;
@@ -24,23 +24,30 @@
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 30px;
-      box-shadow: var(--shadow);
+      box-shadow: 0 10px 30px rgba(192, 120, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
     }
     .request-header {
       text-align: center;
       margin-bottom: 25px;
     }
     .request-logo {
-      height: 60px;
+      height: 75px;
       width: auto;
       margin-bottom: 12px;
+      transition: transform 0.3s ease;
+    }
+    .request-logo:hover {
+      transform: scale(1.05);
     }
     .request-title {
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 800;
-      color: var(--gold);
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       margin-bottom: 6px;
       letter-spacing: -0.02em;
+      display: inline-block;
     }
     .request-subtitle {
       font-size: 14px;
@@ -111,6 +118,26 @@
       .request-title {
         font-size: 20px;
       }
+    }
+    #submitBtn {
+      background: var(--green) !important;
+      border-color: var(--green) !important;
+      color: #ffffff !important;
+      font-weight: 700;
+      font-size: 16px;
+      box-shadow: 0 4px 12px rgba(30, 142, 62, 0.2);
+      transition: all 0.2s ease;
+    }
+    #submitBtn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(30, 142, 62, 0.3);
+    }
+    #submitBtn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
   </style>
 </head>

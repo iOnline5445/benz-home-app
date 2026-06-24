@@ -357,7 +357,12 @@
               📥 Import CSV
               <input type="file" accept=".csv" style="display:none" onchange="importCSV(event,'customers')">
             </label>
-            <button class="btn btn-outline" onclick="copyGuestRequestLink()" title="คัดลอกลิงก์ฝากหาทรัพย์ส่งให้ลูกค้ากรอกข้อมูล">🔗 ลิงก์ฝากหาทรัพย์</button>
+            <button class="btn btn-primary" onclick="copyGuestRequestLink()" title="คัดลอกลิงก์ฝากหาทรัพย์ส่งให้ลูกค้ากรอกข้อมูล"
+              style="background: var(--green) !important; border-color: var(--green) !important; color: #ffffff !important; font-size: 14.5px; padding: 10px 22px; font-weight: 700; box-shadow: 0 4px 15px rgba(80, 200, 120, 0.35); transition: all 0.2s ease-in-out;"
+              onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 20px rgba(80, 200, 120, 0.5)';"
+              onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(80, 200, 120, 0.35)';">
+              🔗 ลิงก์ฝากหาทรัพย์
+            </button>
             <button id="btnAddCustomer" class="btn btn-primary" onclick="openModal('customer')">+ เพิ่มลูกค้า</button>
           </div>
         </div>
