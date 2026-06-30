@@ -375,10 +375,7 @@
 
       channels.forEach(ch => {
         let url = '';
-        if (ch === 'ddproperty') url = 'https://www.ddproperty.com/ลงประกาศอสังหาริมทรัพย์';
         if (ch === 'livinginsider') url = 'https://www.livinginsider.com/post_property.html';
-        if (ch === 'fazwaz') url = 'https://www.fazwaz.co.th/list-your-property';
-        if (ch === 'zmyhome') url = 'https://zmyhome.com/post';
         if (ch === 'ennxo') url = 'https://www.ennxo.com/อสังหาริมทรัพย์';
         if (url) window.open(url, '_blank');
       });
@@ -538,10 +535,7 @@
       
       q.channels.forEach(ch => {
         let url = '';
-        if (ch === 'ddproperty') url = 'https://www.ddproperty.com/ลงประกาศอสังหาริมทรัพย์';
         if (ch === 'livinginsider') url = 'https://www.livinginsider.com/post_property.html';
-        if (ch === 'fazwaz') url = 'https://www.fazwaz.co.th/list-your-property';
-        if (ch === 'zmyhome') url = 'https://zmyhome.com/post';
         if (ch === 'ennxo') url = 'https://www.ennxo.com/อสังหาริมทรัพย์';
         if (url) window.open(url, '_blank');
       });
