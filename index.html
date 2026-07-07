@@ -1525,10 +1525,23 @@
             <div class="form-group"><label>วันที่ Update</label><input id="a_updatedate" type="date"></div>
             <div class="form-group full"><label>Contact</label><input id="a_contact" placeholder="ชื่อ-เบอร์โทร-Line">
             </div>
-            <div class="form-group"><label>Agent ผู้โพสต์</label>
+            <div class="form-group">
+              <label>Agent ผู้โพสต์</label>
               <select id="a_poster">
                 <option value="">-- เลือก Agent --</option>
               </select>
+            </div>
+            <!-- Co-Agent Config ในตัวทรัพย์สิน -->
+            <div class="form-group" style="background:var(--dark3);padding:10px;border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:700;margin-bottom:0;color:var(--text2);">
+                <input type="checkbox" id="a_coagent" checked style="accent-color:var(--gold);">
+                เปิด Co-Agent
+              </label>
+              <div style="display:flex;align-items:center;gap:4px;font-size:12px;">
+                <span>ส่วนแบ่ง:</span>
+                <input type="number" id="a_coagentshare" value="40" style="width:56px;min-height:30px;padding:4px;text-align:center;background:var(--dark);border:1px solid var(--border2);border-radius:6px;color:var(--text);" min="0" max="100">
+                <span>%</span>
+              </div>
             </div>
             <!-- Property Care Checklist -->
             <div class="form-group full" style="border-top:1px dashed var(--border);padding-top:14px;margin-top:10px;">

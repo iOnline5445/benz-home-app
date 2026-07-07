@@ -187,11 +187,22 @@
 
     // Helper: ทำ login จริง (ใช้ร่วมกันระหว่าง doLogin และ retry)
     function performLogin(found, remember) {
-      // normalize email ก่อนทุกอย่าง
       found = { ...found, email: (found.email || '').toLowerCase().trim() };
       const email = found.email;
       const pw = found.password;
-      document.getElementById('loginError').style.display = 'none';
+      const errEl = document.getElementById('loginError');
+      if (errEl) errEl.style.display = 'none';
+
+      // ── บล็อก rejected ──
+      if (found.role === 'rejected') {
+        if (errEl) {
+          errEl.style.display = 'flex';
+          errEl.querySelector('#errorText') && (errEl.querySelector('#errorText').textContent =
+            '❌ บัญชีของคุณไม่ผ่านการอนุมัติ กรุณาติดต่อผู้ดูแลระบบ');
+        }
+        return;
+      }
+
       if (remember) {
         localStorage.setItem(REMEMBER_KEY, JSON.stringify({ email, pw }));
       } else {
@@ -201,14 +212,59 @@
       saveSession(found);
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('appShell').style.display = 'block';
-      document.getElementById('headerUserName').textContent = found.displayname || found.email;
+
+      // ── Header badge ──
+      const headerName = document.getElementById('headerUserName');
+      if (headerName) headerName.textContent = found.displayname || found.email;
       const roleEl = document.getElementById('headerUserRole');
-      if (found.role === 'admin') { roleEl.textContent = '⭐ Admin'; roleEl.className = 'role role-admin'; }
-      else if (found.role === 'agent') { roleEl.textContent = '🏠 Agent'; roleEl.className = 'role role-agent'; }
-      else { roleEl.textContent = '👁️ Viewer'; roleEl.className = 'role role-viewer'; }
+      if (roleEl) {
+        const ROLE_LABELS = {
+          admin:    ['⭐ Admin',   'role role-admin'],
+          agent:    ['🏠 Agent',   'role role-agent'],
+          owner:    ['🏡 Owner',   'role role-agent'],
+          customer: ['👤 Member',  'role role-viewer'],
+          pending:  ['⏳ รออนุมัติ','role role-viewer'],
+          viewer:   ['👁️ Viewer', 'role role-viewer'],
+        };
+        const [label, cls] = ROLE_LABELS[found.role] || ['👤', 'role'];
+        roleEl.textContent = label;
+        roleEl.className = cls;
+      }
+
       applyRoleAccess(found.role);
       loadDB();
       updateSettingsProfileUI();
+
+      // ── Banner: แจ้งเตือน pending ──
+      _renderPendingBanner(found.role);
+    }
+
+    function _renderPendingBanner(role) {
+      let banner = document.getElementById('pendingBanner');
+      if (role === 'pending') {
+        if (!banner) {
+          banner = document.createElement('div');
+          banner.id = 'pendingBanner';
+          banner.style.cssText = [
+            'position:fixed;top:0;left:0;right:0;z-index:8000',
+            'background:linear-gradient(90deg,#7a5800,#c9a84c,#7a5800)',
+            'color:#fff;font-size:12px;font-weight:700',
+            'padding:8px 16px;text-align:center',
+            'display:flex;align-items:center;justify-content:center;gap:8px',
+          ].join(';');
+          banner.innerHTML = '<span>⏳ บัญชีของคุณอยู่ระหว่างรอการอนุมัติจาก Admin — บางฟีเจอร์ถูกจำกัดชั่วคราว</span>';
+          document.body.prepend(banner);
+          // เลื่อน app shell ลงให้พ้น banner
+          const shell = document.getElementById('appShell');
+          if (shell) shell.style.paddingTop = '36px';
+        }
+      } else {
+        if (banner) {
+          banner.remove();
+          const shell = document.getElementById('appShell');
+          if (shell) shell.style.paddingTop = '';
+        }
+      }
     }
 
     function tryRestoreSession(fromFirebase) {
@@ -1076,110 +1132,119 @@
     // ============================
     // ROLE-BASED ACCESS CONTROL
     // ============================
+    // ============================
+    // ROLE MATRIX CONSTANTS
+    // ============================
+    const ROLE = {
+      ADMIN:    'admin',
+      AGENT:    'agent',
+      OWNER:    'owner',
+      CUSTOMER: 'customer',
+      PENDING:  'pending',
+      REJECTED: 'rejected',
+      VIEWER:   'viewer',
+    };
+
     function applyRoleAccess(role) {
-      const isAdmin = role === 'admin';
-      const isAgent = role === 'agent';
-      const isViewer = role === 'viewer';
+      const r = role || 'viewer';
+      const isAdmin    = r === ROLE.ADMIN;
+      const isAgent    = r === ROLE.AGENT;
+      const isOwner    = r === ROLE.OWNER;
+      const isCustomer = r === ROLE.CUSTOMER;
+      const isPending  = r === ROLE.PENDING;
+      const isViewer   = r === ROLE.VIEWER;
 
-      // Desktop header tabs
-      const tabCustomers = document.getElementById('tabCustomers');
-      const tabSettings = document.getElementById('tabSettings');
-      const tabClipboard = document.getElementById('tabClipboard');
-      const tabMarketing = document.getElementById('tabMarketing');
-      const tabCommission = document.getElementById('tabCommission');
-      if (tabCustomers) tabCustomers.style.display = (isAdmin || isAgent) ? '' : 'none';
-      if (tabSettings) tabSettings.style.display = ''; // visible to all
-      if (tabClipboard) tabClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
-      if (tabMarketing) tabMarketing.style.display = (isAdmin || isAgent) ? '' : 'none';
-      if (tabCommission) tabCommission.style.display = (isAdmin || isAgent) ? '' : 'none';
+      // ─── สิทธิ์รวม ───
+      const canPost        = isAdmin || isAgent || isOwner;         // โพสต์ทรัพย์ได้
+      const canSeeContacts = isAdmin || isAgent || isOwner || isCustomer; // เห็นข้อมูลติดต่อ
+      const canSeeCustomers= isAdmin || isAgent;                   // เห็นแท็บลูกค้า/ความต้องการ
+      const canSeeCoAgents = isAdmin || isAgent;                   // เห็น co-agent info
+      const canMarketing   = isAdmin || isAgent;                   // แท็บโพสต์/การตลาด
+      const canCommission  = isAdmin || isAgent;                   // คำนวณค่าคอม
+      const canClipboard   = isAdmin || isAgent;
+      const canAdminPanel  = isAdmin;
 
-      // Settings admin-only items
-      document.querySelectorAll('.settings-nav .admin-only').forEach(el => {
-        el.style.display = isAdmin ? '' : 'none';
-      });
+      // บันทึกสิทธิ์ไว้ระดับ global
+      window._canPost        = canPost;
+      window._canSeeContacts = canSeeContacts;
+      window._canSeeCoAgents = canSeeCoAgents;
+      window._canEdit        = canPost;
+      window._canDelete      = isAdmin;
 
-      // Bottom nav: show/hide based on role
-      const bnavCustomers = document.getElementById('bnav-customers');
-      const bnavClipboard = document.getElementById('bnav-clipboard');
-      const bnavMarketing = document.getElementById('bnav-marketing');
-      // ลูกค้า: admin + agent → แสดงใน bottom nav ตรงๆ (ไม่ซ่อน)
-      if (bnavCustomers) bnavCustomers.style.display = (isAdmin || isAgent) ? '' : 'none';
-      // ClipB: admin + agent
-      if (bnavClipboard) bnavClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
-      // Auto-Post: admin + agent
-      if (bnavMarketing) bnavMarketing.style.display = (isAdmin || isAgent) ? '' : 'none';
-      // ถ้า viewer — shift nav: ทรัพย์สิน + ••• เพิ่มเติม (ตั้งค่า) เท่านั้น
-      // nav-more always visible (handled in buildMoreDrawer)
-
-      // Build "More" drawer items based on role
-      buildMoreDrawer(role);
-
-      // Admin-only panels
-      const clearDataPanel = document.getElementById('clearDataPanel');
-      if (clearDataPanel) clearDataPanel.style.display = isAdmin ? '' : 'none';
-
-      // Import/Export panels - Admin only
-      const importPanel = document.getElementById('importPanel');
-      const exportPanel = document.getElementById('exportPanel');
-      const btnImportCustomerCSV = document.getElementById('btnImportCustomerCSV');
-      if (importPanel) importPanel.style.display = isAdmin ? '' : 'none';
-      if (exportPanel) exportPanel.style.display = isAdmin ? '' : 'none';
-      if (btnImportCustomerCSV) btnImportCustomerCSV.style.display = isAdmin ? '' : 'none';
-
-      // Agent can edit/add, but cannot delete
-      window._canEdit = (isAdmin || isAgent);
-      window._canDelete = isAdmin; // Only admin can delete
-
-      // Helper: ตรวจสอบสิทธิ์แก้ไขทรัพย์สินแบบ per-item (เจ้าของโพสต์หรือ admin เท่านั้น)
       window._canEditAsset = function(asset) {
         if (!AUTH.current) return false;
-        if (AUTH.current.role === 'admin') return true;
-        // เจ้าของโพสต์ (ตรวจจาก creatorEmail)
-        if (asset.creatorEmail && AUTH.current.email) {
+        if (AUTH.current.role === ROLE.ADMIN) return true;
+        if (canPost && asset.creatorEmail && AUTH.current.email)
           return asset.creatorEmail.toLowerCase() === AUTH.current.email.toLowerCase();
-        }
-        // fallback: ตรวจจาก poster name ถ้าไม่มี creatorEmail (data เก่า)
-        if (asset.poster && AUTH.current.displayname) {
+        if (canPost && asset.poster && AUTH.current.displayname)
           return asset.poster === AUTH.current.displayname;
-        }
         return false;
       };
       window._canDeleteAsset = function(asset) {
         if (!AUTH.current) return false;
-        if (AUTH.current.role === 'admin') return true;
-        // เจ้าของโพสต์สามารถลบได้
-        if (asset.creatorEmail && AUTH.current.email) {
+        if (AUTH.current.role === ROLE.ADMIN) return true;
+        if (asset.creatorEmail && AUTH.current.email)
           return asset.creatorEmail.toLowerCase() === AUTH.current.email.toLowerCase();
-        }
         return false;
       };
 
+      // ─── Desktop header tabs ───
+      const _tab = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
+      _tab('tabCustomers', canSeeCustomers);
+      _tab('tabSettings',  true);
+      _tab('tabClipboard', canClipboard);
+      _tab('tabMarketing', canMarketing);
+      _tab('tabCommission',canCommission);
+
+      // ─── Settings: admin-only nav items ───
+      document.querySelectorAll('.settings-nav .admin-only').forEach(el => {
+        el.style.display = canAdminPanel ? '' : 'none';
+      });
+      // pending users nav (admin only)
+      const snavPending = document.getElementById('snav-pending');
+      if (snavPending) snavPending.style.display = canAdminPanel ? '' : 'none';
+
+      // ─── Bottom nav ───
+      _tab('bnav-customers', canSeeCustomers);
+      _tab('bnav-clipboard', canClipboard);
+      _tab('bnav-marketing', canMarketing);
+
+      // ─── Admin-only panels ───
+      const _panel = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
+      _panel('clearDataPanel',     canAdminPanel);
+      _panel('importPanel',        canAdminPanel);
+      _panel('exportPanel',        canAdminPanel);
+      _panel('btnImportCustomerCSV', canAdminPanel);
+      _panel('ssec-pending',       canAdminPanel); // pending approval section
+
+      // ─── Add buttons ───
+      _panel('btnAddAsset',    canPost);
+      _panel('btnAddCustomer', canSeeCustomers && (isAdmin || isAgent));
+
+      // ─── Mobile title ───
       if (window.innerWidth <= 768) {
         const titleEl = document.getElementById('mobileSectionTitle');
         if (titleEl) { titleEl.textContent = _sectionTitles['assets'] || ''; titleEl.style.display = 'block'; }
       }
-      const btnAddAsset = document.getElementById('btnAddAsset');
-      const btnAddCustomer = document.getElementById('btnAddCustomer');
-      if (btnAddAsset) btnAddAsset.style.display = (isAdmin || isAgent) ? '' : 'none';
-      if (btnAddCustomer) btnAddCustomer.style.display = (isAdmin || isAgent) ? '' : 'none';
 
-      // Ensure more drawer is hidden (closed) on login
+      buildMoreDrawer(role);
       closeMoreDrawer();
     }
 
     // Build More drawer menu based on role
     function buildMoreDrawer(role) {
-      const isAdmin = role === 'admin';
-      const isAgent = role === 'agent';
+      const r = role || 'viewer';
       const container = document.getElementById('moreDrawerItems');
       if (!container) return;
 
       const items = [];
-      if (isAdmin || isAgent) {
+      if (r === ROLE.ADMIN || r === ROLE.AGENT) {
         items.push({ icon: '💰', label: 'คำนวณค่าคอม', sub: 'คำนวณส่วนแบ่งค่าคอมมิชชั่น', tab: 'commission' });
       }
-      if (isAdmin) {
+      if (r === ROLE.ADMIN) {
         items.push({ icon: '⚙️', label: 'ตั้งค่าระบบ', sub: 'ผู้ใช้, Firebase, Backup, CSV', tab: 'settings' });
+      } else if (r === ROLE.PENDING) {
+        items.push({ icon: '⏳', label: 'รอการอนุมัติ', sub: 'บัญชีของคุณอยู่ระหว่างตรวจสอบ', tab: 'settings' });
       } else {
         items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'บัญชีของฉัน & ข้อมูลระบบ', tab: 'settings' });
       }
@@ -1200,7 +1265,6 @@
         </button>
       `).join('');
 
-      // Always show the More button (even for viewer - for ตั้งค่า)
       const moreBtn = document.getElementById('bnav-more');
       if (moreBtn) moreBtn.style.display = '';
     }
@@ -1617,6 +1681,22 @@
       tb.innerHTML = AUTH.users.map((u, i) => {
         const isMe = AUTH.current && AUTH.current.username === u.email;
         const linkedAgent = u.linkedAgentId ? (DB.agents.find(a => a.id === u.linkedAgentId) || null) : null;
+        
+        let actionButtons = `
+          <button class="btn btn-outline btn-sm" onclick="editUser(${i})">✏️ แก้ไข</button>
+          ${!isMe ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">🗑️</button>` : ''}
+        `;
+        
+        // ถ้าเป็น pending ให้มีปุ่ม Approve / Reject ด่วน
+        if (u.role === 'pending') {
+          actionButtons = `
+            <button class="btn btn-primary btn-sm" style="background:#5cb85c;border-color:#4cae4c;" onclick="approveAgentUser(${i})">✔️ อนุมัติ</button>
+            <button class="btn btn-danger btn-sm" style="background:#d9534f;border-color:#d43f3a;" onclick="rejectAgentUser(${i})">❌ ปฏิเสธ</button>
+            <button class="btn btn-outline btn-sm" onclick="editUser(${i})">✏️</button>
+            ${!isMe ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">🗑️</button>` : ''}
+          `;
+        }
+
         return `<tr>
           <td style="color:var(--text3)">${i + 1}</td>
           <td style="font-weight:600;font-size:13px">${u.email || '-'}${isMe ? ` <span style="font-size:11px;color:var(--gold)">(คุณ)</span>` : ''}<br>
@@ -1625,9 +1705,8 @@
           <td>${_roleBadge(u.role)}</td>
           <td style="font-size:12px">${linkedAgent ? `<span style="color:var(--green)">✅ ${linkedAgent.name}</span>` : '<span style="color:var(--text3)">—</span>'}</td>
           <td style="font-size:12px;color:var(--text3)">${u.note || '-'}</td>
-          <td><div style="display:flex;gap:5px;flex-wrap:wrap;">
-            <button class="btn btn-outline btn-sm" onclick="editUser(${i})">✏️ แก้ไข</button>
-            ${!isMe ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">🗑️</button>` : ''}
+          <td><div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
+            ${actionButtons}
           </div></td>
         </tr>`;
       }).join('');
@@ -1636,6 +1715,21 @@
       if (ml) ml.innerHTML = AUTH.users.map((u, i) => {
         const isMe = AUTH.current && AUTH.current.username === u.email;
         const linkedAgent = u.linkedAgentId ? (DB.agents.find(a => a.id === u.linkedAgentId) || null) : null;
+        
+        let actionButtons = `
+          <button class="btn btn-outline" onclick="editUser(${i})">✏️ แก้ไข</button>
+          ${!isMe ? `<button class="btn btn-danger" onclick="deleteUser(${i})">🗑️ ลบ</button>` : ''}
+        `;
+        
+        if (u.role === 'pending') {
+          actionButtons = `
+            <button class="btn" style="background:#5cb85c;color:#fff;flex:1;" onclick="approveAgentUser(${i})">✔️ อนุมัติ</button>
+            <button class="btn" style="background:#d9534f;color:#fff;flex:1;" onclick="rejectAgentUser(${i})">❌ ปฏิเสธ</button>
+            <button class="btn btn-outline" style="padding:6px;" onclick="editUser(${i})">✏️</button>
+            ${!isMe ? `<button class="btn btn-danger" style="padding:6px;" onclick="deleteUser(${i})">🗑️</button>` : ''}
+          `;
+        }
+
         return `<div class="m-card">
           <span class="m-card-num">#${i + 1}</span>
           <div class="m-card-top">
@@ -1647,12 +1741,71 @@
           </div>
           ${linkedAgent ? `<div class="m-card-row"><span class="m-card-label">🏠 Agent</span><span class="m-card-val" style="color:var(--green)">✅ ${linkedAgent.name}</span></div>` : ''}
           ${u.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="color:var(--text2);font-size:13px">${u.note}</span></div>` : ''}
-          <div class="m-card-actions">
-            <button class="btn btn-outline" onclick="editUser(${i})">✏️ แก้ไข</button>
-            ${!isMe ? `<button class="btn btn-danger" onclick="deleteUser(${i})">🗑️ ลบ</button>` : ''}
+          <div class="m-card-actions" style="display:flex;gap:5px;width:100%;">
+            ${actionButtons}
           </div>
         </div>`;
       }).join('');
+    }
+
+    function _roleBadge(r) {
+      if (r === 'admin') return `<span style="background:var(--red);color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;">Admin</span>`;
+      if (r === 'agent') return `<span style="background:var(--green);color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;">Agent</span>`;
+      if (r === 'owner') return `<span style="background:var(--blue);color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;">Owner</span>`;
+      if (r === 'customer') return `<span style="background:#5bc0de;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;">Customer</span>`;
+      if (r === 'pending') return `<span style="background:#e8a020;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;animation:pulse 1.5s infinite;">Pending</span>`;
+      if (r === 'rejected') return `<span style="background:#555;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;">Rejected</span>`;
+      return `<span style="background:var(--border);color:var(--text3);padding:2px 6px;border-radius:4px;font-size:11px;">${r || 'viewer'}</span>`;
+    }
+
+    async function approveAgentUser(idx) {
+      const u = AUTH.users[idx];
+      if (!u) return;
+      if (!confirm(`ยืนยันอนุมัติคุณ ${u.displayname || u.email} เป็น Agent หรือไม่?`)) return;
+
+      u.role = 'agent';
+      u.note = `อนุมัติเป็น Agent เมื่อ ${new Date().toLocaleDateString('th-TH')}`;
+
+      // extract co-agent configurations
+      const extra = u.socialProviders && u.socialProviders.coagent ? u.socialProviders.coagent : { accept: true, defaultShare: 40 };
+
+      // Automatically create matching Agent profile
+      const newAgent = {
+        id: genId(),
+        name: u.displayname || u.email.split('@')[0],
+        email: u.email,
+        tel: u.phone || '',
+        line: '',
+        linelink: '',
+        company: 'Benz Home Agent',
+        coagent: extra.accept ? 'รับ' : 'ไม่รับ',
+        coAgentDefaultShare: extra.defaultShare || 40,
+        bank: '',
+        fb: ''
+      };
+
+      DB.agents.push(newAgent);
+      u.linkedAgentId = newAgent.id;
+
+      saveAuth();
+      await saveItem('agents', newAgent, newAgent.id);
+
+      renderUsers();
+      if (typeof populateMktSelect === 'function') populateMktSelect();
+      alert(`✅ อนุมัติคุณ ${u.displayname} เป็น Agent เรียบร้อยแล้วค่ะ!`);
+    }
+
+    async function rejectAgentUser(idx) {
+      const u = AUTH.users[idx];
+      if (!u) return;
+      if (!confirm(`ปฏิเสธการสมัครของ ${u.displayname || u.email} ใช่หรือไม่?`)) return;
+
+      u.role = 'rejected';
+      u.note = `ปฏิเสธการสมัครเมื่อ ${new Date().toLocaleDateString('th-TH')}`;
+
+      saveAuth();
+      renderUsers();
+      alert(`❌ ปฏิเสธการสมัครของ ${u.displayname} เรียบร้อยค่ะ`);
     }
 
     function toggleLinkedAgent() {
@@ -2263,6 +2416,11 @@
         document.getElementById('a_careRent').value = 'ยังไม่เก็บ';
         document.getElementById('a_reservationPeriod').value = '';
         document.getElementById('a_active_available').checked = true;
+
+        const curUser = AUTH.current ? AUTH.users.find(u => u.email === AUTH.current.email) : null;
+        const userCoagent = curUser && curUser.socialProviders && curUser.socialProviders.coagent ? curUser.socialProviders.coagent : { accept: true, defaultShare: 40 };
+        document.getElementById('a_coagent').checked = userCoagent.accept !== false;
+        document.getElementById('a_coagentshare').value = userCoagent.defaultShare !== undefined ? userCoagent.defaultShare : 40;
         
         // Reset deal type radio
         const dealSoldEl = document.getElementById('a_deal_sold');
@@ -2319,7 +2477,9 @@
         listingActive: activeVal ? activeVal.value : 'available',
         careContract: v('a_careContract') || 'ยังไม่ทำ',
         careRepair: v('a_careRepair') || 'ไม่มี',
-        careRent: v('a_careRent') || 'ยังไม่เก็บ'
+        careRent: v('a_careRent') || 'ยังไม่เก็บ',
+        coagent: document.getElementById('a_coagent').checked,
+        coagentshare: parseInt(document.getElementById('a_coagentshare').value) || 0
       };
 
       // Reset / Initialize deal & reservation fields

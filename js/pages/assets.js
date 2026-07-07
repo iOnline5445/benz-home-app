@@ -368,7 +368,7 @@
             <td style="color:var(--gold);white-space:nowrap">${a.price || '-'}</td>
             <td>${a.roomtype || '-'}</td>
             <td>${a.location || '-'}${a.bts ? `<br><small style="color:var(--blue);font-weight:600;">🚇 ${a.bts}</small>` : ''}</td>
-            <td style="font-size:12px">${a.contact || '-'}</td>
+            <td style="font-size:12px">${window._canSeeContacts ? (a.contact || '-') : '🔒 เฉพาะ Agent ที่อนุมัติแล้ว'}</td>
             <td>${a.poster || '-'} ${ownerBadge}</td>
             <td>${careInfo}</td>
             <td><div style="display:flex;gap:4px">
@@ -441,8 +441,8 @@
               ${a.area ? `<div class="card-row"><span class="label">📐 ขนาด</span><span class="value">${a.area}</span></div>` : ''}
               ${a.floor ? `<div class="card-row"><span class="label">🏗️ ชั้น</span><span class="value">${a.floor}</span></div>` : ''}
               ${a.location ? `<div class="card-row"><span class="label">📍 ทำเล</span><span class="value">${a.location}</span></div>` : ''}
-              ${a.bts ? `<div class="card-row"><span class="label">🚇 รถไฟฟ้า</span><span class="value" style="color:var(--blue);font-weight:600;">🚄 ${a.bts}</span></div>` : ''}
-              ${a.contact ? `<div class="card-row"><span class="label">📞 ติดต่อ</span><span class="value">${a.contact}</span></div>` : ''}
+              ${a.contact ? `<div class="card-row"><span class="label">📞 ติดต่อ</span><span class="value">${window._canSeeContacts ? a.contact : '🔒 เฉพาะ Agent ที่อนุมัติแล้ว'}</span></div>` : ''}
+              ${(a.coagent && window._canSeeCoAgents) ? `<div class="card-row"><span class="label">🤝 Co-Agent</span><span class="value" style="color:var(--gold);font-weight:700;">รับ (${a.coagentshare || 40}%)</span></div>` : ''}
               ${a.poster ? `<div class="card-row"><span class="label">👤 โพสต์โดย</span><span class="value">${a.poster} ${ownerBadge}</span></div>` : ''}
               <div style="border-top:1px dashed var(--border);margin-top:8px;padding-top:8px;font-size:12px;">
                 <div style="font-weight:700;color:var(--gold);margin-bottom:6px;">🛠️ สถานะดูแลหลังปิดดีล</div>
@@ -482,8 +482,9 @@
       document.getElementById('modalAssetTitle').textContent = '✏️ แก้ไขทรัพย์สิน';
       setV('a_name', a.name); setV('a_location', a.location); setV('a_bts', a.bts); setV('a_status', a.status); setV('a_type', a.type);
       setV('a_price', a.price); setV('a_roomtype', a.roomtype); setV('a_area', a.area); setV('a_floor', a.floor);
-      setV('a_link', a.link); setV('a_map', a.map); setV('a_linkpic', a.linkpic); setV('a_postdate', a.postdate); setV('a_updatedate', a.updatedate);
       setV('a_contact', a.contact); setV('a_note', a.note);
+      document.getElementById('a_coagent').checked = (a.coagent !== false);
+      setV('a_coagentshare', a.coagentshare !== undefined ? a.coagentshare : 40);
       populatePosterSelect(a.poster || '');
       setV('a_careContract', a.careContract || 'ยังไม่ทำ');
       setV('a_careRepair', a.careRepair || 'ไม่มี');

@@ -201,282 +201,429 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 12px;
       overflow-x: hidden;
       transition: background .3s, color .3s;
     }
 
     .login-container {
       width: 100%;
-      max-width: 420px;
+      max-width: 390px;
       margin: auto;
     }
 
     .login-box {
       background: var(--dark2);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 40px 36px;
+      border-radius: 18px;
+      padding: 22px 20px 20px;
       box-shadow: var(--shadow);
       transition: background-color .3s, border-color .3s;
       position: relative;
     }
 
+    /* ===== LOGO ===== */
     .login-logo {
       text-align: center;
-      margin-bottom: 32px;
+      margin-bottom: 14px;
     }
-
     .login-logo .icon {
-      font-size: 48px;
-      margin-bottom: 8px;
+      font-size: 36px;
+      margin-bottom: 4px;
       display: block;
-      filter: drop-shadow(0 4px 10px rgba(201, 168, 76, 0.15));
     }
-
     .login-logo h1 {
       font-family: 'Noto Serif Thai', serif;
-      font-size: 26px;
+      font-size: 20px;
       color: var(--gold);
-      letter-spacing: 1px;
+      letter-spacing: .5px;
       font-weight: 700;
+      line-height: 1.2;
     }
-
     .login-logo p {
       color: var(--text3);
-      font-size: 13px;
-      margin-top: 4px;
+      font-size: 11px;
+      margin-top: 2px;
     }
 
+    /* ===== TAB SWITCHER ===== */
+    .auth-tabs {
+      display: flex;
+      background: var(--dark3);
+      border-radius: 10px;
+      padding: 3px;
+      margin-bottom: 16px;
+      gap: 3px;
+    }
+    .auth-tab-btn {
+      flex: 1;
+      padding: 7px 10px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text3);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .18s, color .18s;
+    }
+    .auth-tab-btn.active {
+      background: var(--dark2);
+      color: var(--gold);
+      box-shadow: 0 1px 6px rgba(0,0,0,0.18);
+    }
+
+    /* ===== FORM FIELDS ===== */
     .login-field {
-      margin-bottom: 20px;
+      margin-bottom: 12px;
       position: relative;
     }
-
     .login-field label {
       display: block;
-      font-size: 13px;
+      font-size: 11.5px;
       color: var(--text2);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       font-weight: 600;
     }
-
     .input-wrapper {
       position: relative;
       display: flex;
       align-items: center;
     }
-
-    .login-field input {
+    .login-field input,
+    .login-field select,
+    .login-field textarea {
       width: 100%;
       background: var(--dark3);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px 16px;
+      border-radius: 9px;
+      padding: 10px 12px;
       color: var(--text);
       font-family: inherit;
-      font-size: 16px;
+      font-size: 14px;
       outline: none;
       transition: border-color .2s, box-shadow .2s;
-      min-height: 52px;
+      min-height: 42px;
     }
-
-    .login-field input:focus {
+    .login-field select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A7060' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+    .login-field input:focus,
+    .login-field select:focus {
       border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12);
+      box-shadow: 0 0 0 2px rgba(201,168,76,.12);
     }
-
     .toggle-pw-btn {
       position: absolute;
-      right: 14px;
+      right: 10px;
       background: transparent;
       border: none;
       color: var(--text3);
       cursor: pointer;
-      font-size: 20px;
+      font-size: 16px;
       padding: 4px;
       user-select: none;
       outline: none;
       -webkit-tap-highlight-color: transparent;
     }
 
-    .toggle-pw-btn:hover {
+    /* ===== ROLE GRID ===== */
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .role-card {
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 8px 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .18s, background .18s;
+      background: var(--dark3);
+    }
+    .role-card:hover { border-color: var(--gold); }
+    .role-card.selected {
+      border-color: var(--gold);
+      background: rgba(201,168,76,.1);
+    }
+    .role-card input { display: none; }
+    .role-card .role-icon { font-size: 20px; display: block; margin-bottom: 3px; }
+    .role-card .role-name { font-size: 11px; font-weight: 700; color: var(--text2); }
+    .role-card.selected .role-name { color: var(--gold); }
+
+    /* ===== AGENT EXTRA OPTIONS ===== */
+    .agent-extra {
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .agent-extra.visible { display: block; }
+    .agent-extra h4 {
+      font-size: 12px;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .coagent-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .coagent-row label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
       color: var(--text2);
+      cursor: pointer;
+    }
+    .coagent-pct {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--text3);
+    }
+    .coagent-pct input {
+      width: 56px !important;
+      min-height: 30px !important;
+      padding: 4px 8px !important;
+      font-size: 13px !important;
+      text-align: center;
     }
 
+    /* ===== TERMS ===== */
+    .terms-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 11.5px;
+      color: var(--text3);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .terms-row input { margin-top: 2px; accent-color: var(--gold); flex-shrink: 0; }
+    .terms-row a { color: var(--gold); }
+
+    /* ===== OPTIONS ROW ===== */
     .options-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
-      font-size: 13px;
+      margin-bottom: 12px;
+      font-size: 12px;
     }
-
     .remember-me {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       cursor: pointer;
       color: var(--text2);
       user-select: none;
     }
-
     .remember-me input {
-      width: 16px;
-      height: 16px;
+      width: 14px; height: 14px;
       accent-color: var(--gold);
       cursor: pointer;
     }
 
+    /* ===== BUTTONS ===== */
     .login-btn {
       width: 100%;
-      padding: 15px;
+      padding: 11px;
       background: linear-gradient(135deg, var(--gold-dark), var(--gold));
       border: none;
-      border-radius: var(--radius);
+      border-radius: 9px;
       color: var(--dark);
       font-family: inherit;
-      font-size: 17px;
+      font-size: 15px;
       font-weight: 700;
       cursor: pointer;
       transition: opacity .2s, transform .1s;
-      min-height: 54px;
+      min-height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      box-shadow: 0 4px 15px rgba(154, 117, 48, 0.2);
+      gap: 8px;
+      box-shadow: 0 3px 10px rgba(154,117,48,.2);
+      margin-bottom: 0;
+    }
+    .login-btn:hover { opacity: .93; }
+    .login-btn:active { transform: scale(0.98); }
+
+    .btn-social {
+      width: 100%;
+      padding: 10px;
+      border-radius: 9px;
+      border: none;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity .18s, transform .1s;
+      margin-top: 7px;
+    }
+    .btn-social:active { transform: scale(0.98); }
+    .btn-google {
+      background: var(--dark3);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-facebook {
+      background: #1877F2;
+      color: #fff;
     }
 
-    .login-btn:hover {
-      opacity: .95;
+    .social-divider {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 10px 0;
+      font-size: 11px;
+      color: var(--text3);
+    }
+    .social-divider::before,
+    .social-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
     }
 
-    .login-btn:active {
-      transform: scale(0.98);
-    }
-
+    /* ===== ALERTS ===== */
     .login-error {
-      background: rgba(224, 80, 80, 0.08);
-      border: 1px solid rgba(224, 80, 80, 0.2);
+      background: rgba(224,80,80,.08);
+      border: 1px solid rgba(224,80,80,.2);
       color: var(--red);
       border-radius: 8px;
-      padding: 12px 16px;
-      font-size: 13px;
-      margin-bottom: 20px;
+      padding: 10px 14px;
+      font-size: 12px;
+      margin-bottom: 12px;
       display: none;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       animation: shake 0.4s ease;
     }
-
+    .login-success {
+      background: rgba(80,200,120,.08);
+      border: 1px solid rgba(80,200,120,.2);
+      color: var(--green);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      margin-bottom: 12px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
     @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-6px); }
-      40%, 80% { transform: translateX(6px); }
+      0%,100% { transform: translateX(0); }
+      20%,60% { transform: translateX(-5px); }
+      40%,80% { transform: translateX(5px); }
     }
 
-    /* ===== GUEST REQUEST BUTTON ===== */
+    /* ===== GUEST LINK ===== */
+    .guest-section {
+      border-bottom: 1px solid var(--border2);
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    .guest-section p {
+      font-size: 11px;
+      color: var(--text3);
+      margin-bottom: 7px;
+    }
     .guest-request-link {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       width: 100%;
-      min-height: 48px;
-      padding: 12px;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
+      min-height: 38px;
+      padding: 8px 12px;
+      background: var(--dark3);
+      border: 1.5px dashed var(--gold);
+      border-radius: 9px;
       color: var(--gold);
       text-decoration: none;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       transition: all .2s;
-      cursor: pointer;
-      box-sizing: border-box;
-      gap: 6px;
+      gap: 5px;
     }
-    .guest-request-link:hover {
-      background: var(--dark3);
-      border-color: var(--gold);
-    }
+    .guest-request-link:hover { background: rgba(201,168,76,.08); }
 
     /* ===== CONNECTION BADGE ===== */
     .mode-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
+      gap: 5px;
+      padding: 4px 10px;
       border-radius: 20px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       position: absolute;
-      top: -15px;
-      right: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      top: -13px;
+      right: 16px;
+      box-shadow: 0 3px 8px rgba(0,0,0,.15);
       border: 1px solid var(--border);
     }
-    
-    .mode-cloud {
-      background: rgba(80, 200, 120, 0.15);
-      color: var(--green);
-    }
+    .mode-cloud { background: rgba(80,200,120,.15); color: var(--green); }
+    .mode-local { background: rgba(80,144,224,.15); color: var(--blue); }
 
-    .mode-local {
-      background: rgba(80, 144, 224, 0.15);
-      color: var(--blue);
-    }
-
-    /* ===== THEME SWITCHER BAR ===== */
+    /* ===== THEME BAR ===== */
     .theme-bar {
       display: flex;
       justify-content: center;
-      gap: 8px;
-      margin-top: 24px;
+      gap: 7px;
+      margin-top: 14px;
       flex-wrap: wrap;
     }
-
     .theme-btn {
-      width: 24px;
-      height: 24px;
+      width: 20px; height: 20px;
       border-radius: 50%;
       border: 2px solid transparent;
       cursor: pointer;
-      position: relative;
-      transition: transform .2s, border-color .2s;
+      transition: transform .18s, border-color .18s;
     }
+    .theme-btn:hover { transform: scale(1.2); }
+    .theme-btn.active { border-color: var(--text); transform: scale(1.2); }
 
-    .theme-btn:hover {
-      transform: scale(1.15);
-    }
-
-    .theme-btn.active {
-      border-color: var(--text);
-      transform: scale(1.15);
-    }
-
-    /* Loading Spinner */
+    /* ===== SPINNER ===== */
     .spinner {
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(0,0,0,0.15);
+      width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,.15);
       border-top-color: var(--dark);
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      animation: spin .8s linear infinite;
       display: none;
     }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Responsive */
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 480px) {
       .login-box {
-        padding: 30px 24px;
+        padding: 22px 20px 20px;
       }
       .login-logo h1 {
-        font-size: 22px;
+        font-size: 20px;
       }
     }
   </style>
@@ -487,7 +634,7 @@
   <div class="login-box">
     <!-- Mode badge -->
     <div id="modeBadge" class="mode-badge mode-local">
-      <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;"></span>
+      <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:currentColor;"></span>
       <span id="modeText">Offline Local</span>
     </div>
 
@@ -498,30 +645,41 @@
     </div>
 
     <!-- guest request block -->
-    <div style="margin-bottom: 24px; text-align: center; border-bottom: 1px solid var(--border2); padding-bottom: 20px;">
-      <span style="font-size: 13.5px; color: var(--text2); display: block; margin-bottom: 12px; font-weight: 500;">สำหรับลูกค้าที่ต้องการฝากหาบ้าน/คอนโด</span>
-      <a href="request.html" class="guest-request-link" style="background: var(--dark3); border: 1.5px dashed var(--gold); border-radius: var(--radius); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); transition: all 0.2s ease;">
+    <div class="guest-section">
+      <p>สำหรับลูกค้าที่ต้องการฝากหาบ้าน/คอนโด</p>
+      <a href="request.html" class="guest-request-link">
         🏡 ฝากหาทรัพย์สิน (ไม่ต้องเข้าสู่ระบบ)
       </a>
     </div>
 
-    <!-- Error message container -->
-    <div class="login-error" id="loginError">
-      <span>⚠️</span>
-      <span id="errorText">อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง</span>
+    <!-- Auth Tab Buttons -->
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" id="tabLogin" onclick="switchAuthTab('login')">เข้าสู่ระบบ</button>
+      <button class="auth-tab-btn" id="tabRegister" onclick="switchAuthTab('register')">สมัครสมาชิก</button>
     </div>
 
+    <!-- Error/Success Alerts -->
+    <div class="login-error" id="loginError">
+      <span>⚠️</span>
+      <span id="errorText">อีเมลหรือรหัสผ่านไม่ถูกต้อง</span>
+    </div>
+    <div class="login-success" id="loginSuccess">
+      <span>✅</span>
+      <span id="successText">สมัครสมาชิกสำเร็จ! กรุณารอการอนุมัติ</span>
+    </div>
+
+    <!-- 1. LOGIN FORM -->
     <form id="loginForm" onsubmit="handleLoginSubmit(event)">
       <div class="login-field">
         <label for="loginUsername">อีเมลผู้ใช้งาน</label>
-        <input type="email" id="loginUsername" placeholder="yourname@benzhome.com" required autocomplete="email">
+        <input type="email" id="loginUsername" placeholder="yourname@gmail.com" required autocomplete="email">
       </div>
 
       <div class="login-field">
         <label for="loginPassword">รหัสผ่าน</label>
         <div class="input-wrapper">
           <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
-          <button type="button" class="toggle-pw-btn" id="togglePwBtn" onclick="togglePasswordVisibility()" title="แสดงรหัสผ่าน">👁️</button>
+          <button type="button" class="toggle-pw-btn" id="togglePwBtn" onclick="togglePasswordVisibility('loginPassword', 'togglePwBtn')" title="แสดงรหัสผ่าน">👁️</button>
         </div>
       </div>
 
@@ -536,13 +694,88 @@
         <span class="spinner" id="loginSpinner"></span>
         <span id="btnText">เข้าสู่ระบบ</span>
       </button>
-      <button type="button" class="login-btn btn-google" onclick="doLoginWithGoogle()" style="background:#FAF8F2;color:#1A1506;border:1px solid #C07800;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;width:100%;height:45px;border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo" style="width:18px;height:18px;">
-        <span>เข้าสู่ระบบด้วย Google Mail</span>
+
+      <div class="social-divider">หรือเข้าด้วยโซเชียล</div>
+
+      <button type="button" class="btn-social btn-google" onclick="doLoginWithGoogle()">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo" style="width:16px;height:16px;">
+        <span>Google Mail</span>
       </button>
-      <button type="button" class="login-btn btn-facebook" onclick="doLoginWithFacebook()" style="background:#1877F2;color:#FFFFFF;border:none;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;width:100%;height:45px;border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/2023_Facebook_icon.svg" alt="Facebook logo" style="width:20px;height:20px;">
-        <span>เข้าสู่ระบบด้วย Facebook</span>
+      <button type="button" class="btn-social btn-facebook" onclick="doLoginWithFacebook()">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/2023_Facebook_icon.svg" alt="Facebook logo" style="width:16px;height:16px;">
+        <span>Facebook</span>
+      </button>
+    </form>
+
+    <!-- 2. REGISTER FORM -->
+    <form id="registerForm" onsubmit="handleRegisterSubmit(event)" style="display:none;">
+      <div class="login-field">
+        <label for="regName">ชื่อผู้แสดงตัว (Display Name)</label>
+        <input type="text" id="regName" placeholder="เช่น เอเจนต์ สมัครดี" required>
+      </div>
+
+      <div class="login-field">
+        <label for="regEmail">อีเมลผู้ใช้งาน</label>
+        <input type="email" id="regEmail" placeholder="yourname@gmail.com" required>
+      </div>
+
+      <div class="login-field">
+        <label for="regPassword">รหัสผ่าน</label>
+        <div class="input-wrapper">
+          <input type="password" id="regPassword" placeholder="รหัสผ่าน 6 ตัวขึ้นไป" required minlength="6">
+          <button type="button" class="toggle-pw-btn" id="toggleRegPwBtn" onclick="togglePasswordVisibility('regPassword', 'toggleRegPwBtn')" title="แสดงรหัสผ่าน">👁️</button>
+        </div>
+      </div>
+
+      <div class="login-field">
+        <label for="regPhone">เบอร์โทรศัพท์ติดต่อ</label>
+        <input type="tel" id="regPhone" placeholder="เช่น 0891234567" required>
+      </div>
+
+      <div class="login-field">
+        <label>ประเภทผู้สมัครเข้าใช้งาน</label>
+        <div class="role-grid">
+          <div class="role-card selected" id="rc-customer" onclick="selectRegRole('customer')">
+            <span class="role-icon">👤</span>
+            <span class="role-name">ลูกค้า</span>
+          </div>
+          <div class="role-card" id="rc-owner" onclick="selectRegRole('owner')">
+            <span class="role-icon">🏡</span>
+            <span class="role-name">เจ้าของทรัพย์</span>
+          </div>
+          <div class="role-card" id="rc-agent" onclick="selectRegRole('agent')">
+            <span class="role-icon">🏷️</span>
+            <span class="role-name">Agent</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agent Extra Options -->
+      <div class="agent-extra" id="agentExtraOptions">
+        <h4>🤝 การแชร์ระบบร่วมขาย (Co-Agent)</h4>
+        <div class="coagent-row">
+          <label>
+            <input type="checkbox" id="regCoagentAccept" checked>
+            เข้าร่วมเป็น Co-Agent
+          </label>
+          <div class="coagent-pct">
+            <span>ส่วนแบ่งเริ่มต้น</span>
+            <input type="number" id="regCoagentShare" value="40" min="0" max="100">
+            <span>%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="terms-row">
+        <input type="checkbox" id="regAgree" required>
+        <label for="regAgree">
+          ฉันยอมรับ <a href="#" onclick="alert('เงื่อนไขระบบ:\n1. เอเจนต์ใหม่จะต้องรอการอนุมัติสิทธิ์จากแอดมินก่อนจึงจะโพสต์ฝากในระบบร่วมขาย หรือเข้าดูเบอร์ผู้ประกาศหลักได้\n2. ข้อมูลส่วนตัวเบอร์โทรและ Line จะถูกจัดเก็บเพื่อใช้ในการประสานงานซื้อขายเท่านั้น')">เงื่อนไขการใช้งาน</a> และนโยบายของระบบ
+        </label>
+      </div>
+
+      <button type="submit" class="login-btn" id="regSubmitBtn">
+        <span class="spinner" id="regSpinner"></span>
+        <span id="regBtnText">สมัครสมาชิก</span>
       </button>
     </form>
 
@@ -1021,10 +1254,141 @@
     }
   }
 
+  // Tab switching between Login and Register
+  let selectedRegRole = 'customer';
+
+  function switchAuthTab(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('tabLogin').classList.toggle('active', isLogin);
+    document.getElementById('tabRegister').classList.toggle('active', !isLogin);
+    document.getElementById('loginForm').style.display = isLogin ? 'block' : 'none';
+    document.getElementById('registerForm').style.display = isLogin ? 'none' : 'block';
+    
+    // reset alerts
+    document.getElementById('loginError').style.display = 'none';
+    document.getElementById('loginSuccess').style.display = 'none';
+  }
+
+  function selectRegRole(role) {
+    selectedRegRole = role;
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('rc-' + role).classList.add('selected');
+
+    // show extra config for agent only
+    const agentOpt = document.getElementById('agentExtraOptions');
+    if (role === 'agent') {
+      agentOpt.classList.add('visible');
+    } else {
+      agentOpt.classList.remove('visible');
+    }
+  }
+
+  async function handleRegisterSubmit(event) {
+    event.preventDefault();
+    
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim().toLowerCase();
+    const password = document.getElementById('regPassword').value;
+    const phone = document.getElementById('regPhone').value.trim();
+    
+    const errEl = document.getElementById('loginError');
+    const successEl = document.getElementById('loginSuccess');
+    const spinner = document.getElementById('regSpinner');
+    const btnText = document.getElementById('regBtnText');
+    const submitBtn = document.getElementById('regSubmitBtn');
+    
+    errEl.style.display = 'none';
+    successEl.style.display = 'none';
+    
+    // ตรวจสอบความถูกต้องเบื้องต้น
+    if (AUTH.users.some(u => (u.email || '').toLowerCase().trim() === email)) {
+      errEl.style.display = 'flex';
+      document.getElementById('errorText').textContent = '❌ อีเมลนี้ถูกใช้สมัครในระบบแล้ว';
+      return;
+    }
+
+    spinner.style.display = 'inline-block';
+    btnText.textContent = 'กำลังสมัคร...';
+    submitBtn.disabled = true;
+
+    await new Promise(r => setTimeout(r, 600));
+
+    try {
+      // ── กำหนดบทบาทแรกเริ่ม ──
+      // Agent -> pending เสมอ
+      // Customer -> customer เลย
+      // Owner -> owner เลย
+      const finalRole = selectedRegRole === 'agent' ? 'pending' : selectedRegRole;
+
+      const newUser = {
+        email: email,
+        password: password,
+        displayname: name,
+        role: finalRole,
+        phone: phone,
+        note: `สมัครผ่านหน้าเว็บเมื่อ ${new Date().toLocaleDateString('th-TH')}`,
+        linkedAgentId: null,
+        socialProviders: {}
+      };
+
+      // เก็บค่า Co-Agent หากสมัครเป็น Agent
+      if (selectedRegRole === 'agent') {
+        const acceptCo = document.getElementById('regCoagentAccept').checked;
+        const coPct = parseInt(document.getElementById('regCoagentShare').value) || 40;
+        newUser.socialProviders = {
+          coagent: {
+            accept: acceptCo,
+            defaultShare: coPct
+          }
+        };
+      }
+
+      AUTH.users.push(newUser);
+      
+      // Save local
+      localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+
+      // Sync Firebase
+      if (_fbReady && _db) {
+        const { doc, setDoc } = window._firestoreLib;
+        await setDoc(doc(_db, 'yb_auth', 'auth_data'), { users: AUTH.users });
+      }
+
+      spinner.style.display = 'none';
+      btnText.textContent = 'สมัครสมาชิก';
+      submitBtn.disabled = false;
+
+      // แสดงความสำเร็จ
+      successEl.style.display = 'flex';
+      const msg = finalRole === 'pending'
+        ? 'สมัครสมาชิกสำเร็จ! กรุณารอการอนุมัติการเป็น Agent จากแอดมินก่อนเข้าใช้งานเต็มรูปแบบค่ะ'
+        : 'สมัครสมาชิกสำเร็จ! คุณสามารถใช้ข้อมูลนี้เข้าสู่ระบบได้ทันที';
+      document.getElementById('successText').textContent = msg;
+
+      // ล้างค่าฟอร์ม
+      document.getElementById('registerForm').reset();
+      
+      // สลับไปหน้าล็อกอินหลังผ่านไป 3.5 วินาที
+      setTimeout(() => {
+        switchAuthTab('login');
+        document.getElementById('loginUsername').value = email;
+        document.getElementById('loginPassword').value = password;
+      }, 3500);
+
+    } catch (e) {
+      console.error('Register failed:', e);
+      errEl.style.display = 'flex';
+      document.getElementById('errorText').textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อคลาวด์: ' + e.message;
+      spinner.style.display = 'none';
+      btnText.textContent = 'สมัครสมาชิก';
+      submitBtn.disabled = false;
+    }
+  }
+
   // Password visibility helper
-  function togglePasswordVisibility() {
-    const pwInput = document.getElementById('loginPassword');
-    const toggleBtn = document.getElementById('togglePwBtn');
+  function togglePasswordVisibility(inputId, btnId) {
+    const pwInput = document.getElementById(inputId);
+    const toggleBtn = document.getElementById(btnId);
     
     if (pwInput.type === 'password') {
       pwInput.type = 'text';

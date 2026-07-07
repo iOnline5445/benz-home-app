@@ -251,7 +251,7 @@
               </div>
               ` : ''}
               ${a.targetDate ? `<div class="m-card-row"><span class="m-card-label">📅 วันที่ต้องการ</span><span class="m-card-val" style="color:var(--gold);font-weight:600;">${a.targetDate}</span></div>` : ''}
-              ${a.contact ? `<div class="m-card-row"><span class="m-card-label">📞 Contact</span><span class="m-card-val">${a.contact}</span></div>` : ''}
+              ${a.contact ? `<div class="m-card-row"><span class="m-card-label">📞 Contact</span><span class="m-card-val">${window._canSeeContacts ? a.contact : '🔒 เฉพาะ Agent ที่อนุมัติแล้ว'}</span></div>` : ''}
               ${a.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${a.note}</span></div>` : ''}
               <div class="m-card-actions">
                 ${a.linkpost ? `<a class="btn btn-outline" href="${a.linkpost}" target="_blank" style="flex:1;justify-content:center;display:flex;align-items:center;min-height:42px;font-size:14px;border-radius:10px;text-decoration:none;">🔗 Post</a>` : ''}
@@ -280,7 +280,7 @@
             <td><span class="badge ${badge}">${a.status || '-'}</span></td>
             <td>${a.type || '-'}</td>
             <td style="color:var(--gold)">${a.budget || '-'}</td>
-            <td>${a.contact || '-'}</td>
+            <td>${window._canSeeContacts ? (a.contact || '-') : '🔒 เฉพาะ Agent ที่อนุมัติแล้ว'}</td>
             <td style="font-size:12px">${a.linkpost ? `<a href="${a.linkpost}" target="_blank" style="color:var(--blue)">🔗 Link</a>` : '-'}</td>
             <td style="font-size:12px;color:var(--gold);font-weight:600">${a.targetDate || '-'}</td>
             <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.note || '-'}</td>
@@ -320,7 +320,7 @@
             </div>
             ` : ''}
             ${a.targetDate ? `<div class="m-card-row"><span class="m-card-label">📅 วันที่ต้องการ</span><span class="m-card-val" style="color:var(--gold);font-weight:600;">${a.targetDate}</span></div>` : ''}
-            ${a.contact ? `<div class="m-card-row"><span class="m-card-label">📞 Contact</span><span class="m-card-val">${a.contact}</span></div>` : ''}
+            ${a.contact ? `<div class="m-card-row"><span class="m-card-label">📞 Contact</span><span class="m-card-val">${window._canSeeContacts ? a.contact : '🔒 เฉพาะ Agent ที่อนุมัติแล้ว'}</span></div>` : ''}
             ${a.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${a.note}</span></div>` : ''}
             <div class="m-card-actions">
               ${a.linkpost ? `<a class="btn btn-outline" href="${a.linkpost}" target="_blank" style="flex:1;justify-content:center;display:flex;align-items:center;min-height:42px;font-size:14px;border-radius:10px;text-decoration:none;">🔗 Post</a>` : ''}
@@ -487,7 +487,7 @@
               <td>${a.type || '-'}</td>
               <td style="color:var(--gold); font-weight:700;">${a.price || '-'}</td>
               <td>${a.location || '-'}${a.bts ? `<br><small style="color:var(--blue); font-weight:600;">🚇 ${a.bts}</small>` : ''}</td>
-              <td style="font-size:12px;">${a.contact || '-'}</td>
+              <td style="font-size:12px;">${window._canSeeContacts ? (a.contact || '-') : '🔒 เฉพาะ Agent ที่อนุมัติแล้ว'}</td>
               <td>
                 <div style="display:flex; gap:4px;">
                   ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm" style="padding:4px 8px;">🔗</a>` : ''}
@@ -600,7 +600,7 @@
               <td><span class="badge ${badge}">${c.status || '-'}</span></td>
               <td style="color:var(--gold); font-weight:700;">${c.budget || '-'}</td>
               <td>${c.line || 'ไม่ระบุ'}${c.stationStart || c.stationEnd ? `<br><small style="color:var(--text3);">📍 ${c.stationStart || 'ไม่ระบุ'} - ${c.stationEnd || 'ไม่ระบุ'}</small>` : ''}</td>
-              <td style="font-size:12px;">${c.contact || '-'}</td>
+              <td style="font-size:12px;">${window._canSeeContacts ? (c.contact || '-') : '🔒 เฉพาะ Agent ที่อนุมัติแล้ว'}</td>
               <td style="font-size:12px; color:var(--text2); max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${c.note || ''}">${c.note || '-'}</td>
             </tr>
           `;
