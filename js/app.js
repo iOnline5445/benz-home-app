@@ -923,7 +923,7 @@
       const base = isExtension ? './lib' : `https://www.gstatic.com/firebasejs/${sdkVer}`;
       try {
         const authMod = await import(`${base}/firebase-auth.js`);
-        const { getAuth, signInWithPopup, GoogleAuthProvider } = authMod;
+        const { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } = authMod;
         
         const appsMod = await import(`${base}/firebase-app.js`);
         const { getApps, initializeApp } = appsMod;
@@ -931,7 +931,7 @@
         const app = existingApps.length > 0 ? existingApps[0] : initializeApp(FIREBASE_CONFIG);
         const auth = getAuth(app);
         
-        window._firebaseAuth = { auth, signInWithPopup, GoogleAuthProvider };
+        window._firebaseAuth = { auth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider };
         return window._firebaseAuth;
       } catch (e) {
         console.error('Failed to load Firebase Auth SDK:', e);
@@ -973,10 +973,17 @@
             displayname: displayname,
             role: 'agent',
             note: 'สมัครอัตโนมัติผ่าน Google Mail',
-            linkedAgentId: null
+            linkedAgentId: null,
+            socialProviders: {
+              google: { uid: user.uid, email: email, displayName: displayname }
+            }
           };
           
           AUTH.users.push(found);
+          saveAuth();
+        } else {
+          if (!found.socialProviders) found.socialProviders = {};
+          found.socialProviders.google = { uid: user.uid, email: email, displayName: displayname };
           saveAuth();
         }
         
@@ -987,6 +994,71 @@
         errEl.style.display = 'flex';
         const errTextEl = errEl.querySelector('span') || errEl;
         errTextEl.textContent = '❌ ล็อกอินด้วย Google ผิดพลาด: ' + e.message;
+      }
+    }
+
+    async function doLoginWithFacebook() {
+      if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
+        alert('❌ ระบบคลาวด์/Firebase ยังไม่ได้กำหนดค่า กรุณากรอกการตั้งค่า Firebase ก่อนใช้งานเข้าสู่ระบบด้วย Facebook ค่ะ');
+        return;
+      }
+      
+      const errEl = document.getElementById('loginError');
+      errEl.style.display = 'none';
+      
+      try {
+        const { auth, signInWithPopup, FacebookAuthProvider } = await initFirebaseAuth();
+        const provider = new FacebookAuthProvider();
+        
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        
+        let email = user.email ? user.email.toLowerCase().trim() : '';
+        if (!email && user.providerData && user.providerData[0]) {
+          email = (user.providerData[0].email || '').toLowerCase().trim();
+        }
+        if (!email) {
+          email = `${user.uid}@facebook.com`;
+        }
+        
+        const displayname = user.displayName || email.split('@')[0];
+        
+        let found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email);
+        
+        if (!found && _fbReady) {
+          await syncAuthFromFirebase();
+          found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email);
+        }
+        
+        if (!found) {
+          console.log('🆕 Facebook User not found in system. Registering automatically:', email);
+          found = {
+            email: email,
+            password: 'facebook-auth-login-provider-oauth2',
+            displayname: displayname,
+            role: 'agent',
+            note: 'สมัครอัตโนมัติผ่าน Facebook',
+            linkedAgentId: null,
+            socialProviders: {
+              facebook: { uid: user.uid, email: email, displayName: displayname }
+            }
+          };
+          
+          AUTH.users.push(found);
+          saveAuth();
+        } else {
+          if (!found.socialProviders) found.socialProviders = {};
+          found.socialProviders.facebook = { uid: user.uid, email: email, displayName: displayname };
+          saveAuth();
+        }
+        
+        performLogin(found, true);
+        
+      } catch (e) {
+        console.error('Facebook Sign-in Error:', e);
+        errEl.style.display = 'flex';
+        const errTextEl = errEl.querySelector('span') || errEl;
+        errTextEl.textContent = '❌ ล็อกอินด้วย Facebook ผิดพลาด: ' + e.message;
       }
     }
 
@@ -1745,6 +1817,107 @@
       alert('✅ เปลี่ยนรหัสผ่านสำเร็จ');
     }
 
+    function renderProfileSettings() {
+      const cur = AUTH.current;
+      if (!cur) return;
+      
+      const user = AUTH.users.find(u => u.email === cur.username);
+      if (!user) return;
+      
+      document.getElementById('profDisplayName').textContent = user.displayname || '-';
+      document.getElementById('profEmail').textContent = user.email || '-';
+      document.getElementById('profRole').textContent = user.role || 'viewer';
+      
+      document.getElementById('cp_old').value = '';
+      document.getElementById('cp_new').value = '';
+      document.getElementById('cp_confirm').value = '';
+      document.getElementById('cp_error').style.display = 'none';
+      
+      const providers = user.socialProviders || {};
+      
+      const statusGoogleEl = document.getElementById('statusGoogle');
+      if (providers.google) {
+        statusGoogleEl.innerHTML = `
+          <span style="color:var(--green); margin-right:8px;">✔️ เชื่อมต่อแล้ว (${providers.google.email || providers.google.displayName})</span>
+          <button class="btn btn-danger btn-sm" style="font-size:10px; padding:2px 8px;" onclick="disconnectSocialAccount('google')">ยกเลิก</button>
+        `;
+      } else {
+        statusGoogleEl.innerHTML = `
+          <button class="btn btn-outline btn-sm" style="font-size:10px; padding:2px 8px; border-color:var(--gold); color:var(--gold);" onclick="connectSocialAccount('google')">🔗 เชื่อมต่อ</button>
+        `;
+      }
+      
+      const statusFacebookEl = document.getElementById('statusFacebook');
+      if (providers.facebook) {
+        statusFacebookEl.innerHTML = `
+          <span style="color:var(--green); margin-right:8px;">✔️ เชื่อมต่อแล้ว (${providers.facebook.displayName || 'Facebook Account'})</span>
+          <button class="btn btn-danger btn-sm" style="font-size:10px; padding:2px 8px;" onclick="disconnectSocialAccount('facebook')">ยกเลิก</button>
+        `;
+      } else {
+        statusFacebookEl.innerHTML = `
+          <button class="btn btn-outline btn-sm" style="font-size:10px; padding:2px 8px; border-color:var(--gold); color:var(--gold);" onclick="connectSocialAccount('facebook')">🔗 เชื่อมต่อ</button>
+        `;
+      }
+    }
+
+    async function connectSocialAccount(type) {
+      if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
+        alert('❌ ระบบคลาวด์/Firebase ยังไม่ได้กำหนดค่า กรุณากรอกการตั้งค่า Firebase ก่อนเชื่อมต่อบัญชีค่ะ');
+        return;
+      }
+      
+      try {
+        const { auth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } = await initFirebaseAuth();
+        let provider;
+        if (type === 'google') {
+          provider = new GoogleAuthProvider();
+          provider.setCustomParameters({ prompt: 'select_account' });
+        } else if (type === 'facebook') {
+          provider = new FacebookAuthProvider();
+        }
+        
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        const email = (user.email || '').toLowerCase().trim();
+        const displayname = user.displayName || email.split('@')[0];
+        
+        const cur = AUTH.current;
+        const found = AUTH.users.find(u => u.email === cur.username);
+        if (found) {
+          if (!found.socialProviders) found.socialProviders = {};
+          found.socialProviders[type] = {
+            uid: user.uid,
+            email: email || `${user.uid}@facebook.com`,
+            displayName: displayname
+          };
+          saveAuth();
+          renderProfileSettings();
+          alert(`✅ เชื่อมต่อบัญชี ${type === 'google' ? 'Google' : 'Facebook'} สำเร็จค่ะ`);
+        }
+      } catch (e) {
+        console.error('Link account error:', e);
+        alert(`❌ ไม่สามารถเชื่อมต่อบัญชีได้ค่ะ: ` + e.message);
+      }
+    }
+
+    async function disconnectSocialAccount(type) {
+      if (!confirm(`คุณต้องการยกเลิกการเชื่อมต่อบัญชี ${type === 'google' ? 'Google' : 'Facebook'} หรือไม่?`)) return;
+      
+      const cur = AUTH.current;
+      const found = AUTH.users.find(u => u.email === cur.username);
+      if (found && found.socialProviders && found.socialProviders[type]) {
+        delete found.socialProviders[type];
+        saveAuth();
+        renderProfileSettings();
+        alert(`✅ ยกเลิกการเชื่อมต่อบัญชี ${type === 'google' ? 'Google' : 'Facebook'} เรียบร้อยค่ะ`);
+      }
+    }
+
+    window.doLoginWithFacebook = doLoginWithFacebook;
+    window.renderProfileSettings = renderProfileSettings;
+    window.connectSocialAccount = connectSocialAccount;
+    window.disconnectSocialAccount = disconnectSocialAccount;
+
     // ============================
     // MODALS
     // ============================
@@ -1752,6 +1925,7 @@
       const modalId = 'modal' + t.charAt(0).toUpperCase() + t.slice(1);
       document.getElementById(modalId).classList.add('open');
       if (t !== 'user') editMode = { type: t, idx: -1 };
+      if (t === 'changePw') renderProfileSettings();
       if (t === 'asset') {
         document.getElementById('modalAssetTitle').textContent = '🏠 เพิ่มทรัพย์สิน';
         // Clear all fields

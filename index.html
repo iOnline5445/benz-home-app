@@ -46,6 +46,10 @@
         <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo" style="width:18px;height:18px;">
         <span>เข้าสู่ระบบด้วย Google Mail</span>
       </button>
+      <button class="login-btn btn-facebook" onclick="doLoginWithFacebook()" style="background:#1877F2;color:#FFFFFF;border:none;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;width:100%;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/2023_Facebook_icon.svg" alt="Facebook logo" style="width:20px;height:20px;">
+        <span>เข้าสู่ระบบด้วย Facebook</span>
+      </button>
       <div class="login-error" id="loginError">❌ อีเมลหรือรหัสผ่านไม่ถูกต้อง <button onclick="resetAuthData()"
           style="margin-left:10px;background:none;border:1px solid var(--red);color:var(--red);border-radius:5px;padding:2px 8px;cursor:pointer;font-size:12px;">รีเซ็ต</button>
       </div>
@@ -1648,30 +1652,71 @@
     </div>
 
     <!-- Change Password Modal -->
+    <!-- Profile & Change Password Modal -->
     <div class="modal-bg" id="modalChangePw">
-      <div class="modal modal-sm">
-        <div class="modal-head">
-          <h2>🔑 เปลี่ยนรหัสผ่าน</h2>
+      <div class="modal" style="max-width:550px; width:95%; background:var(--dark2); border:1px solid var(--border);">
+        <div class="modal-head" style="border-bottom:1px solid var(--border); padding-bottom:12px;">
+          <h2 style="color:var(--gold);">👤 ตั้งค่าโปรไฟล์ & บัญชีเชื่อมต่อ</h2>
           <button class="close-btn" onclick="closeModal('changePw')">✕</button>
         </div>
-        <div class="modal-body">
-          <div class="form-group" style="margin-bottom:14px;">
-            <label>รหัสผ่านปัจจุบัน</label>
-            <input type="password" id="cp_old" placeholder="รหัสผ่านเดิม">
+        <div class="modal-body" style="padding:20px; display:flex; flex-direction:column; gap:16px;">
+          
+          <!-- User Profile Details -->
+          <div style="background:var(--dark); padding:12px; border-radius:8px; border:1px solid var(--border2);">
+            <h3 style="font-size:14px; color:var(--gold); margin-bottom:8px;">📝 ข้อมูลโปรไฟล์</h3>
+            <div style="font-size:13px; line-height:1.6;">
+              <div><strong>ชื่อผู้แสดง:</strong> <span id="profDisplayName">-</span></div>
+              <div><strong>อีเมลระบบ:</strong> <span id="profEmail">-</span></div>
+              <div><strong>ระดับสิทธิ์:</strong> <span id="profRole">-</span></div>
+            </div>
           </div>
-          <div class="form-group" style="margin-bottom:14px;">
-            <label>รหัสผ่านใหม่</label>
-            <input type="password" id="cp_new" placeholder="รหัสผ่านใหม่">
+
+          <!-- Social Connections -->
+          <div style="background:var(--dark); padding:12px; border-radius:8px; border:1px solid var(--border2);">
+            <h3 style="font-size:14px; color:var(--gold); margin-bottom:10px;">🔗 บัญชีโซเชียลมีเดียที่เชื่อมต่อ</h3>
+            
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <!-- Google -->
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid var(--border2); padding-bottom:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo" style="width:16px;height:16px;">
+                  <span style="font-size:13px; font-weight:600;">Google Mail</span>
+                </div>
+                <div id="statusGoogle" style="font-size:12px;"></div>
+              </div>
+              
+              <!-- Facebook -->
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/2023_Facebook_icon.svg" alt="Facebook logo" style="width:16px;height:16px;">
+                  <span style="font-size:13px; font-weight:600;">Facebook</span>
+                </div>
+                <div id="statusFacebook" style="font-size:12px;"></div>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label>ยืนยันรหัสผ่านใหม่</label>
-            <input type="password" id="cp_confirm" placeholder="ยืนยันรหัสผ่านใหม่">
+
+          <!-- Change Password Form -->
+          <div style="background:var(--dark); padding:12px; border-radius:8px; border:1px solid var(--border2);">
+            <h3 style="font-size:14px; color:var(--gold); margin-bottom:10px;">🔑 เปลี่ยนรหัสผ่าน</h3>
+            <div class="form-group" style="margin-bottom:10px;">
+              <label style="font-size:11px; color:var(--text3);">รหัสผ่านปัจจุบัน</label>
+              <input type="password" id="cp_old" style="font-size:12px; padding:6px; margin-bottom:0;" placeholder="รหัสผ่านเดิม">
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+              <label style="font-size:11px; color:var(--text3);">รหัสผ่านใหม่</label>
+              <input type="password" id="cp_new" style="font-size:12px; padding:6px; margin-bottom:0;" placeholder="รหัสผ่านใหม่">
+            </div>
+            <div class="form-group">
+              <label style="font-size:11px; color:var(--text3);">ยืนยันรหัสผ่านใหม่</label>
+              <input type="password" id="cp_confirm" style="font-size:12px; padding:6px; margin-bottom:0;" placeholder="ยืนยันรหัสผ่านใหม่">
+            </div>
+            <div id="cp_error" style="color:var(--red);font-size:12px;margin-top:8px;display:none;"></div>
           </div>
-          <div id="cp_error" style="color:var(--red);font-size:13px;margin-top:10px;display:none;"></div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer" style="border-top:1px solid var(--border); padding-top:12px;">
           <button class="btn btn-outline" onclick="closeModal('changePw')">ยกเลิก</button>
-          <button class="btn btn-primary" onclick="doChangePw()">💾 บันทึก</button>
+          <button class="btn btn-primary" onclick="doChangePw()">💾 บันทึกรหัสผ่าน</button>
         </div>
       </div>
     </div>

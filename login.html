@@ -540,6 +540,10 @@
         <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo" style="width:18px;height:18px;">
         <span>เข้าสู่ระบบด้วย Google Mail</span>
       </button>
+      <button type="button" class="login-btn btn-facebook" onclick="doLoginWithFacebook()" style="background:#1877F2;color:#FFFFFF;border:none;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;width:100%;height:45px;border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/2023_Facebook_icon.svg" alt="Facebook logo" style="width:20px;height:20px;">
+        <span>เข้าสู่ระบบด้วย Facebook</span>
+      </button>
     </form>
 
 
@@ -840,7 +844,7 @@
     const base = isExtension ? './lib' : `https://www.gstatic.com/firebasejs/${sdkVer}`;
     try {
       const authMod = await import(`${base}/firebase-auth.js`);
-      const { getAuth, signInWithPopup, GoogleAuthProvider } = authMod;
+      const { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } = authMod;
       
       const appsMod = await import(`${base}/firebase-app.js`);
       const { getApps, initializeApp } = appsMod;
@@ -848,7 +852,7 @@
       const app = existingApps.length > 0 ? existingApps[0] : initializeApp(FIREBASE_CONFIG);
       const auth = getAuth(app);
       
-      window._firebaseAuth = { auth, signInWithPopup, GoogleAuthProvider };
+      window._firebaseAuth = { auth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider };
       return window._firebaseAuth;
     } catch (e) {
       console.error('Failed to load Firebase Auth SDK:', e);
@@ -891,19 +895,26 @@
           displayname: displayname,
           role: 'agent',
           note: 'สมัครอัตโนมัติผ่าน Google Mail',
-          linkedAgentId: null
+          linkedAgentId: null,
+          socialProviders: {
+            google: { uid: user.uid, email: email, displayName: displayname }
+          }
         };
         
         AUTH.users.push(found);
-        localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
-        
-        if (_fbReady && _db) {
-          try {
-            const { doc, setDoc } = window._firestoreLib;
-            await setDoc(doc(_db, 'yb_auth', 'auth_data'), { users: AUTH.users });
-          } catch(e) {
-            console.warn('Failed to sync new Google user to Firebase:', e);
-          }
+      } else {
+        if (!found.socialProviders) found.socialProviders = {};
+        found.socialProviders.google = { uid: user.uid, email: email, displayName: displayname };
+      }
+      
+      localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+      
+      if (_fbReady && _db) {
+        try {
+          const { doc, setDoc } = window._firestoreLib;
+          await setDoc(doc(_db, 'yb_auth', 'auth_data'), { users: AUTH.users });
+        } catch(e) {
+          console.warn('Failed to sync new Google user to Firebase:', e);
         }
       }
       
@@ -923,6 +934,90 @@
       console.error('Google Sign-in Error:', e);
       errEl.style.display = 'flex';
       errText.textContent = 'ล็อกอินด้วย Google ผิดพลาด: ' + e.message;
+    }
+  }
+
+  async function doLoginWithFacebook() {
+    if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
+      alert('❌ ระบบคลาวด์/Firebase ยังไม่ได้กำหนดค่า กรุณากรอกการตั้งค่า Firebase ก่อนใช้งานเข้าสู่ระบบด้วย Facebook ค่ะ');
+      return;
+    }
+    
+    const errEl = document.getElementById('loginError');
+    const errText = document.getElementById('errorText');
+    errEl.style.display = 'none';
+    
+    try {
+      const { auth, signInWithPopup, FacebookAuthProvider } = await initFirebaseAuth();
+      const provider = new FacebookAuthProvider();
+      
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      let email = user.email ? user.email.toLowerCase().trim() : '';
+      if (!email && user.providerData && user.providerData[0]) {
+        email = (user.providerData[0].email || '').toLowerCase().trim();
+      }
+      if (!email) {
+        email = `${user.uid}@facebook.com`;
+      }
+      
+      const displayname = user.displayName || email.split('@')[0];
+      
+      let found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email);
+      
+      if (!found && _fbReady) {
+        await syncAuthFromFirebase();
+        found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email);
+      }
+      
+      if (!found) {
+        console.log('🆕 Facebook User not found in system. Registering automatically:', email);
+        found = {
+          email: email,
+          password: 'facebook-auth-login-provider-oauth2',
+          displayname: displayname,
+          role: 'agent',
+          note: 'สมัครอัตโนมัติผ่าน Facebook',
+          linkedAgentId: null,
+          socialProviders: {
+            facebook: { uid: user.uid, email: email, displayName: displayname }
+          }
+        };
+        
+        AUTH.users.push(found);
+      } else {
+        if (!found.socialProviders) found.socialProviders = {};
+        found.socialProviders.facebook = { uid: user.uid, email: email, displayName: displayname };
+      }
+      
+      localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+      
+      if (_fbReady && _db) {
+        try {
+          const { doc, setDoc } = window._firestoreLib;
+          await setDoc(doc(_db, 'yb_auth', 'auth_data'), { users: AUTH.users });
+        } catch(e) {
+          console.warn('Failed to sync new Facebook user to Firebase:', e);
+        }
+      }
+      
+      localStorage.setItem('yb_session', JSON.stringify({ email: found.email, pw: found.password }));
+      localStorage.setItem('yb_remember', JSON.stringify({ email: found.email, pw: found.password }));
+      
+      const btnText = document.getElementById('btnText');
+      const submitBtn = document.getElementById('loginSubmitBtn');
+      btnText.textContent = 'เข้าสู่ระบบสำเร็จ!';
+      submitBtn.style.background = 'linear-gradient(135deg, var(--green), #40B868)';
+      
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 400);
+      
+    } catch (e) {
+      console.error('Facebook Sign-in Error:', e);
+      errEl.style.display = 'flex';
+      errText.textContent = 'ล็อกอินด้วย Facebook ผิดพลาด: ' + e.message;
     }
   }
 
