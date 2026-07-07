@@ -1820,45 +1820,103 @@
     function renderProfileSettings() {
       const cur = AUTH.current;
       if (!cur) return;
-      
+
       const user = AUTH.users.find(u => u.email === cur.username);
       if (!user) return;
-      
-      document.getElementById('profDisplayName').textContent = user.displayname || '-';
-      document.getElementById('profEmail').textContent = user.email || '-';
-      document.getElementById('profRole').textContent = user.role || 'viewer';
-      
-      document.getElementById('cp_old').value = '';
-      document.getElementById('cp_new').value = '';
-      document.getElementById('cp_confirm').value = '';
-      document.getElementById('cp_error').style.display = 'none';
-      
-      const providers = user.socialProviders || {};
-      
-      const statusGoogleEl = document.getElementById('statusGoogle');
-      if (providers.google) {
-        statusGoogleEl.innerHTML = `
-          <span style="color:var(--green); margin-right:8px;">✔️ เชื่อมต่อแล้ว (${providers.google.email || providers.google.displayName})</span>
-          <button class="btn btn-danger btn-sm" style="font-size:10px; padding:2px 8px;" onclick="disconnectSocialAccount('google')">ยกเลิก</button>
-        `;
-      } else {
-        statusGoogleEl.innerHTML = `
-          <button class="btn btn-outline btn-sm" style="font-size:10px; padding:2px 8px; border-color:var(--gold); color:var(--gold);" onclick="connectSocialAccount('google')">🔗 เชื่อมต่อ</button>
-        `;
+
+      // Profile info
+      const dnEl = document.getElementById('profDisplayName');
+      const emEl = document.getElementById('profEmail');
+      const roEl = document.getElementById('profRole');
+      if (dnEl) dnEl.textContent = user.displayname || '-';
+      if (emEl) emEl.textContent = user.email || '-';
+      if (roEl) {
+        const roleMap = { admin: '⭐ Admin', agent: '🏷 Agent', viewer: '👁 Viewer' };
+        roEl.textContent = roleMap[user.role] || user.role || '-';
       }
-      
-      const statusFacebookEl = document.getElementById('statusFacebook');
-      if (providers.facebook) {
-        statusFacebookEl.innerHTML = `
-          <span style="color:var(--green); margin-right:8px;">✔️ เชื่อมต่อแล้ว (${providers.facebook.displayName || 'Facebook Account'})</span>
-          <button class="btn btn-danger btn-sm" style="font-size:10px; padding:2px 8px;" onclick="disconnectSocialAccount('facebook')">ยกเลิก</button>
-        `;
-      } else {
-        statusFacebookEl.innerHTML = `
-          <button class="btn btn-outline btn-sm" style="font-size:10px; padding:2px 8px; border-color:var(--gold); color:var(--gold);" onclick="connectSocialAccount('facebook')">🔗 เชื่อมต่อ</button>
-        `;
+
+      // Clear pw fields
+      ['cp_old','cp_new','cp_confirm'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      const cpErr = document.getElementById('cp_error');
+      if (cpErr) cpErr.style.display = 'none';
+
+      const providers = user.socialProviders || {};
+
+      // ── Google slot ──
+      _renderModalSocialSlot(
+        'statusGoogle', providers.google,
+        'connectSocialAccountDrop("google")',
+        'disconnectSocialAccountDrop("google")',
+        providers.google ? (providers.google.email || providers.google.displayName || 'เชื่อมต่อแล้ว') : null
+      );
+
+      // ── Facebook slot ──
+      _renderModalSocialSlot(
+        'statusFacebook', providers.facebook,
+        'connectSocialAccountDrop("facebook")',
+        'disconnectSocialAccountDrop("facebook")',
+        providers.facebook ? (providers.facebook.displayName || 'Facebook Account') : null
+      );
+
+      // ── Line slot (ถ้ามี element) ──
+      const lineEl = document.getElementById('statusLine');
+      if (lineEl) {
+        const lineId = providers.line && providers.line.lineId ? providers.line.lineId : '';
+        lineEl.innerHTML = '';
+        if (lineId) {
+          const badge = document.createElement('span');
+          badge.style.cssText = 'color:#4caf50;font-size:11px;font-weight:700;margin-right:8px;';
+          badge.textContent = '✔ @' + lineId;
+          const editBtn = document.createElement('button');
+          editBtn.className = 'btn btn-outline btn-sm';
+          editBtn.style.cssText = 'font-size:10px;padding:2px 8px;';
+          editBtn.textContent = '✏️ แก้ไข';
+          editBtn.onclick = () => { closeProfileDropdown && closeProfileDropdown(); _editLineId(user); };
+          lineEl.appendChild(badge);
+          lineEl.appendChild(editBtn);
+        } else {
+          const addBtn = document.createElement('button');
+          addBtn.className = 'btn btn-outline btn-sm';
+          addBtn.style.cssText = 'font-size:10px;padding:2px 8px;border-color:var(--gold);color:var(--gold);';
+          addBtn.textContent = '🔗 เพิ่ม Line ID';
+          addBtn.onclick = () => _editLineId(user);
+          lineEl.appendChild(addBtn);
+        }
       }
     }
+
+    // Helper: render a social slot in the modal using DOM (avoids innerHTML onclick issues)
+    function _renderModalSocialSlot(elId, providerData, connectCall, disconnectCall, label) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.innerHTML = '';
+
+      if (providerData) {
+        const badge = document.createElement('span');
+        badge.style.cssText = 'color:#4caf50;font-size:11px;font-weight:700;margin-right:8px;white-space:nowrap;';
+        badge.textContent = '✔ ' + (label || 'เชื่อมต่อแล้ว');
+
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-danger btn-sm';
+        btn.style.cssText = 'font-size:10px;padding:2px 8px;';
+        btn.textContent = 'ยกเลิก';
+        btn.setAttribute('onclick', disconnectCall);
+
+        el.appendChild(badge);
+        el.appendChild(btn);
+      } else {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-outline btn-sm';
+        btn.style.cssText = 'font-size:10px;padding:2px 10px;border-color:var(--gold);color:var(--gold);font-weight:700;';
+        btn.textContent = '🔗 เชื่อมต่อ';
+        btn.setAttribute('onclick', connectCall);
+
+        el.appendChild(btn);
+      }
+    }
+
 
     async function connectSocialAccount(type) {
       if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
@@ -1917,6 +1975,274 @@
     window.renderProfileSettings = renderProfileSettings;
     window.connectSocialAccount = connectSocialAccount;
     window.disconnectSocialAccount = disconnectSocialAccount;
+
+    // ============================
+    // PROFILE DROPDOWN
+    // ============================
+    let _profileDropOpen = false;
+
+    function toggleProfileDropdown() {
+      _profileDropOpen ? closeProfileDropdown() : openProfileDropdown();
+    }
+
+    function openProfileDropdown() {
+      const drop = document.getElementById('profileDropdown');
+      const chevron = document.getElementById('profileDropChevron');
+      if (!drop) return;
+      drop.style.display = 'block';
+      // Small animation
+      drop.style.opacity = '0';
+      drop.style.transform = 'translateY(-8px)';
+      requestAnimationFrame(() => {
+        drop.style.transition = 'opacity 0.18s ease, transform 0.18s ease';
+        drop.style.opacity = '1';
+        drop.style.transform = 'translateY(0)';
+      });
+      if (chevron) chevron.textContent = '▴';
+      _profileDropOpen = true;
+      renderDropdownProfile();
+      // Close on outside click
+      setTimeout(() => {
+        document.addEventListener('click', _outsideClickHandler);
+      }, 10);
+    }
+
+    function closeProfileDropdown() {
+      const drop = document.getElementById('profileDropdown');
+      const chevron = document.getElementById('profileDropChevron');
+      if (!drop) return;
+      drop.style.opacity = '0';
+      drop.style.transform = 'translateY(-8px)';
+      setTimeout(() => { drop.style.display = 'none'; drop.style.transition = ''; }, 180);
+      if (chevron) chevron.textContent = '▾';
+      _profileDropOpen = false;
+      document.removeEventListener('click', _outsideClickHandler);
+      // clear password fields
+      ['drop_cp_old','drop_cp_new','drop_cp_confirm'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      const errEl = document.getElementById('drop_cp_error');
+      if (errEl) errEl.style.display = 'none';
+    }
+
+    function _outsideClickHandler(e) {
+      const wrapper = document.getElementById('profileDropdownWrapper');
+      if (wrapper && !wrapper.contains(e.target)) {
+        closeProfileDropdown();
+      }
+    }
+
+    function renderDropdownProfile() {
+      const cur = AUTH.current;
+      if (!cur) return;
+      const user = AUTH.users.find(u => u.email === cur.username);
+      if (!user) return;
+
+      const displayName = user.displayname || user.email || '-';
+      const initial = (displayName.charAt(0) || '?').toUpperCase();
+
+      // Avatar initial in badge & dropdown header
+      const avatarBadge = document.getElementById('profileAvatarBadge');
+      if (avatarBadge) avatarBadge.textContent = initial;
+      const avatarDrop = document.getElementById('profileDropAvatar');
+      if (avatarDrop) avatarDrop.textContent = initial;
+
+      // Profile details
+      const nameEl = document.getElementById('profileDropName');
+      const emailEl = document.getElementById('profileDropEmail');
+      const roleEl = document.getElementById('profileDropRole');
+      if (nameEl) nameEl.textContent = displayName;
+      if (emailEl) emailEl.textContent = user.email || '-';
+      if (roleEl) {
+        const roleMap = { admin: '⭐ Admin', agent: '🏷 Agent', viewer: '👁 Viewer' };
+        roleEl.textContent = roleMap[user.role] || user.role || '-';
+      }
+
+      // Social connection status
+      const providers = user.socialProviders || {};
+      _renderDropSocialSlot('dropStatusGoogle', providers.google,
+        () => connectSocialAccountDrop('google'), () => disconnectSocialAccountDrop('google'),
+        providers.google ? (providers.google.email || providers.google.displayName || 'เชื่อมต่อแล้ว') : null
+      );
+      _renderDropSocialSlot('dropStatusFacebook', providers.facebook,
+        () => connectSocialAccountDrop('facebook'), () => disconnectSocialAccountDrop('facebook'),
+        providers.facebook ? (providers.facebook.displayName || 'Facebook Account') : null
+      );
+      _renderDropLineSlot(user);
+    }
+
+    function _renderDropSocialSlot(elId, providerData, connectFn, disconnectFn, label) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      if (providerData) {
+        el.innerHTML = '';
+        const badge = document.createElement('span');
+        badge.style.cssText = 'color:#4caf50;font-size:10px;font-weight:700;margin-right:6px;';
+        badge.textContent = '✔ ' + (label || 'เชื่อมต่อแล้ว');
+        const btn = document.createElement('button');
+        btn.textContent = 'ยกเลิก';
+        btn.style.cssText = 'font-size:10px;padding:2px 7px;border-radius:5px;border:1px solid #c44;background:rgba(200,50,50,0.12);color:#e55;cursor:pointer;';
+        btn.onclick = disconnectFn;
+        el.appendChild(badge);
+        el.appendChild(btn);
+      } else {
+        el.innerHTML = '';
+        const btn = document.createElement('button');
+        btn.textContent = '🔗 เชื่อมต่อ';
+        btn.style.cssText = 'font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid var(--gold);background:rgba(192,120,0,0.12);color:var(--gold);cursor:pointer;font-weight:700;';
+        btn.onclick = connectFn;
+        el.appendChild(btn);
+      }
+    }
+
+    function _renderDropLineSlot(user) {
+      const el = document.getElementById('dropStatusLine');
+      if (!el) return;
+      const lineId = (user.socialProviders && user.socialProviders.line && user.socialProviders.line.lineId) || '';
+
+      el.innerHTML = '';
+      if (lineId) {
+        const badge = document.createElement('span');
+        badge.style.cssText = 'color:#4caf50;font-size:10px;font-weight:700;margin-right:6px;';
+        badge.textContent = '✔ @' + lineId;
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'แก้ไข';
+        editBtn.style.cssText = 'font-size:10px;padding:2px 7px;border-radius:5px;border:1px solid var(--gold);background:rgba(192,120,0,0.12);color:var(--gold);cursor:pointer;';
+        editBtn.onclick = () => _editLineId(user);
+        el.appendChild(badge);
+        el.appendChild(editBtn);
+      } else {
+        const btn = document.createElement('button');
+        btn.textContent = '🔗 เพิ่ม Line ID';
+        btn.style.cssText = 'font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid #06C755;background:rgba(6,199,85,0.1);color:#06C755;cursor:pointer;font-weight:700;';
+        btn.onclick = () => _editLineId(user);
+        el.appendChild(btn);
+      }
+    }
+
+    function _editLineId(user) {
+      const current = (user.socialProviders && user.socialProviders.line && user.socialProviders.line.lineId) || '';
+      const val = prompt('กรอก Line ID ของคุณ:', current);
+      if (val === null) return; // cancelled
+      const lineId = val.trim().replace(/^@/, '');
+      if (!user.socialProviders) user.socialProviders = {};
+      if (lineId) {
+        user.socialProviders.line = { lineId };
+      } else {
+        delete user.socialProviders.line;
+      }
+      saveAuth();
+      renderDropdownProfile();
+      // ซิงก์กับ linked agent ด้วย
+      if (user.linkedAgentId) {
+        const ag = DB.agents.find(a => a.id === user.linkedAgentId);
+        if (ag) {
+          ag.line = lineId;
+          if (typeof saveItem === 'function') saveItem('agents', ag, ag.id);
+        }
+      }
+    }
+
+    async function connectSocialAccountDrop(type) {
+      if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
+        alert('❌ Firebase ยังไม่ได้ตั้งค่า กรุณากรอก Firebase Config ก่อนค่ะ');
+        return;
+      }
+      try {
+        const { auth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } = await initFirebaseAuth();
+        let provider;
+        if (type === 'google') {
+          provider = new GoogleAuthProvider();
+          provider.setCustomParameters({ prompt: 'select_account' });
+        } else {
+          provider = new FacebookAuthProvider();
+        }
+        const result = await signInWithPopup(auth, provider);
+        const fbUser = result.user;
+        let email = (fbUser.email || '').toLowerCase().trim();
+        if (!email && fbUser.providerData && fbUser.providerData[0]) {
+          email = (fbUser.providerData[0].email || '').toLowerCase().trim();
+        }
+        const displayName = fbUser.displayName || email || fbUser.uid;
+
+        const cur = AUTH.current;
+        const found = AUTH.users.find(u => u.email === cur.username);
+        if (found) {
+          if (!found.socialProviders) found.socialProviders = {};
+          found.socialProviders[type] = { uid: fbUser.uid, email, displayName };
+          saveAuth();
+          renderDropdownProfile();
+          renderProfileSettings(); // ซิงก์กับ modal ด้วย
+          const label = type === 'google' ? 'Google Mail' : 'Facebook';
+          alert(`✅ เชื่อมต่อ ${label} สำเร็จแล้วค่ะ`);
+        }
+      } catch (e) {
+        console.error('Connect social error:', e);
+        const label = type === 'google' ? 'Google' : 'Facebook';
+        alert(`❌ เชื่อมต่อ ${label} ไม่สำเร็จ: ` + e.message);
+      }
+    }
+
+    async function disconnectSocialAccountDrop(type) {
+      const label = type === 'google' ? 'Google Mail' : 'Facebook';
+      if (!confirm(`ยืนยันยกเลิกการเชื่อมต่อ ${label} หรือไม่?`)) return;
+      const cur = AUTH.current;
+      const found = AUTH.users.find(u => u.email === cur.username);
+      if (found && found.socialProviders && found.socialProviders[type]) {
+        delete found.socialProviders[type];
+        saveAuth();
+        renderDropdownProfile();
+        renderProfileSettings();
+        alert(`✅ ยกเลิกการเชื่อมต่อ ${label} เรียบร้อยค่ะ`);
+      }
+    }
+
+    function doChangePwDrop() {
+      const oldPw = (document.getElementById('drop_cp_old').value || '').trim();
+      const newPw = (document.getElementById('drop_cp_new').value || '').trim();
+      const con   = (document.getElementById('drop_cp_confirm').value || '').trim();
+      const errEl = document.getElementById('drop_cp_error');
+      errEl.style.display = 'none';
+
+      const cur = AUTH.current;
+      if (!cur) return;
+
+      // Social login users ไม่ใช้ password แบบปกติ
+      const isSocialOnly = cur.password && (
+        cur.password.includes('google-auth') || cur.password.includes('facebook-auth')
+      );
+
+      if (!isSocialOnly && cur.password !== oldPw) {
+        errEl.textContent = '❌ รหัสผ่านปัจจุบันไม่ถูกต้อง';
+        errEl.style.display = 'block'; return;
+      }
+      if (!newPw || newPw.length < 6) {
+        errEl.textContent = '❌ รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร';
+        errEl.style.display = 'block'; return;
+      }
+      if (newPw !== con) {
+        errEl.textContent = '❌ ยืนยันรหัสผ่านไม่ตรงกัน';
+        errEl.style.display = 'block'; return;
+      }
+
+      const idx = AUTH.users.findIndex(u => u.email === cur.username);
+      if (idx >= 0) {
+        AUTH.users[idx].password = newPw;
+        AUTH.current.password = newPw;
+      }
+      saveAuth();
+      closeProfileDropdown();
+      alert('✅ เปลี่ยนรหัสผ่านสำเร็จแล้วค่ะ');
+    }
+
+    window.toggleProfileDropdown = toggleProfileDropdown;
+    window.openProfileDropdown  = openProfileDropdown;
+    window.closeProfileDropdown = closeProfileDropdown;
+    window.renderDropdownProfile = renderDropdownProfile;
+    window.doChangePwDrop = doChangePwDrop;
+    window.connectSocialAccountDrop = connectSocialAccountDrop;
+    window.disconnectSocialAccountDrop = disconnectSocialAccountDrop;
 
     // ============================
     // MODALS

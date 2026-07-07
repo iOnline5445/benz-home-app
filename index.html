@@ -81,7 +81,6 @@
         <button class="htab" id="tabCustomers" onclick="switchTab('customers',this)">🤝 ลูกค้า</button>
         <button class="htab" id="tabClipboard" onclick="switchTab('clipboard',this)">📋 ClipB</button>
         <button class="htab" id="tabMarketing" onclick="switchTab('marketing',this)">🚀 โพสต์</button>
-        <button class="htab" id="tabAgents" onclick="switchTab('agents',this)">👤 Agent</button>
         <button class="htab" id="tabCommission" onclick="switchTab('commission',this)">💰 ค่าคอม</button>
         <button class="htab" id="tabSettings" onclick="switchTab('settings',this)">⚙️ ตั้งค่า</button>
       </div>
@@ -94,9 +93,87 @@
         </div>
         <!-- Theme Panel Button -->
         <button class="theme-panel-btn" onclick="openThemePanel()">🎨<span class="tp-btn-text"> Theme</span></button>
-        <div class="user-badge" onclick="openModal('changePw')" title="คลิกเพื่อเปลี่ยนรหัสผ่าน">
-          <span id="headerUserName">-</span>
-          <span class="role" id="headerUserRole">-</span>
+        <!-- Profile Dropdown Trigger -->
+        <div class="profile-dropdown-wrapper" id="profileDropdownWrapper">
+          <div class="user-badge" id="profileBadgeBtn" onclick="toggleProfileDropdown()" title="คลิกเพื่อตั้งค่าโปรไฟล์">
+            <div id="profileAvatarBadge" style="width:28px;height:28px;border-radius:50%;background:var(--gold);color:#1a1208;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;"></div>
+            <span id="headerUserName">-</span>
+            <span class="role" id="headerUserRole">-</span>
+            <span style="font-size:10px;color:var(--text3);margin-left:2px;" id="profileDropChevron">▾</span>
+          </div>
+
+          <!-- Profile Dropdown Panel -->
+          <div id="profileDropdown" style="display:none;position:absolute;top:calc(100% + 10px);right:0;width:320px;
+               background:var(--dark2);border:1px solid var(--border);border-radius:16px;
+               box-shadow:0 12px 40px rgba(0,0,0,0.5);z-index:9999;overflow:hidden;">
+
+            <!-- Header strip -->
+            <div style="background:linear-gradient(135deg,#1a1208 0%,#2e1f00 100%);padding:16px 18px;border-bottom:1px solid var(--border);">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div id="profileDropAvatar" style="width:46px;height:46px;border-radius:50%;background:var(--gold);color:#1a1208;
+                     display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;
+                     flex-shrink:0;box-shadow:0 0 0 3px rgba(192,120,0,0.3);"></div>
+                <div style="flex:1;min-width:0;">
+                  <div id="profileDropName" style="font-size:15px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">-</div>
+                  <div id="profileDropEmail" style="font-size:11px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">-</div>
+                  <div id="profileDropRole" style="display:inline-block;margin-top:5px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(192,120,0,0.2);color:var(--gold);">-</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Social Connections -->
+            <div style="padding:14px 18px;border-bottom:1px solid var(--border2);">
+              <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">🔗 บัญชีที่เชื่อมต่อ</div>
+              <div style="display:flex;flex-direction:column;gap:7px;">
+
+                <!-- Google -->
+                <div style="display:flex;align-items:center;justify-content:space-between;background:var(--dark);border:1px solid var(--border2);border-radius:10px;padding:8px 12px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" style="width:15px;height:15px;" alt="G">
+                    <span style="font-size:12px;font-weight:600;">Google Mail</span>
+                  </div>
+                  <div id="dropStatusGoogle" style="font-size:11px;"></div>
+                </div>
+
+                <!-- Facebook -->
+                <div style="display:flex;align-items:center;justify-content:space-between;background:var(--dark);border:1px solid var(--border2);border-radius:10px;padding:8px 12px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/2023_Facebook_icon.svg" style="width:15px;height:15px;" alt="FB">
+                    <span style="font-size:12px;font-weight:600;">Facebook</span>
+                  </div>
+                  <div id="dropStatusFacebook" style="font-size:11px;"></div>
+                </div>
+
+                <!-- Line -->
+                <div style="display:flex;align-items:center;justify-content:space-between;background:var(--dark);border:1px solid var(--border2);border-radius:10px;padding:8px 12px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="width:15px;height:15px;border-radius:4px;background:#06C755;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;">L</div>
+                    <span style="font-size:12px;font-weight:600;">Line ID</span>
+                  </div>
+                  <div id="dropStatusLine" style="font-size:11px;"></div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Change Password -->
+            <div style="padding:14px 18px;border-bottom:1px solid var(--border2);">
+              <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">🔑 รหัสผ่าน</div>
+              <div style="display:flex;flex-direction:column;gap:7px;">
+                <input type="password" id="drop_cp_old" placeholder="รหัสผ่านปัจจุบัน" style="font-size:12px;padding:7px 10px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;">
+                <input type="password" id="drop_cp_new" placeholder="รหัสผ่านใหม่ (6+ ตัวอักษร)" style="font-size:12px;padding:7px 10px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;">
+                <input type="password" id="drop_cp_confirm" placeholder="ยืนยันรหัสผ่านใหม่" style="font-size:12px;padding:7px 10px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;">
+                <div id="drop_cp_error" style="font-size:11px;color:var(--red);display:none;"></div>
+                <button onclick="doChangePwDrop()" style="background:linear-gradient(135deg,var(--gold),#a06800);color:#1a1208;font-weight:700;font-size:12px;border:none;border-radius:8px;padding:8px;cursor:pointer;width:100%;">💾 บันทึกรหัสผ่านใหม่</button>
+              </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div style="padding:12px 18px;display:flex;gap:8px;">
+              <button onclick="closeProfileDropdown();openModal('changePw')" style="flex:1;background:var(--dark3);border:1px solid var(--border2);color:var(--text3);font-size:11px;font-weight:600;border-radius:8px;padding:7px;cursor:pointer;">⚙️ ตั้งค่าเต็ม</button>
+              <button onclick="doLogout()" style="flex:1;background:rgba(220,50,50,0.12);border:1px solid rgba(220,50,50,0.3);color:#e55;font-size:11px;font-weight:600;border-radius:8px;padding:7px;cursor:pointer;">🚪 ออกจากระบบ</button>
+            </div>
+          </div>
         </div>
         <button class="logout-btn" onclick="doLogout()">🚪<span class="tp-btn-text"> ออกระบบ</span></button>
       </div>
@@ -112,7 +189,7 @@
       <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px;"></div>
       
       <!-- Profile display in drawer (Mobile) -->
-      <div id="drawerProfile" onclick="openModal('changePw');closeMoreDrawer();"
+      <div id="drawerProfile" onclick="closeMoreDrawer();toggleProfileDropdown();"
            style="display:flex;align-items:center;gap:12px;background:var(--dark3);border:1px solid var(--border2);
                   padding:12px;border-radius:14px;margin-bottom:14px;cursor:pointer;">
         <div id="drawerAvatar" style="width:42px;height:42px;border-radius:50%;background:var(--gold);color:#1a1208;
@@ -121,7 +198,7 @@
           <div id="drawerUserName" style="font-size:15px;font-weight:800;color:var(--text);">ผู้ใช้งาน</div>
           <div id="drawerUserRole" style="font-size:12px;color:var(--gold);font-weight:600;margin-top:2px;">-</div>
         </div>
-        <span style="font-size:11px;color:var(--text3);background:var(--dark4);padding:4px 8px;border-radius:6px;font-weight:600;">🔑 เปลี่ยนรหัส</span>
+        <span style="font-size:11px;color:var(--text3);background:var(--dark4);padding:4px 8px;border-radius:6px;font-weight:600;">⚙️ ตั้งค่า</span>
       </div>
 
       <div
@@ -1682,16 +1759,25 @@
                   <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo" style="width:16px;height:16px;">
                   <span style="font-size:13px; font-weight:600;">Google Mail</span>
                 </div>
-                <div id="statusGoogle" style="font-size:12px;"></div>
+                <div id="statusGoogle" style="font-size:12px;display:flex;align-items:center;gap:6px;"></div>
               </div>
-              
+
               <!-- Facebook -->
-              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid var(--border2); padding-bottom:8px;">
                 <div style="display:flex; align-items:center; gap:8px;">
                   <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/2023_Facebook_icon.svg" alt="Facebook logo" style="width:16px;height:16px;">
                   <span style="font-size:13px; font-weight:600;">Facebook</span>
                 </div>
-                <div id="statusFacebook" style="font-size:12px;"></div>
+                <div id="statusFacebook" style="font-size:12px;display:flex;align-items:center;gap:6px;"></div>
+              </div>
+
+              <!-- Line -->
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div style="width:16px;height:16px;border-radius:4px;background:#06C755;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;flex-shrink:0;">L</div>
+                  <span style="font-size:13px; font-weight:600;">Line ID</span>
+                </div>
+                <div id="statusLine" style="font-size:12px;display:flex;align-items:center;gap:6px;"></div>
               </div>
             </div>
           </div>
