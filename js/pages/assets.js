@@ -311,8 +311,8 @@
           tableBody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--text3)">ไม่พบทรัพย์สินที่ตรงกับเงื่อนไข</td></tr>';
           renderStats(); return;
         }
-        const canEdit = window._canEdit !== false;
-        const canDelete = window._canDelete !== false;
+        const canEdit = window._canEdit === true;
+        const canDelete = window._canDelete === true;
         tableBody.innerHTML = paged.map(a => {
           const ri = DB.assets.indexOf(a);
           const la = a.listingActive || 'available';
@@ -335,7 +335,7 @@
             if (dl <= 0) daysAlert = '<span style="color:var(--red);font-size:11px;font-weight:700;">🚨หมดสัญญา</span>';
             else if (dl <= 30) daysAlert = `<span style="color:var(--gold);font-size:11px;font-weight:700;">⚠️หมดสัญญา(${dl}วัน)</span>`;
           }
-          const isOwner = window._canEditAsset(a);
+          const isOwner = (typeof window._canEditAsset === 'function') ? window._canEditAsset(a) : false;
           const ownerBadge = isOwner ? '' : '<span style="font-size:10px;color:var(--text3);" title="โพสต์โดยผู้อื่น">🔒</span>';
 
           const careContract = a.careContract || 'ยังไม่ทำ';
@@ -387,8 +387,8 @@
           cardEl.innerHTML = '<div class="empty"><div class="ico">🏚️</div><div>ยังไม่มีข้อมูลทรัพย์สิน</div><div style="font-size:13px;margin-top:6px;color:var(--text3)">กด "+ เพิ่มทรัพย์สิน" เพื่อเริ่มต้น</div></div>';
           renderStats(); return;
         }
-        const canEdit = window._canEdit !== false;
-        const canDelete = window._canDelete !== false;
+        const canEdit = window._canEdit === true;
+        const canDelete = window._canDelete === true;
         cardEl.innerHTML = paged.map(a => {
           const ri = DB.assets.indexOf(a);
           const badge = a.status === 'ขาย' ? 'badge-sale' : a.status === 'เช่า' ? 'badge-rent' : 'badge-both';
@@ -416,7 +416,7 @@
             else if (dl <= 30) reservationAlert = `<div style="background:rgba(201,168,76,0.1);border:1px solid var(--gold);border-radius:8px;padding:8px 12px;margin-top:8px;font-size:12px;color:var(--gold);font-weight:600;">⚠️ สัญญาเช่าหมดอายุในอีก ${dl} วัน</div>`;
           }
 
-          const isOwner = window._canEditAsset(a);
+          const isOwner = (typeof window._canEditAsset === 'function') ? window._canEditAsset(a) : false;
           const ownerBadge = isOwner ? '<span style="font-size:10px;color:var(--green);margin-left:4px;">✅ ของคุณ</span>' : '<span style="font-size:10px;color:var(--text3);margin-left:4px;">🔒</span>';
           
           let rentDateRow = '';

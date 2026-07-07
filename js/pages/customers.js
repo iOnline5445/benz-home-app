@@ -209,8 +209,8 @@
       const tb = document.getElementById('customerTable');
       const ml = document.getElementById('customerMList');
       const tbWrap = document.getElementById('customerTableWrap');
-      const canEdit = window._canEdit !== false;
-      const canDelete = window._canDelete !== false;
+      const canEdit = window._canEdit === true;
+      const canDelete = window._canDelete === true;
 
       const effectiveView = (window.innerWidth <= 768) ? 'card' : _custView;
 
