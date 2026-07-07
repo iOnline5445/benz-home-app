@@ -197,12 +197,12 @@
 
                 <div style="display:flex;gap:6px;">
                   <div style="flex:1;">
-                    <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">Line ID</label>
+                    <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">Line ID (ส่วนตัว)</label>
                     <input type="text" id="drop_ag_line" placeholder="ไอดีไลน์" style="font-size:12px;padding:7px 10px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;">
                   </div>
                   <div style="flex:1;">
-                    <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">ลิงก์ Line</label>
-                    <input type="text" id="drop_ag_linelink" placeholder="https://line.me/ti/p/..." style="font-size:12px;padding:7px 10px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;">
+                    <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">Line OA / ลิงก์ Line</label>
+                    <input type="text" id="drop_ag_linelink" placeholder="เช่น @line_oa หรือ ลิงก์" style="font-size:12px;padding:7px 10px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;">
                   </div>
                 </div>
 
@@ -1759,6 +1759,16 @@
               <label>หมายเหตุ</label>
               <input id="u_note" placeholder="เพิ่มเติม...">
             </div>
+
+            <!-- Social Connection Status in Edit User (Admin check) -->
+            <div id="u_socialStatusSection" class="form-group full" style="margin-top:10px;padding:12px;background:var(--dark);border:1px solid var(--border2);border-radius:10px;font-size:12px;display:none;">
+              <div style="font-weight:700;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:6px;">🔗 สถานะการเชื่อมต่อโซเชียล:</div>
+              <div style="display:flex;gap:15px;flex-wrap:wrap;">
+                <div id="u_social_status_google" style="font-weight:500;">Google: ...</div>
+                <div id="u_social_status_facebook" style="font-weight:500;">Facebook: ...</div>
+                <div id="u_social_status_line" style="font-weight:500;">Line ID: ...</div>
+              </div>
+            </div>
             
             <!-- Agent Details Section (Inside User Modal) -->
             <div id="u_agentDetailsSection" class="form-group full" style="margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); display:none;">
@@ -1780,11 +1790,11 @@
                   <input id="u_ag_tel" placeholder="เช่น 089-xxx-xxxx">
                 </div>
                 <div class="form-group">
-                  <label style="font-size:11px;">Line ID</label>
+                  <label style="font-size:11px;">Line ID (ส่วนตัว)</label>
                   <input id="u_ag_line" placeholder="ไอดีไลน์">
                 </div>
                 <div class="form-group full">
-                  <label style="font-size:11px;">ลิงก์ Line (ti/p/ หรือ Line@)</label>
+                  <label style="font-size:11px;">Line OA / ลิงก์ Line (ti/p/ หรือ Line@)</label>
                   <input id="u_ag_linelink" placeholder="เช่น https://line.me/ti/p/...">
                 </div>
                 <div class="form-group full">

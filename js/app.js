@@ -1968,6 +1968,32 @@
         }
       }
 
+      // Populate social connection status display
+      const socialSect = document.getElementById('u_socialStatusSection');
+      if (socialSect) {
+        socialSect.style.display = 'block';
+        const provs = u.socialProviders || {};
+        const statusGoogle = document.getElementById('u_social_status_google');
+        const statusFacebook = document.getElementById('u_social_status_facebook');
+        const statusLine = document.getElementById('u_social_status_line');
+        
+        if (statusGoogle) {
+          statusGoogle.innerHTML = provs.google 
+            ? `<span style="color:var(--green);font-weight:700;">🟢 Google Mail (เชื่อมแล้ว: ${provs.google.email || 'สำเร็จ'})</span>`
+            : `<span style="color:var(--text3);">⚪ Google Mail (ยังไม่เชื่อม)</span>`;
+        }
+        if (statusFacebook) {
+          statusFacebook.innerHTML = provs.facebook 
+            ? `<span style="color:var(--green);font-weight:700;">🟢 Facebook (เชื่อมแล้ว: ${provs.facebook.displayName || 'สำเร็จ'})</span>`
+            : `<span style="color:var(--text3);">⚪ Facebook (ยังไม่เชื่อม)</span>`;
+        }
+        if (statusLine) {
+          statusLine.innerHTML = (provs.line && provs.line.lineId) 
+            ? `<span style="color:var(--green);font-weight:700;">🟢 Line ID (เชื่อมแล้ว: @${provs.line.lineId})</span>`
+            : `<span style="color:var(--text3);">⚪ Line ID (ยังไม่เชื่อม)</span>`;
+        }
+      }
+
       toggleLinkedAgent();
       editMode = { type: 'user', idx: i };
       document.getElementById('modalUser').classList.add('open');
@@ -2358,6 +2384,13 @@
         if (!user.socialProviders.coagent) user.socialProviders.coagent = {};
         user.socialProviders.coagent.accept = (coagent === 'รับ');
         
+        // Sync Line ID to socialProviders
+        if (line) {
+          user.socialProviders.line = { lineId: line.replace(/^@/, '') };
+        } else {
+          delete user.socialProviders.line;
+        }
+        
         await saveItem('agents', ag, agentId);
       }
 
@@ -2433,6 +2466,13 @@
       } else {
         delete user.socialProviders.line;
       }
+      
+      // Update drop input field if it is open on page
+      const dropAgLine = document.getElementById('drop_ag_line');
+      if (dropAgLine) {
+        dropAgLine.value = lineId;
+      }
+
       saveAuth();
       renderDropdownProfile();
       // ซิงก์กับ linked agent ด้วย
@@ -2607,6 +2647,8 @@
         document.getElementById('u_ag_fb').value = '';
 
         toggleLinkedAgent();
+        const socialSect = document.getElementById('u_socialStatusSection');
+        if (socialSect) socialSect.style.display = 'none';
         editMode = { type: 'user', idx: -1 };
       }
     }
