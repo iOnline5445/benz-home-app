@@ -255,6 +255,7 @@
               ${a.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${a.note}</span></div>` : ''}
               <div class="m-card-actions">
                 ${a.linkpost ? `<a class="btn btn-outline" href="${a.linkpost}" target="_blank" style="flex:1;justify-content:center;display:flex;align-items:center;min-height:42px;font-size:14px;border-radius:10px;text-decoration:none;">🔗 Post</a>` : ''}
+                <button class="btn btn-outline" style="border-color:var(--gold);color:var(--gold);" onclick="showAssetMatchesForCustomer(${ri})">🔍 จับคู่ห้องว่าง</button>
                 ${canEdit ? `<button class="btn btn-outline" onclick="editCustomer(${ri})">✏️ แก้ไข</button>` : ''}
                 ${canDelete ? `<button class="btn btn-danger" onclick="deleteItem('customers',${ri})">🗑️</button>` : ''}
               </div>
@@ -284,6 +285,7 @@
             <td style="font-size:12px;color:var(--gold);font-weight:600">${a.targetDate || '-'}</td>
             <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.note || '-'}</td>
             <td><div style="display:flex;gap:5px">
+              <button class="btn btn-outline btn-sm" style="border-color:var(--gold);color:var(--gold);" onclick="showAssetMatchesForCustomer(${ri})" title="จับคู่ทรัพย์สิน">🔍 จับคู่</button>
               ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editCustomer(${ri})">✏️</button>` : ''}
               ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('customers',${ri})">🗑️</button>` : ''}
             </div></td>
@@ -322,6 +324,7 @@
             ${a.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="font-size:13px;color:var(--text2)">${a.note}</span></div>` : ''}
             <div class="m-card-actions">
               ${a.linkpost ? `<a class="btn btn-outline" href="${a.linkpost}" target="_blank" style="flex:1;justify-content:center;display:flex;align-items:center;min-height:42px;font-size:14px;border-radius:10px;text-decoration:none;">🔗 Post</a>` : ''}
+              <button class="btn btn-outline" style="border-color:var(--gold);color:var(--gold);" onclick="showAssetMatchesForCustomer(${ri})">🔍 จับคู่ห้องว่าง</button>
               ${canEdit ? `<button class="btn btn-outline" onclick="editCustomer(${ri})">✏️ แก้ไข</button>` : ''}
               ${canDelete ? `<button class="btn btn-danger" onclick="deleteItem('customers',${ri})">🗑️</button>` : ''}
             </div>
@@ -368,3 +371,248 @@
         alert('คัดลอกลิงก์ส่งลูกค้า:\n' + url);
       });
     }
+
+    // ========================================================
+    // SMART MATCHING FUNCTIONS (Property-Customer Matcher)
+    // ========================================================
+    function parsePriceValue(priceStr) {
+      if (!priceStr) return 0;
+      let str = priceStr.toString().replace(/[^\d.]/g, '');
+      let val = parseFloat(str);
+      if (isNaN(val)) return 0;
+      
+      if (priceStr.toString().includes('ล้าน')) {
+        val = val * 1000000;
+      }
+      return val;
+    }
+
+    function showAssetMatchesForCustomer(custIdx) {
+      const customer = DB.customers[custIdx];
+      if (!customer) return;
+      
+      document.getElementById('modalMatchingTitle').textContent = `🔍 ทรัพย์สินที่ตรงความต้องการ: ${customer.name || 'ไม่ระบุ'}`;
+      
+      const custBudget = parsePriceValue(customer.budget);
+      const custStatus = customer.status; 
+      const custType = customer.type; 
+      const custLine = customer.line; 
+      const custStart = customer.stationStart;
+      const custEnd = customer.stationEnd;
+      
+      const matches = DB.assets.filter(a => {
+        if (a.listingActive === 'sold') return false;
+        
+        let statusMatch = false;
+        if (custStatus === 'เช่า/ขาย' || !custStatus) {
+          statusMatch = true;
+        } else {
+          statusMatch = a.status === custStatus;
+        }
+        if (!statusMatch) return false;
+        
+        let typeMatch = false;
+        if (!custType) {
+          typeMatch = true;
+        } else {
+          typeMatch = (a.type || '').includes(custType) || (custType || '').includes(a.type);
+        }
+        if (!typeMatch) return false;
+        
+        if (custBudget > 0) {
+          const assetPrice = parsePriceValue(a.price);
+          if (assetPrice > 0 && assetPrice > custBudget) {
+            return false;
+          }
+        }
+        
+        if (custLine) {
+          const stations = TRANSIT_LINES[custLine] || [];
+          if (custStart && custEnd) {
+            const cIdx1 = stations.indexOf(custStart);
+            const cIdx2 = stations.indexOf(custEnd);
+            if (cIdx1 !== -1 && cIdx2 !== -1) {
+              const minIdx = Math.min(cIdx1, cIdx2);
+              const maxIdx = Math.max(cIdx1, cIdx2);
+              const validStations = stations.slice(minIdx, maxIdx + 1);
+              if (!validStations.includes(a.bts)) {
+                return false;
+              }
+            }
+          } else {
+            if (!stations.includes(a.bts)) {
+              return false;
+            }
+          }
+        }
+        
+        return true;
+      });
+      
+      const summaryText = document.getElementById('matchingSummaryText');
+      summaryText.innerHTML = `
+        👤 ลูกค้า: <strong>${customer.name || '-'}</strong> | 
+        ความต้องการ: <span class="badge ${custStatus === 'ขาย' ? 'badge-sale' : custStatus === 'เช่า' ? 'badge-rent' : 'badge-both'}">${custStatus || '-'}</span> ${custType || ''} | 
+        งบประมาณ: <span style="color:var(--gold); font-weight:700;">${customer.budget || 'ไม่จำกัด'}</span><br>
+        🚇 เส้นทาง: <strong>${custLine || 'ทุกสาย'}</strong> 
+        ${custStart || custEnd ? `(สถานี ${custStart || 'ไม่ระบุ'} - ${custEnd || 'ไม่ระบุ'})` : ''}
+        <div style="margin-top:8px; color:var(--gold); font-weight:700;">🎯 พบทรัพย์สินที่เหมาะสมทั้งหมด ${matches.length} รายการ:</div>
+      `;
+      
+      const header = document.getElementById('matchingTableHeader');
+      header.innerHTML = `
+        <th style="width:30px">#</th>
+        <th>ชื่อทรัพย์สิน</th>
+        <th>ประเภท</th>
+        <th>ราคา/ค่าเช่า</th>
+        <th>ทำเล/สถานี</th>
+        <th>ข้อมูลติดต่อ</th>
+        <th>การจัดการ</th>
+      `;
+      
+      const tbody = document.getElementById('matchingTableBody');
+      const tableWrap = document.getElementById('matchingTableWrap');
+      const emptyMsg = document.getElementById('matchingEmptyMessage');
+      
+      if (matches.length > 0) {
+        tableWrap.style.display = 'block';
+        emptyMsg.style.display = 'none';
+        
+        tbody.innerHTML = matches.map((a, i) => {
+          const ri = DB.assets.indexOf(a);
+          return `
+            <tr>
+              <td style="color:var(--text3);">${i + 1}</td>
+              <td style="font-weight:600; color:var(--text);">${a.name || '-'}</td>
+              <td>${a.type || '-'}</td>
+              <td style="color:var(--gold); font-weight:700;">${a.price || '-'}</td>
+              <td>${a.location || '-'}${a.bts ? `<br><small style="color:var(--blue); font-weight:600;">🚇 ${a.bts}</small>` : ''}</td>
+              <td style="font-size:12px;">${a.contact || '-'}</td>
+              <td>
+                <div style="display:flex; gap:4px;">
+                  ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm" style="padding:4px 8px;">🔗</a>` : ''}
+                  <button class="btn btn-blue btn-sm" onclick="closeModal('matching'); switchTab('marketing', null); updateBnav('marketing'); selectMktAsset(${ri}, '${(a.name || '').replace(/'/g, "\\'")} (${a.status || ''})');" style="padding:4px 8px; font-size:11px;">🚀 ดึงเขียนโพสต์</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        tableWrap.style.display = 'none';
+        emptyMsg.style.display = 'block';
+      }
+      
+      openModal('matching');
+    }
+
+    function showCustomerMatchesForAsset(assetIdx) {
+      const asset = DB.assets[assetIdx];
+      if (!asset) return;
+      
+      document.getElementById('modalMatchingTitle').textContent = `🤝 ค้นหาผู้ซื้อ/เช่าที่เหมาะสมสำหรับ: ${asset.name || 'ไม่ระบุ'}`;
+      
+      const assetPrice = parsePriceValue(asset.price);
+      const assetStatus = asset.status; 
+      const assetType = asset.type; 
+      const assetBts = asset.bts;
+      
+      const matches = DB.customers.filter(c => {
+        let statusMatch = false;
+        if (c.status === 'เช่า/ขาย' || !c.status) {
+          statusMatch = true;
+        } else {
+          statusMatch = c.status === assetStatus;
+        }
+        if (!statusMatch) return false;
+        
+        let typeMatch = false;
+        if (!c.type) {
+          typeMatch = true;
+        } else {
+          typeMatch = (assetType || '').includes(c.type) || (c.type || '').includes(assetType);
+        }
+        if (!typeMatch) return false;
+        
+        if (assetPrice > 0) {
+          const custBudget = parsePriceValue(c.budget);
+          if (custBudget > 0 && assetPrice > custBudget) {
+            return false;
+          }
+        }
+        
+        if (c.line) {
+          const stations = TRANSIT_LINES[c.line] || [];
+          if (c.stationStart && c.stationEnd) {
+            const cIdx1 = stations.indexOf(c.stationStart);
+            const cIdx2 = stations.indexOf(c.stationEnd);
+            if (cIdx1 !== -1 && cIdx2 !== -1) {
+              const minIdx = Math.min(cIdx1, cIdx2);
+              const maxIdx = Math.max(cIdx1, cIdx2);
+              const validStations = stations.slice(minIdx, maxIdx + 1);
+              if (!validStations.includes(assetBts)) {
+                return false;
+              }
+            }
+          } else {
+            if (assetBts && !stations.includes(assetBts)) {
+              return false;
+            }
+          }
+        }
+        
+        return true;
+      });
+      
+      const summaryText = document.getElementById('matchingSummaryText');
+      summaryText.innerHTML = `
+        🏠 ทรัพย์สิน: <strong>${asset.name || '-'}</strong> | 
+        สถานะ: <span class="badge ${assetStatus === 'ขาย' ? 'badge-sale' : assetStatus === 'เช่า' ? 'badge-rent' : 'badge-both'}">${assetStatus || '-'}</span> ${assetType || ''} | 
+        ราคาเสนอขาย/เช่า: <span style="color:var(--gold); font-weight:700;">${asset.price || '-'}</span><br>
+        📍 ทำเล: <strong>${asset.location || '-'}</strong> ${assetBts ? `(🚇 สถานี ${assetBts})` : ''}
+        <div style="margin-top:8px; color:var(--gold); font-weight:700;">🎯 พบลูกค้าที่น่าจะสนใจอสังหาริมทรัพย์นี้ ${matches.length} รายการ:</div>
+      `;
+      
+      const header = document.getElementById('matchingTableHeader');
+      header.innerHTML = `
+        <th style="width:30px">#</th>
+        <th>ชื่อลูกค้า/โครงการที่สนใจ</th>
+        <th>สถานะที่ต้องการ</th>
+        <th>งบประมาณสูงสุด</th>
+        <th>แนวรถไฟฟ้า</th>
+        <th>ช่องทางติดต่อ</th>
+        <th>หมายเหตุ</th>
+      `;
+      
+      const tbody = document.getElementById('matchingTableBody');
+      const tableWrap = document.getElementById('matchingTableWrap');
+      const emptyMsg = document.getElementById('matchingEmptyMessage');
+      
+      if (matches.length > 0) {
+        tableWrap.style.display = 'block';
+        emptyMsg.style.display = 'none';
+        
+        tbody.innerHTML = matches.map((c, i) => {
+          const badge = c.status === 'ขาย' ? 'badge-sale' : c.status === 'เช่า' ? 'badge-rent' : 'badge-both';
+          return `
+            <tr>
+              <td style="color:var(--text3);">${i + 1}</td>
+              <td style="font-weight:600; color:var(--text);">${c.name || '-'}</td>
+              <td><span class="badge ${badge}">${c.status || '-'}</span></td>
+              <td style="color:var(--gold); font-weight:700;">${c.budget || '-'}</td>
+              <td>${c.line || 'ไม่ระบุ'}${c.stationStart || c.stationEnd ? `<br><small style="color:var(--text3);">📍 ${c.stationStart || 'ไม่ระบุ'} - ${c.stationEnd || 'ไม่ระบุ'}</small>` : ''}</td>
+              <td style="font-size:12px;">${c.contact || '-'}</td>
+              <td style="font-size:12px; color:var(--text2); max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${c.note || ''}">${c.note || '-'}</td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        tableWrap.style.display = 'none';
+        emptyMsg.style.display = 'block';
+      }
+      
+      openModal('matching');
+    }
+
+    window.showAssetMatchesForCustomer = showAssetMatchesForCustomer;
+    window.showCustomerMatchesForAsset = showCustomerMatchesForAsset;
+    window.parsePriceValue = parsePriceValue;

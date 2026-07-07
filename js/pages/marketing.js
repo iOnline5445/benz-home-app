@@ -97,9 +97,15 @@
 
     function populateMktAgentSelect() {
       const sel = document.getElementById('mktAgentSelect');
-      if (!sel) return;
-      sel.innerHTML = '<option value="">-- ใช้ข้อมูลติดต่อจากทรัพย์สิน --</option>' +
-        DB.agents.map((ag, i) => `<option value="${i}">${ag.name || 'ไม่มีชื่อ'}${ag.company ? ' (' + ag.company + ')' : ''}</option>`).join('');
+      if (sel) {
+        sel.innerHTML = '<option value="">-- ใช้ข้อมูลติดต่อจากทรัพย์สิน --</option>' +
+          (DB.agents || []).map((ag, i) => `<option value="${i}">${ag.name || 'ไม่มีชื่อ'}${ag.company ? ' (' + ag.company + ')' : ''}</option>`).join('');
+      }
+      const composerSel = document.getElementById('mktComposerAgent');
+      if (composerSel) {
+        composerSel.innerHTML = '<option value="">-- ใช้ข้อมูลติดต่อจากทรัพย์สิน --</option>' +
+          (DB.agents || []).map((ag) => `<option value="${ag.id}">${ag.name || 'ไม่มีชื่อ'}${ag.company ? ' (' + ag.company + ')' : ''}</option>`).join('');
+      }
     }
 
     function onMktAgentChange() {
@@ -192,6 +198,7 @@
                           ch === 'livinginsider' ? 'Livinginsider' :
                           ch === 'fazwaz' ? 'FazWaz' :
                           ch === 'zmyhome' ? 'ZmyHome' :
+                          ch === 'thaihometown' ? 'Thaihometown' :
                           ch === 'ennxo' ? 'ENNXO' : ch;
             return `<span class="queue-chan-badge queue-chan-${ch}">${label}</span>`;
           }).join(' ');
@@ -377,6 +384,9 @@
         let url = '';
         if (ch === 'livinginsider') url = 'https://www.livinginsider.com/post_property.html';
         if (ch === 'ennxo') url = 'https://www.ennxo.com/อสังหาริมทรัพย์';
+        if (ch === 'ddproperty') url = 'https://www.ddproperty.com/';
+        if (ch === 'zmyhome') url = 'https://zmyhome.com/';
+        if (ch === 'thaihometown') url = 'https://www.thaihometown.com/';
         if (url) window.open(url, '_blank');
       });
 
@@ -457,7 +467,9 @@
         status: 'queued',
         agentId: agent ? agent.id : '',
         template: document.getElementById('mktTemplate').value,
-        posterName: AUTH.current ? (AUTH.current.displayname || AUTH.current.email) : 'เอเจนต์'
+        posterName: AUTH.current ? (AUTH.current.displayname || AUTH.current.email) : 'เอเจนต์',
+        runOnCloud: document.getElementById('mktRunOnCloud').checked,
+        targetAgentId: document.getElementById('mktComposerAgent').value
       };
 
       await saveItem('mktQueue', qItem, qItem.id);
@@ -509,7 +521,9 @@
         status: 'queued',
         agentId: agent ? agent.id : '',
         template: document.getElementById('mktTemplate').value,
-        posterName: AUTH.current ? (AUTH.current.displayname || AUTH.current.email) : 'เอเจนต์'
+        posterName: AUTH.current ? (AUTH.current.displayname || AUTH.current.email) : 'เอเจนต์',
+        runOnCloud: document.getElementById('mktRunOnCloud').checked,
+        targetAgentId: document.getElementById('mktComposerAgent').value
       };
 
       await saveItem('mktQueue', qItem, qItem.id);
@@ -537,6 +551,9 @@
         let url = '';
         if (ch === 'livinginsider') url = 'https://www.livinginsider.com/post_property.html';
         if (ch === 'ennxo') url = 'https://www.ennxo.com/อสังหาริมทรัพย์';
+        if (ch === 'ddproperty') url = 'https://www.ddproperty.com/';
+        if (ch === 'zmyhome') url = 'https://zmyhome.com/';
+        if (ch === 'thaihometown') url = 'https://www.thaihometown.com/';
         if (url) window.open(url, '_blank');
       });
 
@@ -578,6 +595,8 @@
       
       document.getElementById('mktTemplate').value = q.template || 'fb';
       document.getElementById('mktComposerText').value = q.content || '';
+      document.getElementById('mktRunOnCloud').checked = q.runOnCloud !== false;
+      document.getElementById('mktComposerAgent').value = q.targetAgentId || '';
       
       if (q.scheduledTime) {
         const dt = new Date(q.scheduledTime);
@@ -607,6 +626,8 @@
       document.getElementById('mktAgentPreview').style.display = 'none';
       document.getElementById('mktComposerText').value = '';
       document.getElementById('mktCustomTime').value = '';
+      document.getElementById('mktRunOnCloud').checked = true;
+      document.getElementById('mktComposerAgent').value = '';
       const checkboxes = document.querySelectorAll('input[name="mkt_channels"]');
       checkboxes.forEach(cb => cb.checked = true);
     }
@@ -618,7 +639,7 @@
     function checkScheduledQueueReminders() {
       if (!DB.mktQueue) return;
       const now = new Date();
-      const dueItems = DB.mktQueue.filter(q => q.status === 'queued' && new Date(q.scheduledTime) <= now);
+      const dueItems = DB.mktQueue.filter(q => q.status === 'queued' && !q.runOnCloud && new Date(q.scheduledTime) <= now);
       
       dueItems.forEach(q => {
         if (Notification.permission === 'granted') {
@@ -693,4 +714,706 @@
         Notification.requestPermission();
       }
     }
+
+    // ============================
+    // GEMINI AI CONFIG
+    // ============================
+    function initAIConfig() {
+      const apiKey = localStorage.getItem('gemini_api_key') || '';
+      const input = document.getElementById('ai_geminiApiKey');
+      if (input) {
+        input.value = apiKey;
+      }
+    }
+
+    function saveAIConfig() {
+      const input = document.getElementById('ai_geminiApiKey');
+      if (!input) return;
+      const key = input.value.trim();
+      localStorage.setItem('gemini_api_key', key);
+      const statusEl = document.getElementById('aiConfigStatus');
+      if (statusEl) {
+        statusEl.textContent = '💾 บันทึกสิทธิ์การเข้าใช้งาน AI เรียบร้อยแล้ว';
+        statusEl.style.color = 'var(--green)';
+        setTimeout(() => { statusEl.textContent = ''; }, 3000);
+      }
+      showToast('🤖 บันทึก Gemini API Key สำเร็จ!');
+    }
+
+    async function testAIConnection() {
+      const input = document.getElementById('ai_geminiApiKey');
+      if (!input) return;
+      const apiKey = input.value.trim();
+      if (!apiKey) {
+        alert('กรุณากรอก Gemini API Key ก่อนทดสอบค่ะ');
+        return;
+      }
+      
+      const statusEl = document.getElementById('aiConfigStatus');
+      if (statusEl) {
+        statusEl.textContent = '⏳ กำลังทดสอบเชื่อมต่อ...';
+        statusEl.style.color = 'var(--gold)';
+      }
+      
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: 'ทดสอบสั้นๆ ตอบสั้นๆ ว่า OK' }] }]
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (statusEl) {
+            statusEl.textContent = '✅ เชื่อมต่อ AI สำเร็จ!';
+            statusEl.style.color = 'var(--green)';
+          }
+          const textResponse = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] ? data.candidates[0].content.parts[0].text : 'ไม่มีข้อความ';
+          alert('✅ เชื่อมต่อ Gemini API สำเร็จ!\nระบบตอบกลับ: ' + textResponse);
+        } else {
+          const errData = await response.json();
+          if (statusEl) {
+            statusEl.textContent = '❌ เชื่อมต่อ AI ผิดพลาด';
+            statusEl.style.color = 'var(--red)';
+          }
+          alert('❌ เชื่อมต่อผิดพลาด: ' + (errData.error?.message || response.statusText));
+        }
+      } catch (e) {
+        if (statusEl) {
+          statusEl.textContent = '❌ การเชื่อมต่อล้มเหลว';
+          statusEl.style.color = 'var(--red)';
+        }
+        alert('❌ ไม่สามารถเชื่อมต่อ API ได้: ' + e.message);
+      }
+    }
+
+    async function generateMarketingCopyWithAI() {
+      const assetIdxVal = document.getElementById('mktAssetSelect').value;
+      if (assetIdxVal === '') {
+        alert('กรุณาเลือกทรัพย์สินก่อนเขียนข้อความด้วย AI ค่ะ');
+        return;
+      }
+      
+      const apiKey = localStorage.getItem('gemini_api_key') || '';
+      if (!apiKey) {
+        alert('❌ ยังไม่ได้ตั้งค่า Gemini API Key\nกรุณาไปที่แท็บ "ตั้งค่า" -> "ตั้งค่า Gemini AI" เพื่อใส่ API Key ก่อนใช้งานค่ะ');
+        return;
+      }
+      
+      const assetIdx = parseInt(assetIdxVal);
+      const a = DB.assets[assetIdx];
+      
+      const tone = document.getElementById('mktAiTone').value;
+      const highlights = document.getElementById('mktAiHighlights').value.trim();
+      
+      // Get contact details if selected
+      const contactOverride = getContactForMkt(a);
+      const lineAtInfo = getLineAtForMkt();
+      const showContact = document.getElementById('mktContact').checked;
+      const showLineAt = document.getElementById('mktLineAt').checked;
+      
+      let contactInfoText = '';
+      if (showContact && contactOverride) {
+        contactInfoText += `\n📞 สนใจติดต่อ/สอบถามเพิ่มเติม: ${contactOverride}`;
+      }
+      if (showLineAt && lineAtInfo) {
+        contactInfoText += `\n💬 Line ID/Link: ${lineAtInfo}`;
+      }
+
+      // UI States
+      const btn = document.getElementById('btnMktAiGenerate');
+      const loading = document.getElementById('mktAiLoading');
+      const textOutput = document.getElementById('mktComposerText');
+      
+      if (btn) btn.disabled = true;
+      if (loading) loading.style.display = 'block';
+      
+      // Build prompt
+      let toneGuideline = '';
+      if (tone === 'luxury') {
+        toneGuideline = 'เขียนในสไตล์ หรูหรา พรีเมียม ดูหรูหรามีระดับ ใช้ภาษาที่สุภาพและดึงดูดกลุ่มลูกค้าที่มีกำลังซื้อสูง เน้นความเหนือระดับ ความสะดวกสบาย และวัสดุอุปกรณ์ตกแต่งที่พรีเมียม';
+      } else if (tone === 'value') {
+        toneGuideline = 'เขียนในสไตล์ เน้นความคุ้มค่า น่าลงทุน ราคาดีคุ้มเงิน เน้นวิเคราะห์ความคุ้มค่าของการอยู่อาศัยหรือปล่อยเช่า ชี้ให้เห็นถึงความคุ้มค่าเมื่อเทียบกับโครงการอื่นในทำเลเดียวกัน';
+      } else if (tone === 'urgent') {
+        toneGuideline = 'เขียนในสไตล์ เร่งด่วน กระตุ้นความสนใจ (Call to Action) ใช้พาดหัวที่ตื่นเต้น ดึงดูดสายตา เช่น หลุดจอง! ด่วน! ราคาต่ำกว่าตลาด เพื่อกระตุ้นให้ผู้ซื้อทักแชทหรือโทรติดต่อทันที';
+      } else if (tone === 'friendly') {
+        toneGuideline = 'เขียนในสไตล์ อบอุ่น เป็นกันเอง เล่าเรื่องความน่าอยู่ เหมาะสำหรับการสร้างครอบครัวหรือการพักผ่อนอย่างมีความสุข บรรยายความรู้สึกอบอุ่นเสมือนบ้านจริง';
+      }
+      
+      let prompt = `คุณคือเอเจนต์อสังหาริมทรัพย์มืออาชีพของทีม BENZ HOME Agency
+กรุณาช่วยเขียนข้อความโฆษณาโพสต์สำหรับขายหรือเช่าอสังหาริมทรัพย์ชิ้นนี้ โดยอ้างอิงจากข้อมูลด้านล่าง:
+
+ข้อมูลอสังหาริมทรัพย์:
+- ชื่อโครงการ/ทรัพย์สิน: ${a.name || 'ไม่ระบุ'}
+- ประเภท: ${a.type || 'ไม่ระบุ'}
+- รูปแบบประกาศ: ${a.status || 'เช่า/ขาย'}
+- ราคา/ค่าเช่า: ${a.price || 'ไม่ระบุ'}
+- ขนาดห้อง/จำนวนห้อง: ${a.roomtype || 'ไม่ระบุ'} (พื้นที่: ${a.area || 'ไม่ระบุ'} ตร.ม., ชั้น: ${a.floor || 'ไม่ระบุ'})
+- ทำเลที่ตั้ง: ${a.location || 'ไม่ระบุ'}
+${a.bts ? `- ใกล้สถานีรถไฟฟ้า: 🚇 ${a.bts}` : ''}
+${highlights ? `- จุดเด่นพิเศษที่ต้องเน้น: ${highlights}` : ''}
+
+แนวทางในการเขียน:
+1. ${toneGuideline}
+2. เขียนให้น่าสนใจ มีการเว้นบรรทัดให้อ่านง่าย สอดแทรกอิโมจิ (Emoji) ที่เหมาะสมอย่างลงตัว
+3. สรุปรายละเอียดทรัพย์สินและสิ่งอำนวยความสะดวกให้ครบถ้วน น่าดึงดูด
+4. โพสต์เป็นภาษาไทยทั้งหมด ไม่ต้องพาดหัวอารัมภบทหรือมีคำทักทายกับฉัน (ผู้สั่งงาน) ให้เขียนตัวเนื้อหาโพสต์โฆษณาออกมาทันที
+5. ท้ายโพสต์กรุณาใส่ข้อมูลติดต่อตามนี้: ${contactInfoText || 'ข้อมูลติดต่อระบุในโปรไฟล์'}
+`;
+
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const generatedText = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] ? data.candidates[0].content.parts[0].text : '';
+          
+          if (generatedText && textOutput) {
+            textOutput.value = generatedText;
+            showToast('🤖 AI เจนสคริปต์โฆษณาสำเร็จ!');
+          } else {
+            alert('ไม่สามารถดึงข้อความจาก AI ได้');
+          }
+        } else {
+          const errData = await response.json();
+          alert('❌ AI เขียนโพสต์ไม่สำเร็จ: ' + (errData.error?.message || response.statusText));
+        }
+      } catch (e) {
+        alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ AI: ' + e.message);
+      } finally {
+        if (btn) btn.disabled = false;
+        if (loading) loading.style.display = 'none';
+      }
+    }
+
+    // ============================
+    // CANVAS POSTER CREATOR
+    // ============================
+    let _posterBgImage = null;
+    let _loadedQrImage = null;
+    let _currentQrData = '';
+
+    function getAgentQrData() {
+      const lineText = document.getElementById('posterLine').value.trim();
+      const phoneText = document.getElementById('posterPhone').value.trim();
+      
+      if (lineText) {
+        if (lineText.startsWith('http')) return lineText;
+        if (lineText.startsWith('@')) return `https://line.me/R/ti/p/~${lineText.replace('@', '')}`;
+        return `https://line.me/ti/p/${lineText}`;
+      }
+      if (phoneText) {
+        return `tel:${phoneText}`;
+      }
+      return 'https://www.google.com';
+    }
+
+    function openPosterCreator() {
+      const assetIdxVal = document.getElementById('mktAssetSelect').value;
+      if (assetIdxVal === '') {
+        alert('กรุณาเลือกทรัพย์สินก่อนสร้างรูปภาพโปรโมตค่ะ');
+        return;
+      }
+      
+      const assetIdx = parseInt(assetIdxVal);
+      const a = DB.assets[assetIdx];
+      
+      // Get Agent Contact Info
+      let phone = '';
+      let line = '';
+      const agIdxVal = document.getElementById('mktAgentSelect').value;
+      if (agIdxVal !== '') {
+        const ag = DB.agents[parseInt(agIdxVal)];
+        phone = ag.tel || '';
+        line = ag.line || '';
+      } else {
+        phone = a.contact || '';
+      }
+
+      // Populate Inputs
+      document.getElementById('posterTitle').value = a.name || '';
+      document.getElementById('posterPrice').value = `${a.status === 'เช่า' ? 'เช่า' : 'ขาย'} ${a.price || ''}`;
+      
+      let subDetails = [];
+      if (a.roomtype) subDetails.push(a.roomtype);
+      if (a.area) subDetails.push(`${a.area} ตร.ม.`);
+      if (a.floor) subDetails.push(`ชั้น ${a.floor}`);
+      document.getElementById('posterSub').value = subDetails.join(' · ');
+      
+      document.getElementById('posterBts').value = a.bts ? `🚇 สถานี ${a.bts}` : (a.location || '');
+      document.getElementById('posterPhone').value = phone;
+      document.getElementById('posterLine').value = line;
+      
+      // Clear file input
+      document.getElementById('posterBgInput').value = '';
+      _posterBgImage = null;
+      _currentQrData = '';
+      _loadedQrImage = null;
+
+      // Reset template selection & badge
+      document.getElementById('posterTemplate').value = 'classic-gold';
+      document.getElementById('posterBadge').value = 'none';
+
+      openModal('posterCreator');
+      drawPoster();
+    }
+
+    function loadPosterBgImage(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          _posterBgImage = img;
+          drawPoster();
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function drawPoster() {
+      const canvas = document.getElementById('posterCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      
+      ctx.clearRect(0, 0, w, h);
+      
+      const template = document.getElementById('posterTemplate').value || 'classic-gold';
+      const badge = document.getElementById('posterBadge').value || 'none';
+      
+      // Load QR Code dynamically if changed
+      const qrData = getAgentQrData();
+      if (qrData !== _currentQrData) {
+        _currentQrData = qrData;
+        _loadedQrImage = null; // reset while loading
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = function() {
+          _loadedQrImage = img;
+          drawPoster(); // Redraw once loaded
+        };
+        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
+      }
+
+      // 1. Draw Background
+      if (_posterBgImage) {
+        const imgW = _posterBgImage.width;
+        const imgH = _posterBgImage.height;
+        const imgRatio = imgW / imgH;
+        const canvasRatio = w / h;
+        
+        let drawW, drawH, drawX, drawY;
+        if (imgRatio > canvasRatio) {
+          drawH = h;
+          drawW = h * imgRatio;
+          drawX = (w - drawW) / 2;
+          drawY = 0;
+        } else {
+          drawW = w;
+          drawH = w / imgRatio;
+          drawX = 0;
+          drawY = (h - drawH) / 2;
+        }
+        ctx.drawImage(_posterBgImage, drawX, drawY, drawW, drawH);
+      } else {
+        // Fallback backgrounds depending on template
+        if (template === 'minimal-light') {
+          const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+          bgGrad.addColorStop(0, '#FAF9F6');
+          bgGrad.addColorStop(1, '#EAE5D8');
+          ctx.fillStyle = bgGrad;
+          ctx.fillRect(0, 0, w, h);
+          
+          // Subtle abstract shape
+          ctx.strokeStyle = 'rgba(192, 120, 0, 0.05)';
+          ctx.lineWidth = 1;
+          for (let i = 0; i < 800; i += 40) {
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(w, h - i);
+            ctx.stroke();
+          }
+        } else if (template === 'vibrant-tech') {
+          const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+          bgGrad.addColorStop(0, '#050716');
+          bgGrad.addColorStop(1, '#0C0F2B');
+          ctx.fillStyle = bgGrad;
+          ctx.fillRect(0, 0, w, h);
+          
+          // Sci-fi grid
+          ctx.strokeStyle = 'rgba(0, 240, 255, 0.05)';
+          ctx.lineWidth = 1;
+          for (let i = 0; i < w; i += 60) {
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i, h);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, i);
+            ctx.lineTo(w, i);
+            ctx.stroke();
+          }
+        } else { // classic-gold
+          const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+          bgGrad.addColorStop(0, '#1A1813');
+          bgGrad.addColorStop(1, '#080808');
+          ctx.fillStyle = bgGrad;
+          ctx.fillRect(0, 0, w, h);
+          
+          ctx.strokeStyle = 'rgba(201, 168, 76, 0.08)';
+          ctx.lineWidth = 2;
+          for (let i = 0; i < 6; i++) {
+            ctx.beginPath();
+            ctx.arc(w / 2, h / 2, 100 + i * 80, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        }
+      }
+      
+      // 2. Bottom Overlay Gradient (For text contrast)
+      const overlayGrad = ctx.createLinearGradient(0, h * 0.4, 0, h);
+      if (template === 'minimal-light') {
+        overlayGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+        overlayGrad.addColorStop(0.3, 'rgba(250, 248, 242, 0.5)');
+        overlayGrad.addColorStop(0.7, 'rgba(250, 248, 242, 0.92)');
+        overlayGrad.addColorStop(1, 'rgba(250, 248, 242, 0.99)');
+      } else if (template === 'vibrant-tech') {
+        overlayGrad.addColorStop(0, 'rgba(5, 7, 22, 0)');
+        overlayGrad.addColorStop(0.3, 'rgba(5, 7, 22, 0.45)');
+        overlayGrad.addColorStop(0.7, 'rgba(5, 7, 22, 0.88)');
+        overlayGrad.addColorStop(1, 'rgba(5, 7, 22, 0.98)');
+      } else { // classic-gold
+        overlayGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        overlayGrad.addColorStop(0.3, 'rgba(0, 0, 0, 0.4)');
+        overlayGrad.addColorStop(0.7, 'rgba(0, 0, 0, 0.85)');
+        overlayGrad.addColorStop(1, 'rgba(0, 0, 0, 0.98)');
+      }
+      ctx.fillStyle = overlayGrad;
+      ctx.fillRect(0, h * 0.4, w, h * 0.6);
+      
+      // 3. Borders & Frames
+      if (template === 'minimal-light') {
+        ctx.strokeStyle = '#33302A';
+        ctx.lineWidth = 14;
+        ctx.strokeRect(7, 7, w - 14, h - 14);
+        
+        ctx.strokeStyle = '#C9A84C'; // accent gold line
+        ctx.lineWidth = 2;
+        ctx.strokeRect(18, 18, w - 36, h - 36);
+      } else if (template === 'vibrant-tech') {
+        // Cyan tech border
+        ctx.strokeStyle = '#00F0FF';
+        ctx.lineWidth = 10;
+        ctx.strokeRect(5, 5, w - 10, h - 10);
+        
+        // Cyber corner lines
+        ctx.fillStyle = '#00F0FF';
+        ctx.fillRect(15, 15, 40, 6);
+        ctx.fillRect(15, 15, 6, 40);
+        ctx.fillRect(w - 55, 15, 40, 6);
+        ctx.fillRect(w - 21, 15, 6, 40);
+        ctx.fillRect(15, h - 21, 40, 6);
+        ctx.fillRect(15, h - 55, 6, 40);
+        ctx.fillRect(w - 55, h - 21, 40, 6);
+        ctx.fillRect(w - 21, h - 55, 6, 40);
+      } else { // classic-gold
+        ctx.strokeStyle = '#C9A84C';
+        ctx.lineWidth = 14;
+        ctx.strokeRect(7, 7, w - 14, h - 14);
+        
+        ctx.fillStyle = '#C9A84C';
+        ctx.fillRect(20, 20, 20, 20);
+        ctx.fillRect(w - 40, 20, 20, 20);
+        ctx.fillRect(20, h - 40, 20, 20);
+        ctx.fillRect(w - 40, h - 40, 20, 20);
+      }
+      
+      // 4. Brand Header Badge (Top Left)
+      if (template === 'minimal-light') {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.fillRect(35, 35, 320, 60);
+        ctx.strokeStyle = '#33302A';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(35, 35, 320, 60);
+        ctx.fillStyle = '#1A1506';
+      } else if (template === 'vibrant-tech') {
+        ctx.fillStyle = 'rgba(5, 7, 22, 0.85)';
+        ctx.fillRect(35, 35, 320, 60);
+        ctx.strokeStyle = '#00F0FF';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(35, 35, 320, 60);
+        ctx.fillStyle = '#00F0FF';
+      } else { // classic-gold
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.fillRect(35, 35, 320, 60);
+        ctx.strokeStyle = '#C9A84C';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(35, 35, 320, 60);
+        ctx.fillStyle = '#F0EDE6';
+      }
+      ctx.font = 'bold 22px Prompt, Kanit, Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('BENZ HOME AGENCY', 195, 73);
+      
+      // 5. Draw Status Badge Ribbon (Top Right)
+      if (badge !== 'none') {
+        let badgeColor1 = '#E05050'; // default red
+        let badgeColor2 = '#991111';
+        let badgeText = '';
+        
+        if (badge === 'hot-deal') {
+          badgeColor1 = '#E05050';
+          badgeColor2 = '#A81818';
+          badgeText = '🔥 HOT DEAL';
+        } else if (badge === 'quick-move') {
+          badgeColor1 = '#C9A84C';
+          badgeColor2 = '#9A7530';
+          badgeText = '📦 ย้ายเข้าด่วน';
+        } else if (badge === 'under-market') {
+          badgeColor1 = '#5090E0';
+          badgeColor2 = '#195BA0';
+          badgeText = '💎 ต่ำกว่าราคาตลาด';
+        } else if (badge === 'closed') {
+          badgeColor1 = '#7A7060';
+          badgeColor2 = '#444038';
+          badgeText = '🔒 SOLD / RENTED';
+        }
+        
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.4)';
+        ctx.shadowBlur = 10;
+        
+        const badgeW = 280;
+        const badgeH = 54;
+        const badgeX = w - badgeW - 35;
+        const badgeY = 38;
+        
+        const badgeGrad = ctx.createLinearGradient(badgeX, badgeY, badgeX + badgeW, badgeY + badgeH);
+        badgeGrad.addColorStop(0, badgeColor1);
+        badgeGrad.addColorStop(1, badgeColor2);
+        
+        ctx.fillStyle = badgeGrad;
+        ctx.beginPath();
+        ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 12);
+        ctx.fill();
+        
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 22px Prompt, Kanit, Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(badgeText, badgeX + badgeW / 2, badgeY + 34);
+        ctx.restore();
+      }
+      
+      // 6. Text Contents (Bottom Area)
+      const titleText = document.getElementById('posterTitle').value || 'โครงการอสังหาฯ';
+      const priceText = document.getElementById('posterPrice').value || 'ราคาพิเศษ';
+      const subText = document.getElementById('posterSub').value || '';
+      const btsText = document.getElementById('posterBts').value || '';
+      
+      const phoneText = document.getElementById('posterPhone').value || '';
+      const lineText = document.getElementById('posterLine').value || '';
+
+      ctx.textAlign = 'left';
+      if (template === 'minimal-light') {
+        ctx.fillStyle = '#1A1506';
+      } else if (template === 'vibrant-tech') {
+        ctx.fillStyle = '#FFFFFF';
+      } else {
+        ctx.fillStyle = '#FFFFFF';
+      }
+      ctx.font = 'bold 54px Prompt, Kanit, Arial';
+      ctx.fillText(titleText, 60, h - 330);
+      
+      if (template === 'minimal-light') {
+        ctx.fillStyle = '#C07800';
+      } else if (template === 'vibrant-tech') {
+        ctx.fillStyle = '#FFE500';
+      } else {
+        ctx.fillStyle = '#C9A84C';
+      }
+      ctx.font = '900 68px Prompt, Kanit, Arial';
+      ctx.fillText(priceText, 60, h - 245);
+      
+      if (template === 'minimal-light') {
+        ctx.fillStyle = '#5A5040';
+      } else if (template === 'vibrant-tech') {
+        ctx.fillStyle = '#8FA0B8';
+      } else {
+        ctx.fillStyle = '#E1DCD3';
+      }
+      ctx.font = '500 32px Prompt, Kanit, Arial';
+      ctx.fillText(subText, 60, h - 185);
+      
+      if (btsText) {
+        if (template === 'minimal-light') {
+          ctx.fillStyle = '#0077CC';
+        } else if (template === 'vibrant-tech') {
+          ctx.fillStyle = '#00F0FF';
+        } else {
+          ctx.fillStyle = '#5090E0';
+        }
+        ctx.font = 'bold 30px Prompt, Kanit, Arial';
+        ctx.fillText(btsText, 60, h - 130);
+      }
+      
+      // 7. Divider Line
+      if (template === 'minimal-light') {
+        ctx.strokeStyle = 'rgba(51, 48, 42, 0.2)';
+      } else if (template === 'vibrant-tech') {
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.3)';
+      } else {
+        ctx.strokeStyle = 'rgba(201, 168, 76, 0.4)';
+      }
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(60, h - 90);
+      ctx.lineTo(w - 240, h - 90);
+      ctx.stroke();
+      
+      if (template === 'minimal-light') {
+        ctx.fillStyle = '#33302A';
+      } else if (template === 'vibrant-tech') {
+        ctx.fillStyle = '#8FA0B8';
+      } else {
+        ctx.fillStyle = '#B8B0A0';
+      }
+      ctx.font = 'bold 24px Prompt, Kanit, Arial';
+      let contactStr = '';
+      if (phoneText) contactStr += `📞 สนใจติดต่อ: ${phoneText}  `;
+      if (lineText) contactStr += `💬 Line: ${lineText}`;
+      ctx.fillText(contactStr || 'ติดต่อสอบถามรายละเอียดเพิ่มเติม', 60, h - 50);
+
+      // 8. Draw QR Code
+      const qrSize = 150;
+      const qrX = w - 210;
+      const qrY = h - 210;
+      
+      if (_loadedQrImage) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(qrX, qrY, qrSize, qrSize);
+        
+        if (template === 'minimal-light') {
+          ctx.strokeStyle = '#33302A';
+        } else if (template === 'vibrant-tech') {
+          ctx.strokeStyle = '#00F0FF';
+        } else {
+          ctx.strokeStyle = '#C9A84C';
+        }
+        ctx.lineWidth = 4;
+        ctx.strokeRect(qrX, qrY, qrSize, qrSize);
+        
+        ctx.drawImage(_loadedQrImage, qrX + 6, qrY + 6, qrSize - 12, qrSize - 12);
+      } else {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(qrX, qrY, qrSize, qrSize);
+        
+        if (template === 'minimal-light') {
+          ctx.strokeStyle = '#33302A';
+        } else if (template === 'vibrant-tech') {
+          ctx.strokeStyle = '#00F0FF';
+        } else {
+          ctx.strokeStyle = '#C9A84C';
+        }
+        ctx.lineWidth = 4;
+        ctx.strokeRect(qrX, qrY, qrSize, qrSize);
+        
+        ctx.fillStyle = '#5A5040';
+        ctx.font = '13px Prompt, Kanit, Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('⏳ กำลังโหลด QR...', qrX + qrSize / 2, qrY + qrSize / 2 + 5);
+      }
+      
+      if (template === 'minimal-light') {
+        ctx.fillStyle = '#33302A';
+      } else if (template === 'vibrant-tech') {
+        ctx.fillStyle = '#00F0FF';
+      } else {
+        ctx.fillStyle = '#FFFFFF';
+      }
+      ctx.font = 'bold 16px Prompt, Kanit, Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('SCAN ME', qrX + qrSize / 2, qrY - 10);
+    }
+
+    function downloadPosterImage() {
+      const canvas = document.getElementById('posterCanvas');
+      if (!canvas) return;
+      
+      const title = document.getElementById('posterTitle').value || 'asset';
+      const link = document.createElement('a');
+      link.download = `poster_${title.replace(/\s+/g, '_')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('🎨 ดาวน์โหลดรูปภาพโพสต์เรียบร้อย!');
+    }
+
+    async function sharePosterImage() {
+      const canvas = document.getElementById('posterCanvas');
+      if (!canvas) return;
+
+      if (!navigator.share) {
+        alert('เบราว์เซอร์นี้ไม่รองรับการแชร์ไฟล์ภาพโดยตรงค่ะ คุณสามารถดาวน์โหลดรูปภาพและคัดลอกแคปชันไปแชร์แทนได้เลยค่ะ');
+        return;
+      }
+
+      const title = document.getElementById('posterTitle').value || 'property';
+      const text = document.getElementById('mktComposerText').value || '';
+
+      try {
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            alert('ไม่สามารถประมวลผลไฟล์ภาพได้ค่ะ');
+            return;
+          }
+          const file = new File([blob], `poster_${title.replace(/\s+/g, '_')}.png`, { type: 'image/png' });
+          
+          const shareData = {
+            files: [file],
+            title: title,
+            text: text
+          };
+
+          if (navigator.canShare && navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+            showToast('📲 แชร์เรียบร้อย!');
+          } else {
+            alert('อุปกรณ์นี้ไม่รองรับการแชร์ไฟล์ภาพประเภทนี้ค่ะ');
+          }
+        }, 'image/png');
+      } catch (e) {
+        console.error('Error sharing:', e);
+        alert('เกิดข้อผิดพลาดในการแชร์ค่ะ: ' + e.message);
+      }
+    }
+
+    window.saveAIConfig = saveAIConfig;
+    window.testAIConnection = testAIConnection;
+    window.initAIConfig = initAIConfig;
+    window.generateMarketingCopyWithAI = generateMarketingCopyWithAI;
+    window.openPosterCreator = openPosterCreator;
+    window.loadPosterBgImage = loadPosterBgImage;
+    window.drawPoster = drawPoster;
+    window.downloadPosterImage = downloadPosterImage;
+    window.sharePosterImage = sharePosterImage;
 

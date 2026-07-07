@@ -373,6 +373,7 @@
             <td>${careInfo}</td>
             <td><div style="display:flex;gap:4px">
               ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm" style="padding:4px 8px">🔗</a>` : ''}
+              <button class="btn btn-outline btn-sm" style="border-color:var(--gold);color:var(--gold);padding:4px 8px" onclick="showCustomerMatchesForAsset(${ri})" title="จับคู่ลูกค้า">🤝 จับคู่</button>
               ${isOwner ? `<button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️</button>` : ''}
               ${(isOwner || canDelete) ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>` : ''}
             </div></td>
@@ -460,6 +461,7 @@
               ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm">🔗 Link</a>` : ''}
               ${a.map ? `<a href="${a.map}" target="_blank" class="btn btn-outline btn-sm">📍 Map</a>` : ''}
               <button class="btn btn-blue btn-sm" onclick="quickClip(${ri})">📋 ClipB</button>
+              <button class="btn btn-outline btn-sm" style="border-color:var(--gold);color:var(--gold);" onclick="showCustomerMatchesForAsset(${ri})">🤝 จับคู่ลูกค้า</button>
               ${isOwner ? `<button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️</button>` : ''}
               ${(isOwner || canDelete) ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>` : ''}
             </div>

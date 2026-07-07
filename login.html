@@ -536,6 +536,10 @@
         <span class="spinner" id="loginSpinner"></span>
         <span id="btnText">เข้าสู่ระบบ</span>
       </button>
+      <button type="button" class="login-btn btn-google" onclick="doLoginWithGoogle()" style="background:#FAF8F2;color:#1A1506;border:1px solid #C07800;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;width:100%;height:45px;border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo" style="width:18px;height:18px;">
+        <span>เข้าสู่ระบบด้วย Google Mail</span>
+      </button>
     </form>
 
 
@@ -826,6 +830,99 @@
       spinner.style.display = 'none';
       btnText.textContent = 'เข้าสู่ระบบ';
       submitBtn.disabled = false;
+    }
+  }
+
+  async function initFirebaseAuth() {
+    if (window._firebaseAuth) return window._firebaseAuth;
+    const isExtension = window.location.protocol === 'chrome-extension:';
+    const sdkVer = '10.12.2';
+    const base = isExtension ? './lib' : `https://www.gstatic.com/firebasejs/${sdkVer}`;
+    try {
+      const authMod = await import(`${base}/firebase-auth.js`);
+      const { getAuth, signInWithPopup, GoogleAuthProvider } = authMod;
+      
+      const appsMod = await import(`${base}/firebase-app.js`);
+      const { getApps, initializeApp } = appsMod;
+      const existingApps = getApps();
+      const app = existingApps.length > 0 ? existingApps[0] : initializeApp(FIREBASE_CONFIG);
+      const auth = getAuth(app);
+      
+      window._firebaseAuth = { auth, signInWithPopup, GoogleAuthProvider };
+      return window._firebaseAuth;
+    } catch (e) {
+      console.error('Failed to load Firebase Auth SDK:', e);
+      throw new Error('ไม่สามารถโหลดไลบรารี Auth ของ Firebase ได้ค่ะ (ตรวจสอบอินเทอร์เน็ตหรือโฟลเดอร์ lib ใน Extension)');
+    }
+  }
+
+  async function doLoginWithGoogle() {
+    if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
+      alert('❌ ระบบคลาวด์/Firebase ยังไม่ได้กำหนดค่า กรุณากรอกการตั้งค่า Firebase ก่อนใช้งานเข้าสู่ระบบด้วย Google ค่ะ');
+      return;
+    }
+    
+    const errEl = document.getElementById('loginError');
+    const errText = document.getElementById('errorText');
+    errEl.style.display = 'none';
+    
+    try {
+      const { auth, signInWithPopup, GoogleAuthProvider } = await initFirebaseAuth();
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const email = (user.email || '').toLowerCase().trim();
+      const displayname = user.displayName || email.split('@')[0];
+      
+      let found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email);
+      
+      if (!found && _fbReady) {
+        await syncAuthFromFirebase();
+        found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email);
+      }
+      
+      if (!found) {
+        console.log('🆕 Google User not found in system. Registering automatically:', email);
+        found = {
+          email: email,
+          password: 'google-auth-login-provider-oauth2',
+          displayname: displayname,
+          role: 'agent',
+          note: 'สมัครอัตโนมัติผ่าน Google Mail',
+          linkedAgentId: null
+        };
+        
+        AUTH.users.push(found);
+        localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+        
+        if (_fbReady && _db) {
+          try {
+            const { doc, setDoc } = window._firestoreLib;
+            await setDoc(doc(_db, 'yb_auth', 'auth_data'), { users: AUTH.users });
+          } catch(e) {
+            console.warn('Failed to sync new Google user to Firebase:', e);
+          }
+        }
+      }
+      
+      localStorage.setItem('yb_session', JSON.stringify({ email: found.email, pw: found.password }));
+      localStorage.setItem('yb_remember', JSON.stringify({ email: found.email, pw: found.password }));
+      
+      const btnText = document.getElementById('btnText');
+      const submitBtn = document.getElementById('loginSubmitBtn');
+      btnText.textContent = 'เข้าสู่ระบบสำเร็จ!';
+      submitBtn.style.background = 'linear-gradient(135deg, var(--green), #40B868)';
+      
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 400);
+      
+    } catch (e) {
+      console.error('Google Sign-in Error:', e);
+      errEl.style.display = 'flex';
+      errText.textContent = 'ล็อกอินด้วย Google ผิดพลาด: ' + e.message;
     }
   }
 

@@ -42,6 +42,10 @@
           style="font-size:15px;color:var(--text2);cursor:pointer;font-weight:500;">จำรหัสผ่าน</label>
       </div>
       <button class="login-btn" onclick="doLogin()">🔐 เข้าสู่ระบบ</button>
+      <button class="login-btn btn-google" onclick="doLoginWithGoogle()" style="background:#FAF8F2;color:#1A1506;border:1px solid #C9A84C;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;width:100%;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo" style="width:18px;height:18px;">
+        <span>เข้าสู่ระบบด้วย Google Mail</span>
+      </button>
       <div class="login-error" id="loginError">❌ อีเมลหรือรหัสผ่านไม่ถูกต้อง <button onclick="resetAuthData()"
           style="margin-left:10px;background:none;border:1px solid var(--red);color:var(--red);border-radius:5px;padding:2px 8px;cursor:pointer;font-size:12px;">รีเซ็ต</button>
       </div>
@@ -262,46 +266,6 @@
           style="display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;min-height:32px;"></div>
       </div>
 
-      <!-- =================== AGENTS =================== -->
-      <div id="sec-agents" class="section">
-        <div class="toolbar">
-          <div class="toolbar-row">
-            <div class="search-box" style="flex:2;min-width:160px;">
-              <input type="text" id="agentSearch" placeholder="ค้นหา Agent..." oninput="renderAgents()">
-            </div>
-            <div class="toolbar-spacer"></div>
-            <div style="display:flex;gap:4px;" class="view-toggles">
-              <button id="btnAgentViewCard" class="btn btn-outline btn-sm" onclick="setAgentView('card')" title="การ์ด"
-                style="padding:9px 13px;font-size:16px;">⊞</button>
-              <button id="btnAgentViewTable" class="btn btn-outline btn-sm" onclick="setAgentView('table')" title="ตาราง"
-                style="padding:9px 13px;font-size:16px;">☰</button>
-            </div>
-            <button class="btn btn-primary" onclick="openModal('agent')">+ เพิ่ม Agent</button>
-          </div>
-        </div>
-        <div class="table-wrap" id="agentTableWrap" style="display:none;">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>ชื่อ Agent</th>
-                <th>บริษัท/สังกัด</th>
-                <th>Co-Agent</th>
-                <th>เบอร์ติดต่อ</th>
-                <th>E-Mail</th>
-                <th>Line ID</th>
-                <th>Line@</th>
-                <th>เลขบัญชี</th>
-                <th>จัดการ</th>
-              </tr>
-            </thead>
-            <tbody id="agentTable"></tbody>
-          </table>
-        </div>
-        <!-- Mobile card list for agents -->
-        <div class="m-list" id="agentMList"></div>
-      </div>
-
       <!-- =================== CUSTOMERS =================== -->
       <div id="sec-customers" class="section">
         <div class="toolbar">
@@ -478,6 +442,18 @@
                     <input type="checkbox" name="mkt_channels" value="ennxo" class="mkt-channel-cb" checked onchange="onComposerChange()">
                     <span class="mkt-channel-btn">🟪 ENNXO</span>
                   </label>
+                  <label>
+                    <input type="checkbox" name="mkt_channels" value="ddproperty" class="mkt-channel-cb" onchange="onComposerChange()">
+                    <span class="mkt-channel-btn">🟩 DDproperty</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" name="mkt_channels" value="zmyhome" class="mkt-channel-cb" onchange="onComposerChange()">
+                    <span class="mkt-channel-btn">🟧 ZmyHome</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" name="mkt_channels" value="thaihometown" class="mkt-channel-cb" onchange="onComposerChange()">
+                    <span class="mkt-channel-btn">🟥 Thaihometown</span>
+                  </label>
                 </div>
 
                 <label style="font-size:13px;color:var(--text2);margin-bottom:6px;display:block;font-weight:600;">2. เลือกทรัพย์สิน</label>
@@ -517,6 +493,33 @@
                   <option value="fb" selected>สไตล์ Facebook</option>
                   <option value="line">สไตล์ Line OA</option>
                 </select>
+
+                <!-- AI Copywriter Section -->
+                <div style="border-top:1px dashed var(--border);padding-top:14px;margin-top:14px;">
+                  <label style="font-size:13px;color:var(--gold);margin-bottom:8px;display:block;font-weight:700;">🤖 เขียนคำโพสต์ดึงดูดลูกค้าด้วย AI (Gemini)</label>
+                  
+                  <div style="margin-bottom:10px;">
+                    <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">สไตล์/โทนการเขียน:</label>
+                    <select class="cb-select" id="mktAiTone" style="font-size:12px;padding:6px;margin-bottom:0;">
+                      <option value="luxury">💎 หรูหรา พรีเมียม ดึงดูดคนชอบความมีระดับ</option>
+                      <option value="value">💰 เน้นความคุ้มค่า น่าลงทุน ราคาจับต้องได้</option>
+                      <option value="urgent">⚡ เร่งด่วน กระตุ้นการตัดสินใจ ติดต่อด่วน</option>
+                      <option value="friendly">😊 เป็นกันเอง เล่าเรื่องความน่าอยู่ อบอุ่น</option>
+                    </select>
+                  </div>
+
+                  <div style="margin-bottom:12px;">
+                    <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">จุดเด่น/ข้อมูลเสริมที่ต้องการเน้น:</label>
+                    <input type="text" id="mktAiHighlights" class="cb-select" style="font-size:12px;padding:6px;margin-bottom:0;" placeholder="เช่น ห้องมุม, วิวสวนสวย, ทิศใต้ลมดี, ตกแต่งใหม่...">
+                  </div>
+
+                  <button class="btn btn-gold btn-sm" id="btnMktAiGenerate" onclick="generateMarketingCopyWithAI()" style="width:100%;font-size:12px;padding:8px;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:6px;cursor:pointer;">
+                    <span>🤖 เจนข้อความโฆษณาด้วย AI</span>
+                  </button>
+                  <div id="mktAiLoading" style="display:none;font-size:11px;color:var(--gold);margin-top:6px;text-align:center;">
+                    ⏳ กำลังใช้ AI แต่งโพสต์ให้คุณเบนซ์ โปรดรอสักครู่...
+                  </div>
+                </div>
               </div>
 
               <!-- Column 2: Preview & Schedule -->
@@ -534,10 +537,27 @@
                   <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:10px;">
                     <h4 style="font-size:13px;color:var(--gold);margin-bottom:10px;">🕒 ดำเนินการจัดตารางโพสต์</h4>
                     
+                    <!-- Cloud Option & Agent Select for Composer -->
+                    <div style="background:var(--dark);padding:12px;border-radius:8px;margin-bottom:12px;border:1px solid var(--border);">
+                      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                        <input type="checkbox" id="mktRunOnCloud" style="width:16px;height:16px;accent-color:var(--gold);" checked>
+                        <label for="mktRunOnCloud" style="font-size:12px;color:var(--text);font-weight:600;">🤖 โพสต์อัตโนมัติผ่านระบบคลาวด์ (Auto Cloud Post)</label>
+                      </div>
+                      <div id="mktAgentSelectWrap">
+                        <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">เลือก Agent ผู้โพสต์ (ใช้ติดต่อในโพสต์):</label>
+                        <select id="mktComposerAgent" style="width:100%;font-size:12px;padding:6px;border-radius:4px;background:var(--dark2);color:var(--text);border:1px solid var(--border);">
+                          <option value="">-- ใช้ข้อมูลติดต่อจากทรัพย์สินนั้นๆ --</option>
+                        </select>
+                      </div>
+                    </div>
+
                     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
                       <button class="btn btn-primary" onclick="handleComposerShareNow()" style="flex:1;min-width:140px;">🚀 โพสต์ทันที (Share Now)</button>
                       <button class="btn btn-gold" onclick="handleComposerAddToQueue()" style="flex:1;min-width:140px;">🕒 เพิ่มเข้าคิวถัดไป (Queue)</button>
                     </div>
+                    <button class="btn btn-outline" onclick="openPosterCreator()" style="width:100%;margin-bottom:12px;border-color:var(--purple);color:var(--purple);font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;">
+                      <span>🎨 สร้างรูปภาพโปรโมต (Poster Creator)</span>
+                    </button>
                     
                     <div style="display:flex;align-items:center;gap:10px;background:var(--dark);padding:10px;border-radius:8px;border:1px dashed var(--border);">
                       <div style="flex:1;">
@@ -724,6 +744,8 @@
             <button class="snav-item admin-only" id="snav-csv" onclick="switchSettingsTab('csv', this)">📥 นำเข้า/ส่งออก (CSV)</button>
             <button class="snav-item admin-only" id="snav-reset" onclick="switchSettingsTab('reset', this)">🗑️ ล้างข้อมูลระบบ</button>
             <button class="snav-item admin-only" id="snav-quota" onclick="switchSettingsTab('quota', this)">📊 จัดการโควตา</button>
+            <button class="snav-item admin-only" id="snav-platforms" onclick="switchSettingsTab('platforms', this)">🤖 แพลตฟอร์มบอท</button>
+            <button class="snav-item" id="snav-ai" onclick="switchSettingsTab('ai', this)">🤖 ตั้งค่า Gemini AI</button>
           </div>
 
           <div class="settings-content">
@@ -993,6 +1015,118 @@
               </div>
             </div>
 
+            <!-- แพลตฟอร์มบอท -->
+            <div id="ssec-platforms" class="settings-section">
+              <h3 class="settings-title">🤖 แพลตฟอร์มบอท & การเชื่อมต่อคลาวด์</h3>
+              <div class="settings-panel">
+                <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6;">
+                  ตั้งค่าบัญชีล็อกอินและรูปแบบข้อความสำหรับแต่ละแพลตฟอร์ม ข้อมูลรหัสผ่านจะถูกเข้ารหัสลับฝั่งผู้ใช้ (Client-side Encrypted) ก่อนบันทึกไปยัง Firebase
+                </p>
+
+                <!-- Livinginsider Credentials -->
+                <div style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px;">
+                  <h4 style="font-size:14px;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:6px;">🏠 Livinginsider</h4>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;">
+                    <div>
+                      <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">อีเมล / ชื่อผู้ใช้:</label>
+                      <input type="text" id="botLviUser" style="width:100%;font-size:12px;" placeholder="lvi-email@example.com">
+                    </div>
+                    <div>
+                      <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">รหัสผ่าน (จะถูกเข้ารหัส):</label>
+                      <input type="password" id="botLviPass" style="width:100%;font-size:12px;" placeholder="••••••••">
+                    </div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <input type="checkbox" id="botLviActive" style="width:16px;height:16px;accent-color:var(--gold);">
+                    <label for="botLviActive" style="font-size:12px;color:var(--text2);">เปิดใช้งานบอทของคลาวด์สำหรับช่องทางนี้</label>
+                  </div>
+                </div>
+
+                <!-- ENNXO Credentials -->
+                <div style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px;">
+                  <h4 style="font-size:14px;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:6px;">🛍️ ENNXO</h4>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;">
+                    <div>
+                      <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">เบอร์โทรศัพท์ / อีเมล:</label>
+                      <input type="text" id="botEnnxoUser" style="width:100%;font-size:12px;" placeholder="089xxxxxxx">
+                    </div>
+                    <div>
+                      <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">รหัสผ่าน (จะถูกเข้ารหัส):</label>
+                      <input type="password" id="botEnnxoPass" style="width:100%;font-size:12px;" placeholder="••••••••">
+                    </div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <input type="checkbox" id="botEnnxoActive" style="width:16px;height:16px;accent-color:var(--gold);">
+                    <label for="botEnnxoActive" style="font-size:12px;color:var(--text2);">เปิดใช้งานบอทของคลาวด์สำหรับช่องทางนี้</label>
+                  </div>
+                </div>
+
+                <!-- Global Auto Post Rules -->
+                <div style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px;">
+                  <h4 style="font-size:14px;color:var(--gold);margin-bottom:10px;">⚙️ กฎและแหล่งที่มาข้อความ (Auto Post Rules)</h4>
+                  <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px;font-weight:700;">แหล่งข้อมูลเนื้อหาเริ่มต้น:</label>
+                    <select id="botDefaultSource" style="width:100%;font-size:13px;padding:8px;border-radius:6px;background:var(--dark2);color:var(--text);border:1px solid var(--border);" onchange="onBotSourceChange()">
+                      <option value="asset_template">ดึงจากโครงสร้างรายละเอียดทรัพย์สิน + เทมเพลต</option>
+                      <option value="clipboard">ดึงข้อความจากหน้า Clipboard ล่าสุดของระบบ</option>
+                    </select>
+                  </div>
+                  <div id="botClipboardWarning" style="display:none;background:rgba(201,168,76,0.1);border:1px solid var(--gold);color:var(--text);padding:10px;border-radius:6px;font-size:11px;line-height:1.4;margin-bottom:12px;">
+                    💡 <b>หมายเหตุ:</b> หากเลือกดึงจาก Clipboard เมื่อถึงเวลาโพสต์บอทจะคัดลอกข้อความในช่องประวัติคลิปบอร์ดล่าสุดไปโพสต์
+                  </div>
+                  <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px;font-weight:700;">แนบข้อมูลติดต่อของตัวแทน (Agent Contact):</label>
+                    <select id="botDefaultAgent" style="width:100%;font-size:13px;padding:8px;border-radius:6px;background:var(--dark2);color:var(--text);border:1px solid var(--border);">
+                      <option value="">-- ใช้ข้อมูลติดต่อจากทรัพย์สินนั้นๆ --</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Session Cookie Sync Panel -->
+                <div style="background:var(--dark);border:1px solid var(--border);padding:14px;border-radius:8px;margin-bottom:20px;">
+                  <h4 style="font-size:13px;color:var(--text);margin-bottom:6px;font-weight:700;">🔑 คุกกี้ล็อกอินและเซสชัน (Session Cookie Sync)</h4>
+                  <p style="font-size:11px;color:var(--text3);line-height:1.4;margin-bottom:10px;">
+                    คุกกี้เซสชันที่ซิงค์จาก Chrome Extension จะช่วยให้บอทคลาวด์เปิดเว็บในสถานะล็อกอินทันทีโดยข้าม SMS OTP
+                  </p>
+                  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                    <button class="btn btn-outline btn-sm" onclick="syncActiveCookies()" style="font-size:11px;padding:6px 12px;">🔄 ดึงและซิงค์คุกกี้เซสชันตอนนี้</button>
+                    <span id="cookieSyncStatus" style="font-size:11px;color:var(--text3);">ยังไม่ได้ซิงค์คุกกี้</span>
+                  </div>
+                </div>
+
+                <!-- Key for Encryption -->
+                <div style="margin-bottom:20px;">
+                  <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px;font-weight:700;">คีย์เข้ารหัสข้อมูลส่วนบุคคล (Encryption Secret Key):</label>
+                  <input type="text" id="botSecretKey" style="width:100%;font-size:13px;" placeholder="ป้อนรหัสผ่านสุ่มเพื่อเป็นคีย์เข้ารหัสลับของคุณเบนซ์" value="BenzHomeAutoKey123">
+                  <p style="font-size:10px;color:var(--text3);margin-top:4px;">* ใช้สำหรับการเข้ารหัสในเบราว์เซอร์ก่อนบันทึก และจะเก็บบนคลาวด์บอทของคุณเท่านั้น</p>
+                </div>
+
+                <button class="btn btn-primary" onclick="savePlatformCredentials()">💾 บันทึกตั้งค่าบอท</button>
+              </div>
+            </div>
+
+            <!-- ตั้งค่า Gemini AI -->
+            <div id="ssec-ai" class="settings-section">
+              <h3 class="settings-title">🤖 ตั้งค่า Gemini AI</h3>
+              <div class="settings-panel">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                  <div style="font-size:15px;font-weight:700;color:var(--gold);">การเชื่อมต่อ API ของ Gemini</div>
+                </div>
+                <div class="form-group" style="margin-bottom:16px;">
+                  <label style="font-size:12px;">Gemini API Key</label>
+                  <input type="password" id="ai_geminiApiKey" placeholder="ป้อน Gemini API Key..." style="font-size:12px;font-family:monospace;width:100%;">
+                  <p style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.6;">
+                    ระบบใช้ Gemini API สำหรับเขียนข้อความประกาศอสังหาริมทรัพย์อัตโนมัติ คุณสามารถขอ API Key ฟรีได้จาก <a href="https://aistudio.google.com/" target="_blank" style="color:var(--blue);text-decoration:underline;">Google AI Studio</a>
+                  </p>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                  <button class="btn btn-primary" onclick="saveAIConfig()">💾 บันทึกการตั้งค่า AI</button>
+                  <button class="btn btn-outline" onclick="testAIConnection()" style="border-color:var(--gold);color:var(--gold);">🧪 ทดสอบการเชื่อมต่อ AI</button>
+                  <div id="aiConfigStatus" style="display:flex;align-items:center;font-size:13px;color:var(--green);font-weight:600;"></div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -1000,6 +1134,130 @@
       </div><!-- /main -->
 
     <!-- =================== MODALS =================== -->
+
+    <!-- Matching Modal -->
+    <div class="modal-bg" id="modalMatching">
+      <div class="modal" style="max-width:850px; width:95%; background:var(--dark2); border:1px solid var(--border);">
+        <div class="modal-head" style="border-bottom:1px solid var(--border);">
+          <h2 id="modalMatchingTitle" style="color:var(--gold);">🤝 ผลลัพธ์การจับคู่ Smart Match</h2>
+          <button class="close-btn" onclick="closeModal('matching')">✕</button>
+        </div>
+        <div class="modal-body" style="max-height: 550px; overflow-y: auto; padding: 20px;">
+          <div id="matchingSummaryText" style="margin-bottom:16px; font-size:14px; font-weight:600; color:var(--text); line-height:1.5;"></div>
+          
+          <div class="table-responsive" id="matchingTableWrap" style="display:none; border:1px solid var(--border); border-radius:8px; background:var(--dark);">
+            <table class="table" style="margin-bottom:0; width:100%;">
+              <thead style="background:var(--dark3);">
+                <tr id="matchingTableHeader">
+                  <!-- Dynamic headers -->
+                </tr>
+              </thead>
+              <tbody id="matchingTableBody">
+                <!-- Dynamic body rows -->
+              </tbody>
+            </table>
+          </div>
+          
+          <div id="matchingEmptyMessage" style="display:none; text-align:center; padding:40px 20px; background:var(--dark); border:1px dashed var(--border); border-radius:8px;">
+            <div style="font-size:36px; margin-bottom:10px;">🏚️</div>
+            <div style="font-weight:600; color:var(--text2);">ไม่พบรายการที่ตรงกับเงื่อนไข</div>
+            <div style="font-size:12px; margin-top:4px; color:var(--text3);">ระบบประเมินจากประเภทอสังหาฯ, สถานะ (ขาย/เช่า), งบประมาณ และเส้นรถไฟฟ้า</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Poster Creator Modal -->
+    <div class="modal-bg" id="modalPosterCreator">
+      <div class="modal" style="max-width:900px; width:95%; background:var(--dark2); border:1px solid var(--border);">
+        <div class="modal-head" style="border-bottom:1px solid var(--border);">
+          <h2 style="color:var(--gold);">🎨 สร้างรูปภาพโปรโมต (Poster Creator)</h2>
+          <button class="close-btn" onclick="closeModal('posterCreator')">✕</button>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:20px;">
+            
+            <!-- Editor Controls -->
+            <div style="display:flex; flex-direction:column; gap:12px; background:var(--dark); padding:16px; border-radius:8px; border:1px solid var(--border);">
+              <h3 style="font-size:14px; color:var(--gold); border-bottom:1px solid var(--border2); padding-bottom:8px; margin-bottom:8px;">🛠️ ตั้งค่ารูปภาพโปรโมต</h3>
+              
+              <div class="form-group">
+                <label style="font-size:11px; color:var(--text3); display:block; margin-bottom:4px;">1. อัปโหลดภาพพื้นหลังอสังหาฯ:</label>
+                <input type="file" id="posterBgInput" accept="image/*" onchange="loadPosterBgImage(event)" style="font-size:12px; width:100%;">
+              </div>
+
+              <div class="form-group">
+                <label style="font-size:11px; color:var(--text3); display:block; margin-bottom:4px;">2. พาดหัวหลัก (เช่น ชื่อโครงการ):</label>
+                <input type="text" id="posterTitle" class="cb-select" style="font-size:12px; padding:6px; margin-bottom:0;" oninput="drawPoster()" placeholder="เช่น IDEO พระราม 9">
+              </div>
+
+              <div class="form-group">
+                <label style="font-size:11px; color:var(--text3); display:block; margin-bottom:4px;">3. ราคา/รายละเอียด (เช่น ราคาพิเศษ):</label>
+                <input type="text" id="posterPrice" class="cb-select" style="font-size:12px; padding:6px; color:var(--gold); font-weight:700; margin-bottom:0;" oninput="drawPoster()" placeholder="เช่น เช่า 15,000 บ./ด.">
+              </div>
+
+              <div class="form-group">
+                <label style="font-size:11px; color:var(--text3); display:block; margin-bottom:4px;">4. ข้อมูลย่อย (เช่น ขนาดห้อง/ทำเล):</label>
+                <input type="text" id="posterSub" class="cb-select" style="font-size:12px; padding:6px; margin-bottom:0;" oninput="drawPoster()" placeholder="เช่น 1 Bed · 35 ตร.ม. · ชั้น 12">
+              </div>
+
+              <div class="form-group">
+                <label style="font-size:11px; color:var(--text3); display:block; margin-bottom:4px;">5. ทำเลรถไฟฟ้า (เช่น ใกล้ BTS แบริ่ง):</label>
+                <input type="text" id="posterBts" class="cb-select" style="font-size:12px; padding:6px; margin-bottom:0;" oninput="drawPoster()" placeholder="เช่น 🚇 BTS แบริ่ง (300 เมตร)">
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:8px;">
+                <div class="form-group">
+                  <label style="font-size:11px; color:var(--text3); display:block; margin-bottom:4px;">เลือกเทมเพลตภาพ (Template):</label>
+                  <select id="posterTemplate" style="width:100%;font-size:12px;padding:6px;border-radius:4px;background:var(--dark2);color:var(--text);border:1px solid var(--border);" onchange="drawPoster()">
+                    <option value="classic-gold">Classic Gold (หรูหรา)</option>
+                    <option value="minimal-light">Minimal Light (สว่างคลีน)</option>
+                    <option value="vibrant-tech">Vibrant Tech (นีออน)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label style="font-size:11px; color:var(--text3); display:block; margin-bottom:4px;">ติดป้ายประกาศ (Badge):</label>
+                  <select id="posterBadge" style="width:100%;font-size:12px;padding:6px;border-radius:4px;background:var(--dark2);color:var(--text);border:1px solid var(--border);" onchange="drawPoster()">
+                    <option value="none">— ไม่มีป้าย —</option>
+                    <option value="hot-deal">🔥 HOT DEAL</option>
+                    <option value="quick-move">📦 ย้ายด่วน/พร้อมอยู่</option>
+                    <option value="under-market">💎 ต่ำกว่าราคาตลาด</option>
+                    <option value="closed">🔒 RENTED/SOLD</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div class="form-group">
+                  <label style="font-size:11px; color:var(--text3); display:block; margin-bottom:4px;">6. เบอร์ติดต่อเอเจนต์:</label>
+                  <input type="text" id="posterPhone" class="cb-select" style="font-size:12px; padding:6px; margin-bottom:0;" oninput="drawPoster()" placeholder="เช่น 089-xxx-xxxx">
+                </div>
+                <div class="form-group">
+                  <label style="font-size:11px; color:var(--text3); display:block; margin-bottom:4px;">7. Line ID เอเจนต์:</label>
+                  <input type="text" id="posterLine" class="cb-select" style="font-size:12px; padding:6px; margin-bottom:0;" oninput="drawPoster()" placeholder="เช่น @benzhome">
+                </div>
+              </div>
+
+              <div style="display:flex; gap:8px; margin-top:10px;">
+                <button class="btn btn-primary" onclick="downloadPosterImage()" style="flex:1; display:flex; align-items:center; justify-content:center; gap:6px; border-radius:6px; cursor:pointer;">
+                  <span>💾 ดาวน์โหลดรูปภาพ</span>
+                </button>
+                <button class="btn btn-outline" id="btnPosterShare" onclick="sharePosterImage()" style="flex:1; border-color:var(--green); color:var(--green); display:flex; align-items:center; justify-content:center; gap:6px; border-radius:6px; cursor:pointer;">
+                  <span>📲 แชร์เข้า Line/มือถือ</span>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Canvas Preview -->
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--dark); padding:16px; border-radius:8px; border:1px solid var(--border);">
+              <h3 style="font-size:13px; color:var(--text2); margin-bottom:10px;">🖼️ ตัวอย่างรูปภาพ (1200 x 1200 px)</h3>
+              <canvas id="posterCanvas" width="1200" height="1200" style="max-width:100%; height:auto; border-radius:6px; border:1px solid var(--border2); box-shadow:var(--shadow);"></canvas>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Asset Modal -->
     <div class="modal-bg" id="modalAsset">
@@ -1232,41 +1490,6 @@
       </div>
     </div>
 
-    <!-- Agent Modal -->
-    <div class="modal-bg" id="modalAgent">
-      <div class="modal">
-        <div class="modal-head">
-          <h2 id="modalAgentTitle">👤 เพิ่ม Agent</h2>
-          <button class="close-btn" onclick="closeModal('agent')">✕</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-grid">
-            <div class="form-group full"><label>ชื่อ Agent *</label><input id="ag_name"
-                placeholder="ชื่อ-นามสกุล (ชื่อเล่น)"></div>
-            <div class="form-group"><label>บริษัท/สังกัด</label><input id="ag_company"
-                placeholder="ชื่อบริษัท หรือ Freelance"></div>
-            <div class="form-group"><label>รับ Co-Agent</label><select id="ag_coagent">
-                <option>รับ</option>
-                <option>ไม่รับ</option>
-              </select></div>
-            <div class="form-group"><label>เบอร์ติดต่อ</label><input id="ag_tel" placeholder="08x-xxx-xxxx"></div>
-            <div class="form-group"><label>Facebook</label><input id="ag_fb" placeholder="URL หรือชื่อ"></div>
-            <div class="form-group"><label>Line ID</label><input id="ag_line" placeholder="Line ID"></div>
-            <div class="form-group"><label>Link Line@</label><input id="ag_linelink"
-                placeholder="@lineoa หรือ https://line.me/ti/..."></div>
-            <div class="form-group full"><label>E-Mail</label><input id="ag_email" type="email"
-                placeholder="example@email.com"></div>
-            <div class="form-group full"><label>เลขบัญชี</label><input id="ag_bank" placeholder="ธนาคาร# เลขบัญชี">
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-outline" onclick="closeModal('agent')">ยกเลิก</button>
-          <button class="btn btn-primary" onclick="saveAgent()">💾 บันทึก</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Customer Modal -->
     <div class="modal-bg" id="modalCustomer">
       <div class="modal">
@@ -1344,7 +1567,7 @@
 
     <!-- User Modal (Admin) -->
     <div class="modal-bg" id="modalUser">
-      <div class="modal modal-sm">
+      <div class="modal">
         <div class="modal-head">
           <h2 id="modalUserTitle">👤 เพิ่ม/แก้ไขผู้ใช้</h2>
           <button class="close-btn" onclick="closeModal('user')">✕</button>
@@ -1377,12 +1600,43 @@
               <label>หมายเหตุ</label>
               <input id="u_note" placeholder="เพิ่มเติม...">
             </div>
-            <div class="form-group full" id="linkedAgentRow">
-              <label>🔗 เชื่อมกับ Agent <span style="color:var(--text3);font-weight:400;font-size:12px">(ถ้า Role เป็น
-                  agent)</span></label>
-              <select id="u_linkedAgent">
-                <option value="">— ไม่เชื่อมกับ Agent —</option>
-              </select>
+            
+            <!-- Agent Details Section (Inside User Modal) -->
+            <div id="u_agentDetailsSection" class="form-group full" style="margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); display:none;">
+              <h4 style="font-size:13px; color:var(--gold); margin-bottom:10px;">📋 ข้อมูลตัวแทน/ผู้ติดต่อ (Agent Profile)</h4>
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
+                <div class="form-group">
+                  <label style="font-size:11px;">สังกัด/บริษัท</label>
+                  <input id="u_ag_company" placeholder="เช่น BENZ HOME">
+                </div>
+                <div class="form-group">
+                  <label style="font-size:11px;">รับ Co-Agent</label>
+                  <select id="u_ag_coagent">
+                    <option value="รับ">รับ</option>
+                    <option value="ไม่รับ">ไม่รับ</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label style="font-size:11px;">เบอร์โทรศัพท์</label>
+                  <input id="u_ag_tel" placeholder="เช่น 089-xxx-xxxx">
+                </div>
+                <div class="form-group">
+                  <label style="font-size:11px;">Line ID</label>
+                  <input id="u_ag_line" placeholder="ไอดีไลน์">
+                </div>
+                <div class="form-group full">
+                  <label style="font-size:11px;">ลิงก์ Line (ti/p/ หรือ Line@)</label>
+                  <input id="u_ag_linelink" placeholder="เช่น https://line.me/ti/p/...">
+                </div>
+                <div class="form-group full">
+                  <label style="font-size:11px;">บัญชีธนาคาร (รับค่าคอม)</label>
+                  <input id="u_ag_bank" placeholder="กสิกรไทย 123-x-xxxxx-x">
+                </div>
+                <div class="form-group full">
+                  <label style="font-size:11px;">ลิงก์ Facebook Profile</label>
+                  <input id="u_ag_fb" placeholder="https://facebook.com/...">
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1570,13 +1824,13 @@
   </div>
 
     <!-- JavaScript Application Modules -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="js/global-state.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/pages/assets.js"></script>
   <script src="js/pages/customers.js"></script>
   <script src="js/pages/marketing.js"></script>
-  <script src="js/pages/agents.js"></script>
   <script src="js/pages/calculator.js"></script>
   <script src="js/app.js"></script>
 </body>

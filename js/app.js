@@ -5,7 +5,7 @@
         if (!_realtimeSyncActive) {
           const { collection, getDocs } = window._firestoreLib;
           let anyFail = false;
-          for (const col of ['assets', 'agents', 'customers', 'mktQueue', 'mktScheduleSlots']) {
+          for (const col of ['assets', 'agents', 'customers', 'mktQueue', 'mktScheduleSlots', 'platformCredentials']) {
             try {
               const snap = await getDocs(collection(_db, col));
               if (col === 'mktScheduleSlots') {
@@ -388,6 +388,8 @@
         updateBackupStatus();
       } else if (tabName === 'quota') {
         loadQuotaSettingsUI();
+      } else if (tabName === 'platforms') {
+        loadPlatformCredentials();
       }
     }
 
@@ -409,6 +411,167 @@
       localStorage.setItem('yb_quota_limit', val);
       alert('💾 บันทึกการตั้งค่าโควตาสำเร็จแล้ว: ' + val + ' เคสต่อวัน');
     }
+
+    // ==========================================
+    // PLATFORM CREDENTIALS & AUTOMATION SETTINGS
+    // ==========================================
+    function encryptVal(text, key) {
+      if (!text) return "";
+      try {
+        return CryptoJS.AES.encrypt(text, key).toString();
+      } catch (e) {
+        console.error("Encryption failed:", e);
+        return text;
+      }
+    }
+
+    function decryptVal(cipher, key) {
+      if (!cipher) return "";
+      try {
+        const bytes = CryptoJS.AES.decrypt(cipher, key);
+        return bytes.toString(CryptoJS.enc.Utf8);
+      } catch (e) {
+        console.error("Decryption failed:", e);
+        return "";
+      }
+    }
+
+    function populateSettingsAgentSelect() {
+      const sel = document.getElementById('botDefaultAgent');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">-- ใช้ข้อมูลติดต่อจากทรัพย์สิน --</option>' +
+        (DB.agents || []).map((ag) => `<option value="${ag.id}">${ag.name || 'ไม่มีชื่อ'}${ag.company ? ' (' + ag.company + ')' : ''}</option>`).join('');
+    }
+
+    function loadPlatformCredentials() {
+      populateSettingsAgentSelect();
+
+      const creds = DB.platformCredentials && DB.platformCredentials[0] ? DB.platformCredentials[0] : null;
+      const keyInput = document.getElementById('botSecretKey');
+      const key = keyInput ? keyInput.value : "BenzHomeAutoKey123";
+
+      if (creds) {
+        document.getElementById('botLviUser').value = creds.lviUser || "";
+        document.getElementById('botLviPass').value = creds.lviPassEnc ? decryptVal(creds.lviPassEnc, key) : "";
+        document.getElementById('botLviActive').checked = !!creds.lviActive;
+
+        document.getElementById('botEnnxoUser').value = creds.ennxoUser || "";
+        document.getElementById('botEnnxoPass').value = creds.ennxoPassEnc ? decryptVal(creds.ennxoPassEnc, key) : "";
+        document.getElementById('botEnnxoActive').checked = !!creds.ennxoActive;
+
+        document.getElementById('botDefaultSource').value = creds.defaultSource || "asset_template";
+        document.getElementById('botDefaultAgent').value = creds.defaultAgent || "";
+        
+        onBotSourceChange();
+        
+        const statusText = document.getElementById('cookieSyncStatus');
+        if (statusText) {
+          if (creds.cookiesSyncedAt) {
+            statusText.textContent = "ซิงค์ล่าสุดเมื่อ: " + new Date(creds.cookiesSyncedAt).toLocaleString('th-TH');
+          } else {
+            statusText.textContent = "ยังไม่ได้ซิงค์คุกกี้";
+          }
+        }
+      }
+    }
+
+    async function savePlatformCredentials() {
+      const keyInput = document.getElementById('botSecretKey');
+      const key = keyInput ? keyInput.value : "BenzHomeAutoKey123";
+      if (!key) {
+        alert("❌ กรุณากรอก Encryption Secret Key เพื่อความปลอดภัย");
+        return;
+      }
+
+      const lviUser = document.getElementById('botLviUser').value;
+      const lviPass = document.getElementById('botLviPass').value;
+      const lviActive = document.getElementById('botLviActive').checked;
+
+      const ennxoUser = document.getElementById('botEnnxoUser').value;
+      const ennxoPass = document.getElementById('botEnnxoPass').value;
+      const ennxoActive = document.getElementById('botEnnxoActive').checked;
+
+      const defaultSource = document.getElementById('botDefaultSource').value;
+      const defaultAgent = document.getElementById('botDefaultAgent').value;
+
+      const lviPassEnc = lviPass ? encryptVal(lviPass, key) : "";
+      const ennxoPassEnc = ennxoPass ? encryptVal(ennxoPass, key) : "";
+
+      const credsId = DB.platformCredentials && DB.platformCredentials[0] ? DB.platformCredentials[0].id : "main_creds";
+
+      const credsObj = {
+        id: credsId,
+        lviUser,
+        lviPassEnc,
+        lviActive,
+        ennxoUser,
+        ennxoPassEnc,
+        ennxoActive,
+        defaultSource,
+        defaultAgent,
+        cookiesSyncedAt: DB.platformCredentials && DB.platformCredentials[0] ? (DB.platformCredentials[0].cookiesSyncedAt || null) : null,
+        cookies: DB.platformCredentials && DB.platformCredentials[0] ? (DB.platformCredentials[0].cookies || null) : null
+      };
+
+      await saveItem('platformCredentials', credsObj, credsId);
+
+      if (!_realtimeSyncActive) {
+        if (!DB.platformCredentials) DB.platformCredentials = [];
+        DB.platformCredentials[0] = credsObj;
+        saveTolocalStorage();
+      }
+
+      alert("💾 บันทึกการตั้งค่าแพลตฟอร์มบอทเรียบร้อยแล้วค่ะ");
+    }
+
+    function onBotSourceChange() {
+      const select = document.getElementById('botDefaultSource');
+      const warning = document.getElementById('botClipboardWarning');
+      if (select && warning) {
+        warning.style.display = (select.value === 'clipboard') ? 'block' : 'none';
+      }
+    }
+
+    async function syncActiveCookies() {
+      const statusText = document.getElementById('cookieSyncStatus');
+      if (statusText) statusText.textContent = "กำลังซิงค์...";
+
+      if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({ action: "syncCookies" }, async (response) => {
+          if (response && response.success) {
+            statusText.textContent = "ซิงค์สำเร็จ! เมื่อ: " + new Date().toLocaleString('th-TH');
+            showToast("✅ ซิงค์คุกกี้สิทธิ์ล็อกอินสำเร็จ");
+          } else {
+            statusText.textContent = "ซิงค์ไม่สำเร็จ: " + (response ? response.error : "ไม่พบ Extension");
+            showToast("❌ ซิงค์คุกกี้ล้มเหลว", "#e05050");
+          }
+        });
+      } else {
+        setTimeout(async () => {
+          const credsId = DB.platformCredentials && DB.platformCredentials[0] ? DB.platformCredentials[0].id : "main_creds";
+          const mockCookies = [
+            { domain: ".livinginsider.com", name: "PHPSESSID", value: "mock_session_id_12345" },
+            { domain: ".ennxo.com", name: "session", value: "mock_ennxo_session_98765" }
+          ];
+          
+          if (!DB.platformCredentials) DB.platformCredentials = [];
+          const currentCreds = DB.platformCredentials[0] || { id: credsId };
+          currentCreds.cookies = mockCookies;
+          currentCreds.cookiesSyncedAt = new Date().toISOString();
+          DB.platformCredentials[0] = currentCreds;
+          
+          await saveItem('platformCredentials', currentCreds, credsId);
+          
+          if (statusText) statusText.textContent = "ซิงค์สำเร็จ (จำลอง)! เมื่อ: " + new Date().toLocaleString('th-TH');
+          showToast("✅ ซิงค์คุกกี้สิทธิ์ล็อกอินสำเร็จ (Mock)");
+        }, 1000);
+      }
+    }
+
+    // Expose functions globally for HTML trigger
+    window.savePlatformCredentials = savePlatformCredentials;
+    window.onBotSourceChange = onBotSourceChange;
+    window.syncActiveCookies = syncActiveCookies;
 
     function updateSettingsProfileUI() {
       const cur = AUTH.current;
@@ -753,6 +916,80 @@
       performLogin(found, remember);
     }
 
+    async function initFirebaseAuth() {
+      if (window._firebaseAuth) return window._firebaseAuth;
+      const isExtension = window.location.protocol === 'chrome-extension:';
+      const sdkVer = '10.12.2';
+      const base = isExtension ? './lib' : `https://www.gstatic.com/firebasejs/${sdkVer}`;
+      try {
+        const authMod = await import(`${base}/firebase-auth.js`);
+        const { getAuth, signInWithPopup, GoogleAuthProvider } = authMod;
+        
+        const appsMod = await import(`${base}/firebase-app.js`);
+        const { getApps, initializeApp } = appsMod;
+        const existingApps = getApps();
+        const app = existingApps.length > 0 ? existingApps[0] : initializeApp(FIREBASE_CONFIG);
+        const auth = getAuth(app);
+        
+        window._firebaseAuth = { auth, signInWithPopup, GoogleAuthProvider };
+        return window._firebaseAuth;
+      } catch (e) {
+        console.error('Failed to load Firebase Auth SDK:', e);
+        throw new Error('ไม่สามารถโหลดไลบรารี Auth ของ Firebase ได้ค่ะ (ตรวจสอบอินเทอร์เน็ตหรือโฟลเดอร์ lib ใน Extension)');
+      }
+    }
+
+    async function doLoginWithGoogle() {
+      if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
+        alert('❌ ระบบคลาวด์/Firebase ยังไม่ได้กำหนดค่า กรุณากรอกการตั้งค่า Firebase ก่อนใช้งานเข้าสู่ระบบด้วย Google ค่ะ');
+        return;
+      }
+      
+      const errEl = document.getElementById('loginError');
+      errEl.style.display = 'none';
+      
+      try {
+        const { auth, signInWithPopup, GoogleAuthProvider } = await initFirebaseAuth();
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        const email = (user.email || '').toLowerCase().trim();
+        const displayname = user.displayName || email.split('@')[0];
+        
+        let found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email);
+        
+        if (!found && _fbReady) {
+          await syncAuthFromFirebase();
+          found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email);
+        }
+        
+        if (!found) {
+          console.log('🆕 Google User not found in system. Registering automatically:', email);
+          found = {
+            email: email,
+            password: 'google-auth-login-provider-oauth2',
+            displayname: displayname,
+            role: 'agent',
+            note: 'สมัครอัตโนมัติผ่าน Google Mail',
+            linkedAgentId: null
+          };
+          
+          AUTH.users.push(found);
+          saveAuth();
+        }
+        
+        performLogin(found, true);
+        
+      } catch (e) {
+        console.error('Google Sign-in Error:', e);
+        errEl.style.display = 'flex';
+        const errTextEl = errEl.querySelector('span') || errEl;
+        errTextEl.textContent = '❌ ล็อกอินด้วย Google ผิดพลาด: ' + e.message;
+      }
+    }
+
     function doLogout() {
       if (!confirm('ยืนยันออกจากระบบ?')) return;
       AUTH.current = null;
@@ -773,13 +1010,11 @@
       const isViewer = role === 'viewer';
 
       // Desktop header tabs
-      const tabAgents = document.getElementById('tabAgents');
       const tabCustomers = document.getElementById('tabCustomers');
       const tabSettings = document.getElementById('tabSettings');
       const tabClipboard = document.getElementById('tabClipboard');
       const tabMarketing = document.getElementById('tabMarketing');
       const tabCommission = document.getElementById('tabCommission');
-      if (tabAgents) tabAgents.style.display = isAdmin ? '' : 'none';
       if (tabCustomers) tabCustomers.style.display = (isAdmin || isAgent) ? '' : 'none';
       if (tabSettings) tabSettings.style.display = ''; // visible to all
       if (tabClipboard) tabClipboard.style.display = (isAdmin || isAgent) ? '' : 'none';
@@ -872,7 +1107,6 @@
         items.push({ icon: '💰', label: 'คำนวณค่าคอม', sub: 'คำนวณส่วนแบ่งค่าคอมมิชชั่น', tab: 'commission' });
       }
       if (isAdmin) {
-        items.push({ icon: '👤', label: 'Agent', sub: 'จัดการรายชื่อ Agent', tab: 'agents' });
         items.push({ icon: '⚙️', label: 'ตั้งค่าระบบ', sub: 'ผู้ใช้, Firebase, Backup, CSV', tab: 'settings' });
       } else {
         items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'บัญชีของฉัน & ข้อมูลระบบ', tab: 'settings' });
@@ -967,7 +1201,6 @@
       if (btn) btn.classList.add('active');
       updateBnav(t);
       if (t === 'assets') { renderAssets(); renderStats(); }
-      if (t === 'agents') renderAgents();
       if (t === 'customers') renderCustomers();
       if (t === 'clipboard') populateCbSelect();
       if (t === 'marketing') {
@@ -1293,6 +1526,9 @@
       populateTrainLineSelects();
       populateAssetBtsSelect();
       initAllSearchableSelects();
+      if (typeof initAIConfig === 'function') {
+        initAIConfig();
+      }
     });
 
     function renderUsers() {
@@ -1349,32 +1585,73 @@
 
     function toggleLinkedAgent() {
       const role = document.getElementById('u_role').value;
-      const row = document.getElementById('linkedAgentRow');
-      row.style.display = role === 'agent' ? '' : 'none';
+      const sect = document.getElementById('u_agentDetailsSection');
+      if (sect) {
+        sect.style.display = (role === 'agent' || role === 'admin') ? 'block' : 'none';
+      }
     }
 
-    function populateLinkedAgentSelect(currentId) {
-      const sel = document.getElementById('u_linkedAgent');
-      sel.innerHTML = '<option value="">— ไม่เชื่อมกับ Agent —</option>';
-      DB.agents.forEach(a => {
-        const opt = document.createElement('option');
-        opt.value = a.id || a.name;
-        opt.textContent = a.name + (a.company ? ` (${a.company})` : '');
-        if (a.id === currentId || a.name === currentId) opt.selected = true;
-        sel.appendChild(opt);
-      });
-    }
-
-    function saveUser() {
+    async function saveUser() {
       const email = document.getElementById('u_email').value.trim().toLowerCase();
       const pw = document.getElementById('u_password').value;
       const dname = document.getElementById('u_displayname').value.trim();
       const role = document.getElementById('u_role').value;
       const note = document.getElementById('u_note').value.trim();
-      const linked = document.getElementById('u_linkedAgent').value;
 
       if (!email) { alert('กรุณาใส่อีเมล'); return; }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('รูปแบบอีเมลไม่ถูกต้อง'); return; }
+
+      let linkedAgentId = null;
+
+      if (role === 'agent' || role === 'admin') {
+        const ag = {
+          name: dname || email.split('@')[0],
+          company: document.getElementById('u_ag_company').value.trim(),
+          coagent: document.getElementById('u_ag_coagent').value,
+          tel: document.getElementById('u_ag_tel').value.trim(),
+          fb: document.getElementById('u_ag_fb').value.trim(),
+          email: email,
+          line: document.getElementById('u_ag_line').value.trim(),
+          linelink: document.getElementById('u_ag_linelink').value.trim(),
+          bank: document.getElementById('u_ag_bank').value.trim()
+        };
+
+        if (editMode.idx >= 0) {
+          const u = AUTH.users[editMode.idx];
+          if (u.linkedAgentId) {
+            ag.id = u.linkedAgentId;
+            const agIdx = DB.agents.findIndex(x => x.id === u.linkedAgentId || x.name === u.linkedAgentId);
+            if (agIdx >= 0) {
+              DB.agents[agIdx] = ag;
+            } else {
+              DB.agents.push(ag);
+            }
+            await saveItem('agents', ag, ag.id);
+            linkedAgentId = ag.id;
+          } else {
+            ag.id = genId();
+            DB.agents.push(ag);
+            await saveItem('agents', ag, ag.id);
+            linkedAgentId = ag.id;
+          }
+        } else {
+          ag.id = genId();
+          DB.agents.push(ag);
+          await saveItem('agents', ag, ag.id);
+          linkedAgentId = ag.id;
+        }
+      } else {
+        if (editMode.idx >= 0) {
+          const u = AUTH.users[editMode.idx];
+          if (u.linkedAgentId) {
+            await deleteItemFromDB('agents', u.linkedAgentId);
+            const agIdx = DB.agents.findIndex(x => x.id === u.linkedAgentId);
+            if (agIdx >= 0) {
+              DB.agents.splice(agIdx, 1);
+            }
+          }
+        }
+      }
 
       if (editMode.idx >= 0) {
         const u = AUTH.users[editMode.idx];
@@ -1382,14 +1659,19 @@
         u.displayname = dname;
         u.role = role;
         u.note = note;
-        u.linkedAgentId = linked || null;
+        u.linkedAgentId = linkedAgentId;
         if (pw) u.password = pw;
       } else {
         if (!pw || pw.length < 6) { alert('Password ต้องมีอย่างน้อย 6 ตัวอักษร'); return; }
         if (AUTH.users.find(x => x.email === email)) { alert('อีเมลนี้มีในระบบแล้ว'); return; }
-        AUTH.users.push({ email, password: pw, displayname: dname, role, note, linkedAgentId: linked || null });
+        AUTH.users.push({ email, password: pw, displayname: dname, role, note, linkedAgentId });
       }
-      saveAuth(); closeModal('user'); renderUsers();
+
+      saveAuth();
+      closeModal('user');
+      renderUsers();
+      if (typeof populateMktSelect === 'function') populateMktSelect();
+      if (!_realtimeSyncActive) { saveTolocalStorage(); }
     }
 
     function editUser(i) {
@@ -1401,15 +1683,50 @@
       document.getElementById('u_role').value = u.role || 'viewer';
       document.getElementById('u_note').value = u.note || '';
       document.getElementById('u_pw_hint').style.display = 'inline';
-      populateLinkedAgentSelect(u.linkedAgentId || '');
+
+      document.getElementById('u_ag_company').value = '';
+      document.getElementById('u_ag_coagent').value = 'รับ';
+      document.getElementById('u_ag_tel').value = '';
+      document.getElementById('u_ag_line').value = '';
+      document.getElementById('u_ag_linelink').value = '';
+      document.getElementById('u_ag_bank').value = '';
+      document.getElementById('u_ag_fb').value = '';
+
+      if (u.linkedAgentId) {
+        const ag = DB.agents.find(x => x.id === u.linkedAgentId || x.name === u.linkedAgentId);
+        if (ag) {
+          document.getElementById('u_ag_company').value = ag.company || '';
+          document.getElementById('u_ag_coagent').value = ag.coagent || 'รับ';
+          document.getElementById('u_ag_tel').value = ag.tel || '';
+          document.getElementById('u_ag_line').value = ag.line || '';
+          document.getElementById('u_ag_linelink').value = ag.linelink || '';
+          document.getElementById('u_ag_bank').value = ag.bank || '';
+          document.getElementById('u_ag_fb').value = ag.fb || '';
+        }
+      }
+
       toggleLinkedAgent();
       editMode = { type: 'user', idx: i };
       document.getElementById('modalUser').classList.add('open');
     }
 
-    function deleteUser(i) {
-      if (!confirm(`ยืนยันลบ user "${AUTH.users[i].email}"?`)) return;
-      AUTH.users.splice(i, 1); saveAuth(); renderUsers();
+    async function deleteUser(i) {
+      const u = AUTH.users[i];
+      if (!confirm(`ยืนยันลบ user "${u.email}"?`)) return;
+      
+      if (u.linkedAgentId) {
+        await deleteItemFromDB('agents', u.linkedAgentId);
+        const agIdx = DB.agents.findIndex(x => x.id === u.linkedAgentId);
+        if (agIdx >= 0) {
+          DB.agents.splice(agIdx, 1);
+        }
+      }
+      
+      AUTH.users.splice(i, 1);
+      saveAuth();
+      renderUsers();
+      if (typeof populateMktSelect === 'function') populateMktSelect();
+      if (!_realtimeSyncActive) { saveTolocalStorage(); }
     }
 
     function doChangePw() {
@@ -1460,11 +1777,6 @@
         const currentUserName = AUTH.current ? (AUTH.current.displayname || AUTH.current.email || '') : '';
         populatePosterSelect(currentUserName);
       }
-      if (t === 'agent') {
-        document.getElementById('modalAgentTitle').textContent = '👤 เพิ่ม Agent';
-        ['ag_name', 'ag_company', 'ag_tel', 'ag_fb', 'ag_email', 'ag_line', 'ag_linelink', 'ag_bank'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-        document.getElementById('ag_coagent').value = 'รับ';
-      }
       if (t === 'customer') {
         document.getElementById('modalCustomerTitle').textContent = '🤝 เพิ่มลูกค้า';
         ['cu_name', 'cu_budget', 'cu_area', 'cu_floor', 'cu_contact', 'cu_linkpost', 'cu_note', 'cu_line', 'cu_stationStart', 'cu_stationEnd', 'cu_targetDate'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
@@ -1478,7 +1790,16 @@
         document.getElementById('u_role').value = 'agent';
         document.getElementById('u_note').value = '';
         document.getElementById('u_pw_hint').style.display = 'none';
-        populateLinkedAgentSelect('');
+        
+        // Reset new agent profile inputs
+        document.getElementById('u_ag_company').value = '';
+        document.getElementById('u_ag_coagent').value = 'รับ';
+        document.getElementById('u_ag_tel').value = '';
+        document.getElementById('u_ag_line').value = '';
+        document.getElementById('u_ag_linelink').value = '';
+        document.getElementById('u_ag_bank').value = '';
+        document.getElementById('u_ag_fb').value = '';
+
         toggleLinkedAgent();
         editMode = { type: 'user', idx: -1 };
       }
@@ -1578,31 +1899,7 @@
       closeModal('asset');
       if (!_realtimeSyncActive) { renderStats(); }
     }
-    // ============================
-    // SAVE AGENT
-    // ============================
-    async function saveAgent() {
-      const a = { name: v('ag_name'), company: v('ag_company'), coagent: v('ag_coagent'), tel: v('ag_tel'), fb: v('ag_fb'), email: v('ag_email'), line: v('ag_line'), linelink: v('ag_linelink'), bank: v('ag_bank') };
-      if (!a.name) { alert('กรุณาใส่ชื่อ Agent'); return; }
-      if (editMode.idx >= 0) {
-        const existing = DB.agents[editMode.idx];
-        a.id = existing.id || genId();
-        await saveItem('agents', a, a.id);
-        if (!_realtimeSyncActive) {
-          DB.agents[editMode.idx] = a;
-          renderAgents(); populateCbAgentSelect();
-        }
-      } else {
-        const saved = await saveItem('agents', a);
-        if (!_realtimeSyncActive) {
-          DB.agents.push(saved);
-          renderAgents(); populateCbAgentSelect();
-        }
-      }
-      closeModal('agent');
-      if (!_realtimeSyncActive) { saveTolocalStorage(); }
-      if (document.getElementById('modalAsset').classList.contains('open')) populatePosterSelect(document.getElementById('a_poster').value);
-    }
+
     // ============================
     // SAVE CUSTOMER
     // ============================
@@ -2116,8 +2413,10 @@
       alert(`✅ โหลดข้อมูลตัวอย่างแล้ว!\n🏠 ${sample.assets.length} ทรัพย์สิน\n👤 ${sample.agents.length} Agent\n🤝 ${sample.customers.length} ลูกค้า`);
     }
 
-    // ==========================================
-    // COMMISSION CALCULATOR LOGIC
-    // ==========================================
     let calcMode = 'addon'; // 'addon' or 'net'
+
+    function renderAgents() {
+      // Stub to maintain compatibility with legacy hooks and Firebase listeners
+    }
+    window.renderAgents = renderAgents;
     
