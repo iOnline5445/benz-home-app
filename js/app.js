@@ -27,6 +27,7 @@
       }
       updateFirebaseStatus();
       renderAssets(); renderAgents(); renderCustomers(); renderStats();
+      updatePendingCountNotification();
       if (!_reminderInterval) {
         _reminderInterval = setInterval(checkScheduledQueueReminders, 30000);
       }
@@ -1672,7 +1673,7 @@
       const ml = document.getElementById('userMList');
 
       if (!AUTH.users.length) {
-        tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีผู้ใช้</td></tr>`;
+        tb.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีผู้ใช้</td></tr>`;
         if (ml) ml.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">ยังไม่มีผู้ใช้</div>`;
         return;
       }
@@ -1682,6 +1683,12 @@
         const isMe = AUTH.current && AUTH.current.username === u.email;
         const linkedAgent = u.linkedAgentId ? (DB.agents.find(a => a.id === u.linkedAgentId) || null) : null;
         
+        // Co-Agent status & default share
+        const coDetails = u.socialProviders && u.socialProviders.coagent ? u.socialProviders.coagent : null;
+        const coText = coDetails 
+          ? `<span style="color:${coDetails.accept ? 'var(--green)' : 'var(--text3)'};font-weight:700;">${coDetails.accept ? '✔️ รับ' : '❌ ไม่รับ'} (${coDetails.defaultShare || 40}%)</span>`
+          : '<span style="color:var(--text3)">—</span>';
+
         let actionButtons = `
           <button class="btn btn-outline btn-sm" onclick="editUser(${i})">✏️ แก้ไข</button>
           ${!isMe ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">🗑️</button>` : ''}
@@ -1701,7 +1708,8 @@
           <td style="color:var(--text3)">${i + 1}</td>
           <td style="font-weight:600;font-size:13px">${u.email || '-'}${isMe ? ` <span style="font-size:11px;color:var(--gold)">(คุณ)</span>` : ''}<br>
             <span style="font-weight:400;color:var(--text3);font-size:12px">${u.displayname || ''}</span></td>
-          <td>${u.displayname || '-'}</td>
+          <td style="font-size:13px;font-weight:600;">${u.phone || '-'}</td>
+          <td style="font-size:12px;">${coText}</td>
           <td>${_roleBadge(u.role)}</td>
           <td style="font-size:12px">${linkedAgent ? `<span style="color:var(--green)">✅ ${linkedAgent.name}</span>` : '<span style="color:var(--text3)">—</span>'}</td>
           <td style="font-size:12px;color:var(--text3)">${u.note || '-'}</td>
@@ -1716,6 +1724,11 @@
         const isMe = AUTH.current && AUTH.current.username === u.email;
         const linkedAgent = u.linkedAgentId ? (DB.agents.find(a => a.id === u.linkedAgentId) || null) : null;
         
+        const coDetails = u.socialProviders && u.socialProviders.coagent ? u.socialProviders.coagent : null;
+        const coText = coDetails 
+          ? `${coDetails.accept ? '✔️ รับ' : '❌ ไม่รับ'} (${coDetails.defaultShare || 40}%)`
+          : '—';
+
         let actionButtons = `
           <button class="btn btn-outline" onclick="editUser(${i})">✏️ แก้ไข</button>
           ${!isMe ? `<button class="btn btn-danger" onclick="deleteUser(${i})">🗑️ ลบ</button>` : ''}
@@ -1739,13 +1752,18 @@
             </div>
             ${_roleBadge(u.role)}
           </div>
-          ${linkedAgent ? `<div class="m-card-row"><span class="m-card-label">🏠 Agent</span><span class="m-card-val" style="color:var(--green)">✅ ${linkedAgent.name}</span></div>` : ''}
+          <div class="m-card-row"><span class="m-card-label">📞 เบอร์โทร</span><span class="m-card-val" style="font-weight:600;">${u.phone || '-'}</span></div>
+          <div class="m-card-row"><span class="m-card-label">🤝 Co-Agent</span><span class="m-card-val" style="font-weight:600;">${coText}</span></div>
+          ${linkedAgent ? `<div class="m-card-row"><span class="m-card-label">🏠 Agent Profile</span><span class="m-card-val" style="color:var(--green)">✅ ${linkedAgent.name}</span></div>` : ''}
           ${u.note ? `<div class="m-card-row"><span class="m-card-label">📝 Note</span><span class="m-card-val" style="color:var(--text2);font-size:13px">${u.note}</span></div>` : ''}
           <div class="m-card-actions" style="display:flex;gap:5px;width:100%;">
             ${actionButtons}
           </div>
         </div>`;
       }).join('');
+
+      // Update notification badge count dynamically
+      updatePendingCountNotification();
     }
 
     function _roleBadge(r) {
@@ -1812,7 +1830,7 @@
       const role = document.getElementById('u_role').value;
       const sect = document.getElementById('u_agentDetailsSection');
       if (sect) {
-        sect.style.display = (role === 'agent' || role === 'admin') ? 'block' : 'none';
+        sect.style.display = (role !== 'viewer') ? 'block' : 'none';
       }
     }
 
@@ -1827,8 +1845,9 @@
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('รูปแบบอีเมลไม่ถูกต้อง'); return; }
 
       let linkedAgentId = null;
+      const isAgentOrOwner = (role !== 'viewer' && role !== 'customer');
 
-      if (role === 'agent' || role === 'admin') {
+      if (isAgentOrOwner) {
         const ag = {
           name: dname || email.split('@')[0],
           company: document.getElementById('u_ag_company').value.trim(),
@@ -1878,6 +1897,9 @@
         }
       }
 
+      const telVal = document.getElementById('u_ag_tel').value.trim();
+      const coagentVal = document.getElementById('u_ag_coagent').value;
+
       if (editMode.idx >= 0) {
         const u = AUTH.users[editMode.idx];
         u.email = email;
@@ -1886,10 +1908,26 @@
         u.note = note;
         u.linkedAgentId = linkedAgentId;
         if (pw) u.password = pw;
+        u.phone = telVal;
+        
+        if (!u.socialProviders) u.socialProviders = {};
+        if (!u.socialProviders.coagent) u.socialProviders.coagent = {};
+        u.socialProviders.coagent.accept = (coagentVal === 'รับ');
       } else {
         if (!pw || pw.length < 6) { alert('Password ต้องมีอย่างน้อย 6 ตัวอักษร'); return; }
         if (AUTH.users.find(x => x.email === email)) { alert('อีเมลนี้มีในระบบแล้ว'); return; }
-        AUTH.users.push({ email, password: pw, displayname: dname, role, note, linkedAgentId });
+        AUTH.users.push({ 
+          email, 
+          password: pw, 
+          displayname: dname, 
+          role, 
+          note, 
+          linkedAgentId,
+          phone: telVal,
+          socialProviders: {
+            coagent: { accept: (coagentVal === 'รับ'), defaultShare: 40 }
+          }
+        });
       }
 
       saveAuth();
@@ -1910,8 +1948,8 @@
       document.getElementById('u_pw_hint').style.display = 'inline';
 
       document.getElementById('u_ag_company').value = '';
-      document.getElementById('u_ag_coagent').value = 'รับ';
-      document.getElementById('u_ag_tel').value = '';
+      document.getElementById('u_ag_coagent').value = (u.socialProviders && u.socialProviders.coagent && u.socialProviders.coagent.accept === false) ? 'ไม่รับ' : 'รับ';
+      document.getElementById('u_ag_tel').value = u.phone || '';
       document.getElementById('u_ag_line').value = '';
       document.getElementById('u_ag_linelink').value = '';
       document.getElementById('u_ag_bank').value = '';
@@ -1922,7 +1960,7 @@
         if (ag) {
           document.getElementById('u_ag_company').value = ag.company || '';
           document.getElementById('u_ag_coagent').value = ag.coagent || 'รับ';
-          document.getElementById('u_ag_tel').value = ag.tel || '';
+          document.getElementById('u_ag_tel').value = ag.tel || u.phone || '';
           document.getElementById('u_ag_line').value = ag.line || '';
           document.getElementById('u_ag_linelink').value = ag.linelink || '';
           document.getElementById('u_ag_bank').value = ag.bank || '';
@@ -2208,7 +2246,7 @@
       if (nameEl) nameEl.textContent = displayName;
       if (emailEl) emailEl.textContent = user.email || '-';
       if (roleEl) {
-        const roleMap = { admin: '⭐ Admin', agent: '🏷 Agent', viewer: '👁 Viewer' };
+        const roleMap = { admin: '⭐ Admin', agent: '🏠 Agent', viewer: '👁️ Viewer', owner: '👤 Owner', customer: '🤝 Customer', pending: '⏳ Pending' };
         roleEl.textContent = roleMap[user.role] || user.role || '-';
       }
 
@@ -2223,7 +2261,117 @@
         providers.facebook ? (providers.facebook.displayName || 'Facebook Account') : null
       );
       _renderDropLineSlot(user);
+
+      // Populate agent profile section in dropdown
+      const dropAgentSection = document.getElementById('dropAgentProfileSection');
+      if (dropAgentSection) {
+        if (user.role === 'agent' || user.role === 'admin' || user.role === 'owner' || user.role === 'pending' || user.role === 'rejected') {
+          dropAgentSection.style.display = 'block';
+          const linkedAgent = user.linkedAgentId ? DB.agents.find(a => a.id === user.linkedAgentId) : null;
+          document.getElementById('drop_ag_company').value = linkedAgent ? (linkedAgent.company || '') : '';
+          document.getElementById('drop_ag_coagent').value = linkedAgent ? (linkedAgent.coagent || 'รับ') : 'รับ';
+          document.getElementById('drop_ag_tel').value = linkedAgent ? (linkedAgent.tel || '') : (user.phone || '');
+          document.getElementById('drop_ag_line').value = linkedAgent ? (linkedAgent.line || '') : '';
+          document.getElementById('drop_ag_linelink').value = linkedAgent ? (linkedAgent.linelink || '') : '';
+          document.getElementById('drop_ag_bank').value = linkedAgent ? (linkedAgent.bank || '') : '';
+          document.getElementById('drop_ag_fb').value = linkedAgent ? (linkedAgent.fb || '') : '';
+        } else {
+          dropAgentSection.style.display = 'none';
+        }
+      }
     }
+
+    function updatePendingCountNotification() {
+      if (!AUTH.current || AUTH.current.role !== 'admin') return;
+
+      const pendingCount = AUTH.users.filter(u => u.role === 'pending').length;
+      
+      // Update Desktop Settings Tab
+      const tabSettings = document.getElementById('tabSettings');
+      if (tabSettings) {
+        if (pendingCount > 0) {
+          tabSettings.innerHTML = `⚙️ ตั้งค่า <span style="background:var(--red);color:#fff;border-radius:10px;padding:2px 7px;font-size:10px;margin-left:4px;font-weight:700;display:inline-block;line-height:1;box-shadow:0 2px 5px rgba(224,80,80,0.3);">คำขอ: ${pendingCount}</span>`;
+        } else {
+          tabSettings.innerHTML = `⚙️ ตั้งค่า`;
+        }
+      }
+
+      // Update Mobile Drawer Settings button
+      const drawerProfileBtn = document.getElementById('drawerProfile');
+      if (drawerProfileBtn) {
+        let badgeEl = drawerProfileBtn.querySelector('.badge-pending-count');
+        if (pendingCount > 0) {
+          if (!badgeEl) {
+            badgeEl = document.createElement('span');
+            badgeEl.className = 'badge-pending-count';
+            badgeEl.style.cssText = 'font-size:10px;color:#fff;background:var(--red);padding:2px 6px;border-radius:10px;font-weight:700;margin-left:8px;';
+            drawerProfileBtn.appendChild(badgeEl);
+          }
+          badgeEl.textContent = `รออนุมัติ: ${pendingCount}`;
+          badgeEl.style.display = 'inline-block';
+        } else if (badgeEl) {
+          badgeEl.style.display = 'none';
+        }
+      }
+    }
+    window.updatePendingCountNotification = updatePendingCountNotification;
+
+    async function saveAgentProfileFromDrop() {
+      const cur = AUTH.current;
+      if (!cur) return;
+      const user = AUTH.users.find(u => u.email === cur.username);
+      if (!user) return;
+
+      const company = document.getElementById('drop_ag_company').value.trim();
+      const coagent = document.getElementById('drop_ag_coagent').value;
+      const tel = document.getElementById('drop_ag_tel').value.trim();
+      const line = document.getElementById('drop_ag_line').value.trim();
+      const linelink = document.getElementById('drop_ag_linelink').value.trim();
+      const bank = document.getElementById('drop_ag_bank').value.trim();
+      const fb = document.getElementById('drop_ag_fb').value.trim();
+
+      // Check if user has linkedAgentId
+      let agentId = user.linkedAgentId;
+      if (!agentId && (user.role === 'agent' || user.role === 'admin' || user.role === 'owner' || user.role === 'pending')) {
+        agentId = genId();
+        user.linkedAgentId = agentId;
+      }
+
+      if (agentId) {
+        let ag = DB.agents.find(x => x.id === agentId);
+        if (!ag) {
+          ag = { id: agentId };
+          DB.agents.push(ag);
+        }
+        ag.name = user.displayname || user.email.split('@')[0];
+        ag.email = user.email;
+        ag.company = company;
+        ag.coagent = coagent;
+        ag.tel = tel;
+        ag.line = line;
+        ag.linelink = linelink;
+        ag.bank = bank;
+        ag.fb = fb;
+
+        // update co-agent default share in user profile too
+        if (!user.socialProviders) user.socialProviders = {};
+        if (!user.socialProviders.coagent) user.socialProviders.coagent = {};
+        user.socialProviders.coagent.accept = (coagent === 'รับ');
+        
+        await saveItem('agents', ag, agentId);
+      }
+
+      // Save phone number directly into user credentials
+      user.phone = tel;
+
+      saveAuth();
+      alert('✅ บันทึกข้อมูลส่วนตัวเรียบร้อยแล้วค่ะ!');
+      renderDropdownProfile();
+      if (user.role === 'admin') {
+        renderUsers();
+      }
+    }
+    window.saveAgentProfileFromDrop = saveAgentProfileFromDrop;
 
     function _renderDropSocialSlot(elId, providerData, connectFn, disconnectFn, label) {
       const el = document.getElementById(elId);

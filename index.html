@@ -12,6 +12,9 @@
   <link rel="stylesheet" href="css/styles.css">
   <script>
     window.onerror = function(msg, url, line, col, error) {
+      if ((msg && msg.indexOf('browser extension') !== -1) || (url && url.indexOf('blob:') === 0)) {
+        return false;
+      }
       var errDiv = document.getElementById('debug-error-console');
       if (!errDiv) {
         errDiv = document.createElement('div');
@@ -166,6 +169,54 @@
                   <div id="dropStatusLine" style="font-size:11px;"></div>
                 </div>
 
+             </div>
+            </div>
+
+            <!-- Agent Profile Detail Editor (สำหรับผู้ใช้ทั่วไปที่เป็น Agent) -->
+            <div id="dropAgentProfileSection" style="display:none;padding:14px 18px;border-bottom:1px solid var(--border2);max-height:260px;overflow-y:auto;">
+              <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">📋 ข้อมูลตัวแทน (Agent Profile)</div>
+              <div style="display:flex;flex-direction:column;gap:7px;">
+                <div>
+                  <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">สังกัด/บริษัท</label>
+                  <input type="text" id="drop_ag_company" placeholder="เช่น BENZ HOME" style="font-size:12px;padding:7px 10px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;">
+                </div>
+                
+                <div style="display:flex;gap:6px;">
+                  <div style="flex:1;">
+                    <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">รับ Co-Agent</label>
+                    <select id="drop_ag_coagent" style="font-size:12px;padding:4px 8px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;cursor:pointer;height:32px;">
+                      <option value="รับ">รับ</option>
+                      <option value="ไม่รับ">ไม่รับ</option>
+                    </select>
+                  </div>
+                  <div style="flex:1;">
+                    <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">เบอร์โทรศัพท์</label>
+                    <input type="tel" id="drop_ag_tel" placeholder="เบอร์โทรศัพท์" style="font-size:12px;padding:7px 10px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;height:32px;">
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:6px;">
+                  <div style="flex:1;">
+                    <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">Line ID</label>
+                    <input type="text" id="drop_ag_line" placeholder="ไอดีไลน์" style="font-size:12px;padding:7px 10px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;">
+                  </div>
+                  <div style="flex:1;">
+                    <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">ลิงก์ Line</label>
+                    <input type="text" id="drop_ag_linelink" placeholder="https://line.me/ti/p/..." style="font-size:12px;padding:7px 10px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;">
+                  </div>
+                </div>
+
+                <div>
+                  <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">บัญชีธนาคาร (รับค่าคอม)</label>
+                  <input type="text" id="drop_ag_bank" placeholder="กสิกรไทย 123-x-xxxxx-x" style="font-size:12px;padding:7px 10px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;">
+                </div>
+
+                <div>
+                  <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">ลิงก์ Facebook Profile</label>
+                  <input type="text" id="drop_ag_fb" placeholder="https://facebook.com/..." style="font-size:12px;padding:7px 10px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;">
+                </div>
+
+                <button onclick="saveAgentProfileFromDrop()" style="background:linear-gradient(135deg,var(--gold),#a06800);color:#1a1208;font-weight:700;font-size:12px;border:none;border-radius:8px;padding:9px;cursor:pointer;width:100%;margin-top:5px;box-shadow:0 3px 6px rgba(0,0,0,0.18);">💾 บันทึกข้อมูลส่วนตัว</button>
               </div>
             </div>
 
@@ -902,11 +953,12 @@
                   <thead>
                     <tr>
                       <th>#</th>
-                      <th>อีเมล (Login)</th>
-                      <th>ชื่อ-นามสกุล</th>
+                      <th>บัญชีผู้ใช้งาน / ชื่อผู้แสดงตัว</th>
+                      <th>เบอร์โทร</th>
+                      <th>Co-Agent</th>
                       <th>Role</th>
-                      <th>เชื่อม Agent</th>
-                      <th>หมายเหตุ</th>
+                      <th>เชื่อมโปรไฟล์ Agent</th>
+                      <th>หมายเหตุ / ประวัติ</th>
                       <th>จัดการ</th>
                     </tr>
                   </thead>
