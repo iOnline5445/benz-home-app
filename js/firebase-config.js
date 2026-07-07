@@ -11,7 +11,7 @@
           import(`${base}/firebase-firestore.js`)
         ]).then(([appMod, fsMod]) => {
           const { initializeApp, getApps } = appMod;
-          const { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, writeBatch, onSnapshot } = fsMod;
+          const { getFirestore, collection, doc, getDocs, getDoc, setDoc, deleteDoc, writeBatch, onSnapshot } = fsMod;
 
           if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
             console.warn('⚠️ Firebase config ยังไม่ได้กรอก — ใช้ localStorage แทน');
@@ -23,7 +23,7 @@
           const app = existingApps.length > 0 ? existingApps[0] : initializeApp(FIREBASE_CONFIG);
           _db = getFirestore(app);
           window._db = _db;
-          window._firestoreLib = { collection, doc, getDocs, setDoc, deleteDoc, writeBatch, onSnapshot };
+          window._firestoreLib = { collection, doc, getDocs, getDoc, setDoc, deleteDoc, writeBatch, onSnapshot };
           _fbReady = true;
           console.log('✅ Firebase connected');
           resolve(true);
@@ -44,7 +44,7 @@
       _realtimeSyncActive = true;
 
       const { collection, onSnapshot } = window._firestoreLib;
-      const cols = ['assets', 'agents', 'customers', 'mktQueue', 'mktScheduleSlots'];
+      const cols = ['assets', 'agents', 'customers', 'mktQueue', 'mktScheduleSlots', 'users'];
 
       // unsubscribe listeners เก่าก่อน
       _unsubscribeListeners.forEach(fn => fn());
@@ -56,6 +56,27 @@
           if (_suppressSnapshot) return;
           if (col === 'mktScheduleSlots') {
             DB.mktScheduleSlots = snap.docs.map(d => d.data().time);
+          } else if (col === 'users') {
+            const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const fbUsers = snap.docs.map(d => {
+              const u = d.data();
+              if (u.email) u.email = u.email.toLowerCase().trim();
+              return u;
+            }).filter(u => u.email && emailRe.test(u.email));
+
+            if (fbUsers.length > 0) {
+              AUTH.users = fbUsers;
+              const hasAdmin = AUTH.users.some(u => u.role === 'admin');
+              if (!hasAdmin) {
+                AUTH.users.unshift({ email: 'admin@benzhome.com', password: 'admin1234', displayname: 'ผู้ดูแลระบบ', role: 'admin', note: 'Super Admin', linkedAgentId: null });
+              }
+              localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+
+              if (typeof window._checkCurrentUserSessionSync === 'function') {
+                window._checkCurrentUserSessionSync();
+              }
+              if (typeof renderUsers === 'function') renderUsers();
+            }
           } else {
             DB[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
           }

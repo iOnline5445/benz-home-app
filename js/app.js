@@ -119,9 +119,79 @@
       } catch (e) { console.warn('saveAuthToFirebase fail:', e); }
     }
 
+    async function migrateOldAuthData() {
+      if (!_fbReady || !_db) return;
+      try {
+        const { doc, getDoc, collection, setDoc } = window._firestoreLib;
+        const oldRef = doc(_db, 'yb_auth', 'auth_data');
+        const oldSnap = await getDoc(oldRef);
+        if (oldSnap.exists()) {
+          const oldData = oldSnap.data();
+          if (oldData && Array.isArray(oldData.users)) {
+            console.log('🔄 Found legacy auth_data. Migrating users...');
+            for (const u of oldData.users) {
+              if (u.email) {
+                const email = u.email.toLowerCase().trim();
+                const safeId = email.replace(/[.@]/g, '_');
+                const userRef = doc(collection(_db, 'users'), safeId);
+                const checkSnap = await getDoc(userRef);
+                if (!checkSnap.exists()) {
+                  await setDoc(userRef, { ...u, email });
+                  console.log('Migrated user:', email);
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('migrateOldAuthData failed (might not exist):', e);
+      }
+    }
+
+    function checkCurrentUserSessionSync() {
+      if (!AUTH.current || !AUTH.users.length) return;
+      const currentEmail = (AUTH.current.email || '').toLowerCase().trim();
+      const updatedUser = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === currentEmail);
+      if (updatedUser) {
+        const roleChanged = updatedUser.role !== AUTH.current.role;
+        const nameChanged = updatedUser.displayname !== AUTH.current.displayname;
+        if (roleChanged || nameChanged) {
+          console.log('🔄 User role/name updated. Re-applying permissions.');
+          AUTH.current = { ...AUTH.current, ...updatedUser };
+          saveSession(AUTH.current);
+          applyRoleAccess(AUTH.current.role);
+          
+          // Update header name & role UI
+          const headerName = document.getElementById('headerUserName');
+          if (headerName) headerName.textContent = AUTH.current.displayname || AUTH.current.email;
+          const roleEl = document.getElementById('headerUserRole');
+          if (roleEl) {
+            const ROLE_LABELS = {
+              admin:    ['⭐ Admin',   'role role-admin'],
+              agent:    ['🏠 Agent',   'role role-agent'],
+              owner:    ['🏡 Owner',   'role role-agent'],
+              customer: ['👤 Member',  'role role-viewer'],
+              pending:  ['⏳ รออนุมัติ','role role-viewer'],
+              viewer:   ['👁️ Viewer', 'role role-viewer'],
+            };
+            const [label, cls] = ROLE_LABELS[AUTH.current.role] || ['👤', 'role'];
+            roleEl.textContent = label;
+            roleEl.className = cls;
+          }
+          _renderPendingBanner(AUTH.current.role);
+
+          // Re-render UI components that depend on permissions/role
+          if (typeof renderAssets === 'function') renderAssets();
+          if (typeof renderCustomers === 'function') renderCustomers();
+        }
+      }
+    }
+    window._checkCurrentUserSessionSync = checkCurrentUserSessionSync;
+
     async function loadAuthFromFirebase() {
       if (!_fbReady || !_db) return false;
       try {
+        await migrateOldAuthData();
         const { collection, getDocs } = window._firestoreLib;
         const snap = await getDocs(collection(_db, 'users'));
         if (snap.docs.length > 0) {
@@ -135,6 +205,8 @@
 
           if (fbUsers.length > 0) {
             AUTH.users = fbUsers;
+            checkCurrentUserSessionSync();
+
             // ตรวจ hasAdmin หลัง sync
             const hasAdmin = AUTH.users.some(u => u.role === 'admin');
             if (!hasAdmin) {

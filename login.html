@@ -991,6 +991,20 @@
     }
   }
 
+  async function saveUserToFirebase(user) {
+    if (!_fbReady || !_db) return;
+    try {
+      const { collection, doc, setDoc } = window._firestoreLib;
+      const email = (user.email || '').toLowerCase().trim();
+      const safeId = email.replace(/[.@]/g, '_');
+      const ref = doc(collection(_db, 'users'), safeId);
+      await setDoc(ref, { ...user, email });
+      console.log('✅ User saved to Firebase successfully:', email);
+    } catch (e) {
+      console.warn('Failed to save user to Firebase:', e);
+    }
+  }
+
   // ============================
   // FORM SUBMISSION
   // ============================
@@ -1143,12 +1157,7 @@
       localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
       
       if (_fbReady && _db) {
-        try {
-          const { doc, setDoc } = window._firestoreLib;
-          await setDoc(doc(_db, 'yb_auth', 'auth_data'), { users: AUTH.users });
-        } catch(e) {
-          console.warn('Failed to sync new Google user to Firebase:', e);
-        }
+        await saveUserToFirebase(found);
       }
       
       localStorage.setItem('yb_session', JSON.stringify({ email: found.email, pw: found.password }));
@@ -1227,12 +1236,7 @@
       localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
       
       if (_fbReady && _db) {
-        try {
-          const { doc, setDoc } = window._firestoreLib;
-          await setDoc(doc(_db, 'yb_auth', 'auth_data'), { users: AUTH.users });
-        } catch(e) {
-          console.warn('Failed to sync new Facebook user to Firebase:', e);
-        }
+        await saveUserToFirebase(found);
       }
       
       localStorage.setItem('yb_session', JSON.stringify({ email: found.email, pw: found.password }));
@@ -1350,8 +1354,7 @@
 
       // Sync Firebase
       if (_fbReady && _db) {
-        const { doc, setDoc } = window._firestoreLib;
-        await setDoc(doc(_db, 'yb_auth', 'auth_data'), { users: AUTH.users });
+        await saveUserToFirebase(newUser);
       }
 
       spinner.style.display = 'none';
