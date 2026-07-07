@@ -187,7 +187,7 @@
 
     // Helper: ทำ login จริง (ใช้ร่วมกันระหว่าง doLogin และ retry)
     function performLogin(found, remember) {
-      found = { ...found, email: (found.email || '').toLowerCase().trim() };
+      found = { ...found, email: (found.email || '').toLowerCase().trim(), username: (found.email || '').toLowerCase().trim() };
       const email = found.email;
       const pw = found.password;
       const errEl = document.getElementById('loginError');

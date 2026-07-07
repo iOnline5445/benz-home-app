@@ -8,8 +8,21 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Kanit:wght@300;400;500;600;700&family=Noto+Serif+Thai:wght@400;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
-    <!-- Core CSS Stylesheet -->
+  <!-- Core CSS Stylesheet -->
   <link rel="stylesheet" href="css/styles.css">
+  <script>
+    window.onerror = function(msg, url, line, col, error) {
+      var errDiv = document.getElementById('debug-error-console');
+      if (!errDiv) {
+        errDiv = document.createElement('div');
+        errDiv.id = 'debug-error-console';
+        errDiv.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:99999;background:#f8d7da;color:#721c24;border:2px solid #f5c6cb;padding:16px;border-radius:12px;max-width:350px;font-family:monospace;font-size:12px;box-shadow:0 4px 15px rgba(0,0,0,0.25);overflow:auto;max-height:300px;line-height:1.5;';
+        document.body.appendChild(errDiv);
+      }
+      errDiv.innerHTML += '<div><strong>Error:</strong> ' + msg + '<br><strong>Line:</strong> ' + line + ':' + col + '<br><strong>URL:</strong> ' + url + '</div><hr style="margin:8px 0;border:0;border-top:1px solid #f5c6cb;">';
+      return false;
+    };
+  </script>
 </head>
 
 <body>
