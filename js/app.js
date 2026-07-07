@@ -2286,7 +2286,6 @@
         () => connectSocialAccountDrop('facebook'), () => disconnectSocialAccountDrop('facebook'),
         providers.facebook ? (providers.facebook.displayName || 'Facebook Account') : null
       );
-      _renderDropLineSlot(user);
 
       // Populate agent profile section in dropdown
       const dropAgentSection = document.getElementById('dropAgentProfileSection');
@@ -2430,60 +2429,7 @@
       }
     }
 
-    function _renderDropLineSlot(user) {
-      const el = document.getElementById('dropStatusLine');
-      if (!el) return;
-      const lineId = (user.socialProviders && user.socialProviders.line && user.socialProviders.line.lineId) || '';
 
-      el.innerHTML = '';
-      if (lineId) {
-        const badge = document.createElement('span');
-        badge.style.cssText = 'color:#4caf50;font-size:10px;font-weight:700;margin-right:6px;';
-        badge.textContent = '✔ @' + lineId;
-        const editBtn = document.createElement('button');
-        editBtn.textContent = 'แก้ไข';
-        editBtn.style.cssText = 'font-size:10px;padding:2px 7px;border-radius:5px;border:1px solid var(--gold);background:rgba(192,120,0,0.12);color:var(--gold);cursor:pointer;';
-        editBtn.onclick = () => _editLineId(user);
-        el.appendChild(badge);
-        el.appendChild(editBtn);
-      } else {
-        const btn = document.createElement('button');
-        btn.textContent = '🔗 เพิ่ม Line ID';
-        btn.style.cssText = 'font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid #06C755;background:rgba(6,199,85,0.1);color:#06C755;cursor:pointer;font-weight:700;';
-        btn.onclick = () => _editLineId(user);
-        el.appendChild(btn);
-      }
-    }
-
-    function _editLineId(user) {
-      const current = (user.socialProviders && user.socialProviders.line && user.socialProviders.line.lineId) || '';
-      const val = prompt('กรอก Line ID ของคุณ:', current);
-      if (val === null) return; // cancelled
-      const lineId = val.trim().replace(/^@/, '');
-      if (!user.socialProviders) user.socialProviders = {};
-      if (lineId) {
-        user.socialProviders.line = { lineId };
-      } else {
-        delete user.socialProviders.line;
-      }
-      
-      // Update drop input field if it is open on page
-      const dropAgLine = document.getElementById('drop_ag_line');
-      if (dropAgLine) {
-        dropAgLine.value = lineId;
-      }
-
-      saveAuth();
-      renderDropdownProfile();
-      // ซิงก์กับ linked agent ด้วย
-      if (user.linkedAgentId) {
-        const ag = DB.agents.find(a => a.id === user.linkedAgentId);
-        if (ag) {
-          ag.line = lineId;
-          if (typeof saveItem === 'function') saveItem('agents', ag, ag.id);
-        }
-      }
-    }
 
     async function connectSocialAccountDrop(type) {
       if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
