@@ -368,6 +368,76 @@
       return fallback.toISOString();
     }
 
+    async function postToFacebookViaAPI(text, imageLink) {
+      const creds = DB.platformCredentials && DB.platformCredentials[0] ? DB.platformCredentials[0] : null;
+      if (!creds || !creds.fbUploadPostActive) {
+        console.log("Facebook Auto-Post is not active or configured.");
+        return false;
+      }
+
+      const keyInput = document.getElementById('botSecretKey');
+      const key = keyInput ? keyInput.value : "BenzHomeAutoKey123";
+      
+      const apiKey = creds.fbUploadPostKeyEnc ? decryptVal(creds.fbUploadPostKeyEnc, key) : "";
+      const profile = creds.fbUploadPostProfile || "";
+      const pageId = creds.fbPageSelect || "";
+
+      if (!apiKey || !profile) {
+        alert("❌ ระบบโพสต์ Facebook อัตโนมัติเปิดใช้งานอยู่ แต่ยังไม่ได้กำหนดค่า API Key หรือ Profile ในหน้าตั้งค่าแผงควบคุมค่ะ");
+        return false;
+      }
+
+      showToast("⏳ กำลังดำเนินการโพสต์ลง Facebook...");
+
+      try {
+        let url = 'https://api.upload-post.com/api/upload_text';
+        let body;
+        let headers = {
+          'Authorization': `Apikey ${apiKey}`
+        };
+
+        if (imageLink) {
+          url = 'https://api.upload-post.com/api/upload_photos';
+          const formData = new FormData();
+          formData.append('user', profile);
+          formData.append('platform[]', 'facebook');
+          formData.append('title', text);
+          formData.append('photos[]', imageLink);
+          if (pageId) {
+            formData.append('facebook_page_id', pageId);
+          }
+          body = formData;
+        } else {
+          headers['Content-Type'] = 'application/json';
+          body = JSON.stringify({
+            user: profile,
+            platform: ['facebook'],
+            title: text,
+            facebook_page_id: pageId || undefined
+          });
+        }
+
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: headers,
+          body: body
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || `HTTP ${res.status}`);
+        }
+
+        const resData = await res.json();
+        showToast("✅ โพสต์ Facebook สำเร็จแล้วค่ะ!");
+        return true;
+      } catch (e) {
+        console.error("Facebook post error:", e);
+        alert(`❌ เกิดข้อผิดพลาดในการโพสต์ลง Facebook: ${e.message}`);
+        return false;
+      }
+    }
+
     async function handleComposerShareNow() {
       const text = document.getElementById('mktComposerText').value;
       if (!text) { alert('กรุณาเขียนประกาศก่อนค่ะ'); return; }
@@ -380,19 +450,24 @@
 
       navigator.clipboard.writeText(text);
 
-      channels.forEach(ch => {
-        let url = '';
-        if (ch === 'livinginsider') url = 'https://www.livinginsider.com/post_property.html';
-        if (ch === 'ennxo') url = 'https://www.ennxo.com/อสังหาริมทรัพย์';
-        if (ch === 'ddproperty') url = 'https://www.ddproperty.com/';
-        if (ch === 'zmyhome') url = 'https://zmyhome.com/';
-        if (ch === 'thaihometown') url = 'https://www.thaihometown.com/';
-        if (url) window.open(url, '_blank');
-      });
+       const assetIdxVal = document.getElementById('mktAssetSelect').value;
+       const assetIdx = assetIdxVal !== '' ? parseInt(assetIdxVal) : -1;
+       const asset = assetIdx >= 0 ? DB.assets[assetIdx] : null;
+       const imageLink = asset ? asset.linkpic : '';
 
-      const assetIdxVal = document.getElementById('mktAssetSelect').value;
-      const assetIdx = assetIdxVal !== '' ? parseInt(assetIdxVal) : -1;
-      const asset = assetIdx >= 0 ? DB.assets[assetIdx] : null;
+       if (channels.includes('facebook')) {
+         postToFacebookViaAPI(text, imageLink);
+       }
+
+       channels.forEach(ch => {
+         let url = '';
+         if (ch === 'livinginsider') url = 'https://www.livinginsider.com/post_property.html';
+         if (ch === 'ennxo') url = 'https://www.ennxo.com/อสังหาริมทรัพย์';
+         if (ch === 'ddproperty') url = 'https://www.ddproperty.com/';
+         if (ch === 'zmyhome') url = 'https://zmyhome.com/';
+         if (ch === 'thaihometown') url = 'https://www.thaihometown.com/';
+         if (url) window.open(url, '_blank');
+       });
 
       const agentIdxVal = document.getElementById('mktAgentSelect').value;
       const agentIdx = agentIdxVal !== '' ? parseInt(agentIdxVal) : -1;
@@ -546,6 +621,18 @@
     async function handleQueuePostNow(idx) {
       const q = DB.mktQueue[idx];
       navigator.clipboard.writeText(q.content);
+
+      let imageLink = '';
+      if (q.assetId) {
+        const asset = DB.assets.find(a => a.id === q.assetId);
+        if (asset && asset.linkpic) {
+          imageLink = asset.linkpic;
+        }
+      }
+
+      if (q.channels && q.channels.includes('facebook')) {
+        postToFacebookViaAPI(q.content, imageLink);
+      }
       
       q.channels.forEach(ch => {
         let url = '';

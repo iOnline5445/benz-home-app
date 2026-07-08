@@ -374,7 +374,7 @@
             <td><div style="display:flex;gap:4px">
               ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm" style="padding:4px 8px">🔗</a>` : ''}
               <button class="btn btn-outline btn-sm" style="border-color:var(--gold);color:var(--gold);padding:4px 8px" onclick="showCustomerMatchesForAsset(${ri})" title="จับคู่ลูกค้า">🤝 จับคู่</button>
-              ${isOwner ? `<button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️</button>` : ''}
+              <button class="btn btn-outline btn-sm" onclick="editAsset(${ri})" title="แก้ไข">✏️</button>
               ${(isOwner || canDelete) ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>` : ''}
             </div></td>
           </tr>`;
@@ -528,7 +528,7 @@
                 ${a.map ? `<a href="${a.map}" target="_blank" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="พิกัดแผนที่">📍</a>` : ''}
                 <button class="btn btn-blue btn-sm" onclick="quickClip(${ri})" style="font-size:12px;padding:6px 10px;border-radius:8px;font-weight:600;">📋 คัดลอก</button>
                 <button class="btn btn-outline btn-sm" style="border-color:var(--gold);color:var(--gold);font-size:12px;padding:6px 10px;border-radius:8px;font-weight:600;" onclick="showCustomerMatchesForAsset(${ri})">🤝 จับคู่</button>
-                ${isOwner ? `<button class="btn btn-outline btn-sm" onclick="editAsset(${ri})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="แก้ไข">✏️</button>` : ''}
+                <button class="btn btn-outline btn-sm" onclick="editAsset(${ri})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="แก้ไข">✏️</button>
                 ${(isOwner || canDelete) ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="ลบ">🗑️</button>` : ''}
               </div>
             </div>
@@ -543,7 +543,7 @@
       const a = DB.assets[i];
       // ตรวจสอบสิทธิ์: เฉพาะเจ้าของโพสต์หรือ admin เท่านั้นถึงจะแก้ไขได้
       if (!window._canEditAsset(a)) {
-        alert('🔒 ไม่สามารถแก้ไขได้ — คุณไม่ใช่เจ้าของโพสต์นี้\nโพสต์โดย: ' + (a.poster || 'ไม่ระบุ'));
+        alert('🔒 ขออภัยค่ะ คุณไม่มีสิทธิ์แก้ไขทรัพย์สินนี้เนื่องจากถูกโพสต์โดยเอเจนต์ท่านอื่น (สิทธิ์การแก้ไขเฉพาะผู้ดูแลระบบหรือเจ้าของโพสต์เท่านั้นค่ะ)\n\nโพสต์โดย: ' + (a.poster || 'ไม่ระบุ'));
         return;
       }
       document.getElementById('modalAssetTitle').textContent = '✏️ แก้ไขทรัพย์สิน';

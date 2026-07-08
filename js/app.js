@@ -719,6 +719,31 @@
         document.getElementById('botEnnxoPass').value = creds.ennxoPassEnc ? decryptVal(creds.ennxoPassEnc, key) : "";
         document.getElementById('botEnnxoActive').checked = !!creds.ennxoActive;
 
+        if (document.getElementById('botFbUploadPostKey')) {
+          document.getElementById('botFbUploadPostKey').value = creds.fbUploadPostKeyEnc ? decryptVal(creds.fbUploadPostKeyEnc, key) : "";
+        }
+        if (document.getElementById('botFbUploadPostProfile')) {
+          document.getElementById('botFbUploadPostProfile').value = creds.fbUploadPostProfile || "";
+        }
+        if (document.getElementById('botFbUploadPostActive')) {
+          document.getElementById('botFbUploadPostActive').checked = !!creds.fbUploadPostActive;
+        }
+
+        const pageSelect = document.getElementById('botFbPageSelect');
+        if (pageSelect) {
+          pageSelect.innerHTML = '<option value="">-- เลือกหน้าเพจ --</option>';
+          const pages = creds.fbPagesList || [];
+          pages.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.name;
+            if (creds.fbPageSelect && creds.fbPageSelect === p.id) {
+              opt.selected = true;
+            }
+            pageSelect.appendChild(opt);
+          });
+        }
+
         document.getElementById('botDefaultSource').value = creds.defaultSource || "asset_template";
         document.getElementById('botDefaultAgent').value = creds.defaultAgent || "";
         
@@ -751,11 +776,17 @@
       const ennxoPass = document.getElementById('botEnnxoPass').value;
       const ennxoActive = document.getElementById('botEnnxoActive').checked;
 
+      const fbUploadPostKey = document.getElementById('botFbUploadPostKey') ? document.getElementById('botFbUploadPostKey').value : "";
+      const fbUploadPostProfile = document.getElementById('botFbUploadPostProfile') ? document.getElementById('botFbUploadPostProfile').value : "";
+      const fbPageSelect = document.getElementById('botFbPageSelect') ? document.getElementById('botFbPageSelect').value : "";
+      const fbUploadPostActive = document.getElementById('botFbUploadPostActive') ? document.getElementById('botFbUploadPostActive').checked : false;
+
       const defaultSource = document.getElementById('botDefaultSource').value;
       const defaultAgent = document.getElementById('botDefaultAgent').value;
 
       const lviPassEnc = lviPass ? encryptVal(lviPass, key) : "";
       const ennxoPassEnc = ennxoPass ? encryptVal(ennxoPass, key) : "";
+      const fbUploadPostKeyEnc = fbUploadPostKey ? encryptVal(fbUploadPostKey, key) : "";
 
       const credsId = DB.platformCredentials && DB.platformCredentials[0] ? DB.platformCredentials[0].id : "main_creds";
 
@@ -767,10 +798,15 @@
         ennxoUser,
         ennxoPassEnc,
         ennxoActive,
+        fbUploadPostKeyEnc,
+        fbUploadPostProfile,
+        fbPageSelect,
+        fbUploadPostActive,
         defaultSource,
         defaultAgent,
         cookiesSyncedAt: DB.platformCredentials && DB.platformCredentials[0] ? (DB.platformCredentials[0].cookiesSyncedAt || null) : null,
-        cookies: DB.platformCredentials && DB.platformCredentials[0] ? (DB.platformCredentials[0].cookies || null) : null
+        cookies: DB.platformCredentials && DB.platformCredentials[0] ? (DB.platformCredentials[0].cookies || null) : null,
+        fbPagesList: DB.platformCredentials && DB.platformCredentials[0] ? (DB.platformCredentials[0].fbPagesList || []) : []
       };
 
       await saveItem('platformCredentials', credsObj, credsId);
@@ -1932,7 +1968,10 @@
         const linkedAgent = u.linkedAgentId ? (DB.agents.find(a => a.id === u.linkedAgentId) || null) : null;
         
         // Co-Agent status & default share
-        const coDetails = u.coagent || (u.socialProviders && u.socialProviders.coagent ? u.socialProviders.coagent : null);
+        const isAgentOrAdmin = (u.businessRole === 'agent' || u.accessLevel === 'admin' || u.accessLevel === 'super_admin' || u.businessRole === 'owner');
+        const coDetails = isAgentOrAdmin 
+          ? (u.coagent || (u.socialProviders && u.socialProviders.coagent ? u.socialProviders.coagent : { accept: true, defaultShare: 40 }))
+          : null;
         const coText = coDetails 
           ? `<span style="color:${coDetails.accept ? 'var(--green)' : 'var(--text3)'};font-weight:700;">${coDetails.accept ? '✔️ รับ' : '❌ ไม่รับ'} (${coDetails.defaultShare || 40}%)</span>`
           : '<span style="color:var(--text3)">—</span>';
@@ -1972,7 +2011,10 @@
         const isMe = AUTH.current && AUTH.current.email === u.email;
         const linkedAgent = u.linkedAgentId ? (DB.agents.find(a => a.id === u.linkedAgentId) || null) : null;
         
-        const coDetails = u.coagent || (u.socialProviders && u.socialProviders.coagent ? u.socialProviders.coagent : null);
+        const isAgentOrAdmin = (u.businessRole === 'agent' || u.accessLevel === 'admin' || u.accessLevel === 'super_admin' || u.businessRole === 'owner');
+        const coDetails = isAgentOrAdmin 
+          ? (u.coagent || (u.socialProviders && u.socialProviders.coagent ? u.socialProviders.coagent : { accept: true, defaultShare: 40 }))
+          : null;
         const coText = coDetails 
           ? `${coDetails.accept ? '✔️ รับ' : '❌ ไม่รับ'} (${coDetails.defaultShare || 40}%)`
           : '—';
@@ -2060,6 +2102,9 @@
 
       // extract co-agent configurations
       const extra = u.coagent || (u.socialProviders && u.socialProviders.coagent ? u.socialProviders.coagent : { accept: true, defaultShare: 40 });
+      if (!u.coagent) u.coagent = { accept: extra.accept, defaultShare: extra.defaultShare || 40 };
+      if (!u.socialProviders) u.socialProviders = {};
+      if (!u.socialProviders.coagent) u.socialProviders.coagent = { accept: extra.accept, defaultShare: extra.defaultShare || 40 };
 
       // Automatically create matching Agent profile
       const newAgent = {
@@ -2208,8 +2253,10 @@
         
         if (!u.coagent) u.coagent = {};
         u.coagent.accept = (coagentVal === 'รับ');
+        u.coagent.defaultShare = u.coagent.defaultShare || 40;
 
         if (!u.socialProviders) u.socialProviders = {};
+        u.socialProviders.coagent = { accept: (coagentVal === 'รับ'), defaultShare: u.coagent.defaultShare || 40 };
         if (lineVal) {
           u.socialProviders.line = { lineId: lineVal.replace(/^@/, '') };
         } else {
@@ -2308,9 +2355,25 @@
             : `<span style="color:var(--text3);">⚪ Facebook (ยังไม่เชื่อม)</span>`;
         }
         if (statusLine) {
-          statusLine.innerHTML = (provs.line && provs.line.lineId) 
-            ? `<span style="color:var(--green);font-weight:700;">🟢 Line ID (เชื่อมแล้ว: @${provs.line.lineId})</span>`
+          let lineId = (provs.line && provs.line.lineId) || '';
+          if (!lineId && u.linkedAgentId) {
+            const ag = DB.agents.find(x => x.id === u.linkedAgentId || x.name === u.linkedAgentId);
+            if (ag && ag.line) lineId = ag.line;
+          }
+          statusLine.innerHTML = lineId 
+            ? `<span style="color:var(--green);font-weight:700;">🟢 Line ID (เชื่อมแล้ว: @${lineId.replace(/^@/, '')})</span>`
             : `<span style="color:var(--text3);">⚪ Line ID (ยังไม่เชื่อม)</span>`;
+        }
+        const uAgLine = document.getElementById('u_ag_line');
+        if (uAgLine) {
+          uAgLine.oninput = () => {
+            const lineVal = uAgLine.value.trim().replace(/^@/, '');
+            if (statusLine) {
+              statusLine.innerHTML = lineVal
+                ? `<span style="color:var(--green);font-weight:700;">🟢 Line ID (เชื่อมแล้ว: @${lineVal})</span>`
+                : `<span style="color:var(--text3);">⚪ Line ID (ยังไม่เชื่อม)</span>`;
+            }
+          };
         }
       }
 
@@ -2432,7 +2495,11 @@
       // ── Line slot (ถ้ามี element) ──
       const lineEl = document.getElementById('statusLine');
       if (lineEl) {
-        const lineId = providers.line && providers.line.lineId ? providers.line.lineId : '';
+        let lineId = providers.line && providers.line.lineId ? providers.line.lineId : '';
+        if (!lineId && user.linkedAgentId) {
+          const ag = DB.agents.find(x => x.id === user.linkedAgentId || x.name === user.linkedAgentId);
+          if (ag && ag.line) lineId = ag.line;
+        }
         lineEl.innerHTML = '';
         if (lineId) {
           const badge = document.createElement('span');
@@ -2765,9 +2832,11 @@
         // update co-agent default share in user profile too
         if (!user.coagent) user.coagent = {};
         user.coagent.accept = (coagent === 'รับ');
+        user.coagent.defaultShare = user.coagent.defaultShare || 40;
         
         // Sync Line ID to socialProviders
         if (!user.socialProviders) user.socialProviders = {};
+        user.socialProviders.coagent = { accept: (coagent === 'รับ'), defaultShare: user.coagent.defaultShare || 40 };
         if (line) {
           user.socialProviders.line = { lineId: line.replace(/^@/, '') };
         } else {
@@ -2974,7 +3043,9 @@
         document.getElementById('a_active_available').checked = true;
 
         const curUser = AUTH.current ? AUTH.users.find(u => u.email === AUTH.current.email) : null;
-        const userCoagent = curUser && curUser.socialProviders && curUser.socialProviders.coagent ? curUser.socialProviders.coagent : { accept: true, defaultShare: 40 };
+        const userCoagent = curUser && (curUser.coagent || (curUser.socialProviders && curUser.socialProviders.coagent))
+          ? (curUser.coagent || curUser.socialProviders.coagent)
+          : { accept: true, defaultShare: 40 };
         const isCoagentAccept = userCoagent.accept !== false;
         document.getElementById('a_coagent').checked = isCoagentAccept;
         document.getElementById('a_coagent_controls').style.display = isCoagentAccept ? 'flex' : 'none';
@@ -3648,4 +3719,90 @@
       // Stub to maintain compatibility with legacy hooks and Firebase listeners
     }
     window.renderAgents = renderAgents;
+
+    async function fetchFacebookPagesFromUploadPost() {
+      const apiKeyInput = document.getElementById('botFbUploadPostKey');
+      const profileInput = document.getElementById('botFbUploadPostProfile');
+      if (!apiKeyInput || !profileInput) return;
+
+      const apiKey = apiKeyInput.value.trim();
+      const profile = profileInput.value.trim();
+
+      if (!apiKey) {
+        alert("❌ กรุณากรอก API Key ของ Upload-Post ก่อนค่ะ");
+        return;
+      }
+      if (!profile) {
+        alert("❌ กรุณากรอกชื่อ Profile (user) ก่อนค่ะ");
+        return;
+      }
+
+      // Check if event is defined
+      const evt = typeof event !== 'undefined' ? event : null;
+      const btn = evt ? evt.target : null;
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "⌛ กำลังดึงข้อมูล...";
+      }
+
+      try {
+        const url = `https://api.upload-post.com/api/uploadposts/facebook/pages?user=${encodeURIComponent(profile)}`;
+        const res = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Apikey ${apiKey}`
+          }
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || `HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        const pages = data.pages || data || [];
+        
+        const pageSelect = document.getElementById('botFbPageSelect');
+        if (pageSelect) {
+          pageSelect.innerHTML = '<option value="">-- เลือกหน้าเพจ --</option>';
+          pages.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.name;
+            pageSelect.appendChild(opt);
+          });
+        }
+
+        // Save pages list to database so we don't have to fetch every time
+        const keyInput = document.getElementById('botSecretKey');
+        const key = keyInput ? keyInput.value : "BenzHomeAutoKey123";
+        
+        const credsId = DB.platformCredentials && DB.platformCredentials[0] ? DB.platformCredentials[0].id : "main_creds";
+        const existingCreds = DB.platformCredentials && DB.platformCredentials[0] ? DB.platformCredentials[0] : {};
+        
+        const credsObj = {
+          ...existingCreds,
+          id: credsId,
+          fbPagesList: pages.map(p => ({ id: p.id, name: p.name }))
+        };
+
+        await saveItem('platformCredentials', credsObj, credsId);
+        if (!_realtimeSyncActive) {
+          if (!DB.platformCredentials) DB.platformCredentials = [];
+          DB.platformCredentials[0] = credsObj;
+          saveTolocalStorage();
+        }
+
+        alert(`✅ ดึงข้อมูลเพจสำเร็จ! พบทั้งหมด ${pages.length} เพจค่ะ กรุณากดเลือกเพจและกดบันทึกตั้งค่าบอทเพื่อบันทึกข้อมูลนะค่ะ`);
+      } catch (e) {
+        console.error("Fetch Facebook pages error:", e);
+        alert(`❌ ไม่สามารถดึงรายชื่อเพจได้: ${e.message}`);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "🔄 ดึงรายชื่อเพจ";
+        }
+      }
+    }
+    window.fetchFacebookPagesFromUploadPost = fetchFacebookPagesFromUploadPost;
     
