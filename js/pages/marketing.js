@@ -194,12 +194,9 @@
           else if (dt.toDateString() === tomorrow.toDateString()) relativeDay = 'พรุ่งนี้';
 
           const chanBadges = (q.channels || []).map(ch => {
-            const label = ch === 'ddproperty' ? 'DDproperty' :
-                          ch === 'livinginsider' ? 'Livinginsider' :
-                          ch === 'fazwaz' ? 'FazWaz' :
-                          ch === 'zmyhome' ? 'ZmyHome' :
-                          ch === 'thaihometown' ? 'Thaihometown' :
-                          ch === 'ennxo' ? 'ENNXO' : ch;
+            const label = ch === 'livinginsider' ? 'Livinginsider' :
+                          ch === 'ennxo' ? 'ENNXO' :
+                          ch === 'facebook' ? 'Facebook' : ch;
             return `<span class="queue-chan-badge queue-chan-${ch}">${label}</span>`;
           }).join(' ');
 
@@ -463,9 +460,6 @@
          let url = '';
          if (ch === 'livinginsider') url = 'https://www.livinginsider.com/post_property.html';
          if (ch === 'ennxo') url = 'https://www.ennxo.com/อสังหาริมทรัพย์';
-         if (ch === 'ddproperty') url = 'https://www.ddproperty.com/';
-         if (ch === 'zmyhome') url = 'https://zmyhome.com/';
-         if (ch === 'thaihometown') url = 'https://www.thaihometown.com/';
          if (url) window.open(url, '_blank');
        });
 
@@ -638,9 +632,6 @@
         let url = '';
         if (ch === 'livinginsider') url = 'https://www.livinginsider.com/post_property.html';
         if (ch === 'ennxo') url = 'https://www.ennxo.com/อสังหาริมทรัพย์';
-        if (ch === 'ddproperty') url = 'https://www.ddproperty.com/';
-        if (ch === 'zmyhome') url = 'https://zmyhome.com/';
-        if (ch === 'thaihometown') url = 'https://www.thaihometown.com/';
         if (url) window.open(url, '_blank');
       });
 

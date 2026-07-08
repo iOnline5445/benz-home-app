@@ -2153,6 +2153,14 @@
       }
     }
 
+    function toggleUserCoagentShare(val, targetId) {
+      const el = document.getElementById(targetId);
+      if (el) {
+        el.style.display = (val === 'รับ') ? 'block' : 'none';
+      }
+    }
+    window.toggleUserCoagentShare = toggleUserCoagentShare;
+
     async function saveUser() {
       const email = document.getElementById('u_email').value.trim().toLowerCase();
       const pw = document.getElementById('u_password').value;
@@ -2183,6 +2191,7 @@
           name: dname || email.split('@')[0],
           company: document.getElementById('u_ag_company').value.trim(),
           coagent: document.getElementById('u_ag_coagent').value,
+          coAgentDefaultShare: parseInt(document.getElementById('u_ag_coagentshare').value) || 40,
           tel: document.getElementById('u_ag_tel').value.trim(),
           fb: document.getElementById('u_ag_fb').value.trim(),
           email: email,
@@ -2230,6 +2239,7 @@
 
       const telVal = document.getElementById('u_ag_tel').value.trim();
       const coagentVal = document.getElementById('u_ag_coagent').value;
+      const coagentShareVal = parseInt(document.getElementById('u_ag_coagentshare').value) || 40;
 
       // Hash password if supplied
       let finalPw = undefined;
@@ -2253,10 +2263,10 @@
         
         if (!u.coagent) u.coagent = {};
         u.coagent.accept = (coagentVal === 'รับ');
-        u.coagent.defaultShare = u.coagent.defaultShare || 40;
+        u.coagent.defaultShare = coagentShareVal;
 
         if (!u.socialProviders) u.socialProviders = {};
-        u.socialProviders.coagent = { accept: (coagentVal === 'รับ'), defaultShare: u.coagent.defaultShare || 40 };
+        u.socialProviders.coagent = { accept: (coagentVal === 'รับ'), defaultShare: coagentShareVal };
         if (lineVal) {
           u.socialProviders.line = { lineId: lineVal.replace(/^@/, '') };
         } else {
@@ -2266,7 +2276,7 @@
         if (!pw || pw.length < 6) { alert('Password ต้องมีอย่างน้อย 6 ตัวอักษร'); return; }
         if (AUTH.users.find(x => x.email === email)) { alert('อีเมลนี้มีในระบบแล้ว'); return; }
         
-        const socialProvs = { coagent: { accept: (coagentVal === 'รับ'), defaultShare: 40 } };
+        const socialProvs = { coagent: { accept: (coagentVal === 'รับ'), defaultShare: coagentShareVal } };
         if (lineVal) {
           socialProvs.line = { lineId: lineVal.replace(/^@/, '') };
         }
@@ -2281,7 +2291,7 @@
           note, 
           linkedAgentId,
           phone: telVal,
-          coagent: { accept: (coagentVal === 'รับ'), defaultShare: 40 },
+          coagent: { accept: (coagentVal === 'รับ'), defaultShare: coagentShareVal },
           socialProviders: socialProvs
         });
       }
@@ -2316,6 +2326,10 @@
 
       document.getElementById('u_ag_company').value = '';
       document.getElementById('u_ag_coagent').value = (u.coagent && u.coagent.accept === false) ? 'ไม่รับ' : 'รับ';
+      const defaultShareVal = (u.coagent && u.coagent.defaultShare !== undefined) ? u.coagent.defaultShare : 40;
+      document.getElementById('u_ag_coagentshare').value = defaultShareVal;
+      toggleUserCoagentShare(document.getElementById('u_ag_coagent').value, 'u_ag_coagentshare_group');
+      
       document.getElementById('u_ag_tel').value = u.phone || '';
       document.getElementById('u_ag_line').value = '';
       document.getElementById('u_ag_linelink').value = '';
@@ -2327,6 +2341,9 @@
         if (ag) {
           document.getElementById('u_ag_company').value = ag.company || '';
           document.getElementById('u_ag_coagent').value = ag.coagent || 'รับ';
+          const agShare = ag.coAgentDefaultShare !== undefined ? ag.coAgentDefaultShare : defaultShareVal;
+          document.getElementById('u_ag_coagentshare').value = agShare;
+          toggleUserCoagentShare(document.getElementById('u_ag_coagent').value, 'u_ag_coagentshare_group');
           document.getElementById('u_ag_tel').value = ag.tel || u.phone || '';
           document.getElementById('u_ag_line').value = ag.line || '';
           document.getElementById('u_ag_linelink').value = ag.linelink || '';
@@ -2743,7 +2760,11 @@
           dropAgentSection.style.display = 'block';
           const linkedAgent = user.linkedAgentId ? DB.agents.find(a => a.id === user.linkedAgentId) : null;
           document.getElementById('drop_ag_company').value = linkedAgent ? (linkedAgent.company || '') : '';
-          document.getElementById('drop_ag_coagent').value = linkedAgent ? (linkedAgent.coagent || 'รับ') : 'รับ';
+          const dropCoagentVal = linkedAgent ? (linkedAgent.coagent || 'รับ') : 'รับ';
+          document.getElementById('drop_ag_coagent').value = dropCoagentVal;
+          const dropCoagentShareVal = linkedAgent ? (linkedAgent.coAgentDefaultShare || 40) : (user.coagent && user.coagent.defaultShare !== undefined ? user.coagent.defaultShare : 40);
+          document.getElementById('drop_ag_coagentshare').value = dropCoagentShareVal;
+          toggleUserCoagentShare(dropCoagentVal, 'drop_ag_coagentshare_group');
           document.getElementById('drop_ag_tel').value = linkedAgent ? (linkedAgent.tel || '') : (user.phone || '');
           document.getElementById('drop_ag_line').value = linkedAgent ? (linkedAgent.line || '') : '';
           document.getElementById('drop_ag_linelink').value = linkedAgent ? (linkedAgent.linelink || '') : '';
@@ -2799,6 +2820,7 @@
 
       const company = document.getElementById('drop_ag_company').value.trim();
       const coagent = document.getElementById('drop_ag_coagent').value;
+      const coagentShare = parseInt(document.getElementById('drop_ag_coagentshare').value) || 40;
       const tel = document.getElementById('drop_ag_tel').value.trim();
       const line = document.getElementById('drop_ag_line').value.trim();
       const linelink = document.getElementById('drop_ag_linelink').value.trim();
@@ -2823,6 +2845,7 @@
         ag.email = user.email;
         ag.company = company;
         ag.coagent = coagent;
+        ag.coAgentDefaultShare = coagentShare;
         ag.tel = tel;
         ag.line = line;
         ag.linelink = linelink;
@@ -2832,11 +2855,11 @@
         // update co-agent default share in user profile too
         if (!user.coagent) user.coagent = {};
         user.coagent.accept = (coagent === 'รับ');
-        user.coagent.defaultShare = user.coagent.defaultShare || 40;
+        user.coagent.defaultShare = coagentShare;
         
         // Sync Line ID to socialProviders
         if (!user.socialProviders) user.socialProviders = {};
-        user.socialProviders.coagent = { accept: (coagent === 'รับ'), defaultShare: user.coagent.defaultShare || 40 };
+        user.socialProviders.coagent = { accept: (coagent === 'รับ'), defaultShare: coagentShare };
         if (line) {
           user.socialProviders.line = { lineId: line.replace(/^@/, '') };
         } else {
@@ -3085,6 +3108,8 @@
         // Reset new agent profile inputs
         document.getElementById('u_ag_company').value = '';
         document.getElementById('u_ag_coagent').value = 'รับ';
+        document.getElementById('u_ag_coagentshare').value = '40';
+        toggleUserCoagentShare('รับ', 'u_ag_coagentshare_group');
         document.getElementById('u_ag_tel').value = '';
         document.getElementById('u_ag_line').value = '';
         document.getElementById('u_ag_linelink').value = '';

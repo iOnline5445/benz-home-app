@@ -177,15 +177,20 @@
                 <div style="display:flex;gap:6px;">
                   <div style="flex:1;">
                     <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">รับ Co-Agent</label>
-                    <select id="drop_ag_coagent" style="font-size:12px;padding:4px 8px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;cursor:pointer;height:32px;">
+                    <select id="drop_ag_coagent" onchange="toggleUserCoagentShare(this.value, 'drop_ag_coagentshare_group')" style="font-size:12px;padding:4px 8px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;cursor:pointer;height:32px;">
                       <option value="รับ">รับ</option>
                       <option value="ไม่รับ">ไม่รับ</option>
                     </select>
                   </div>
-                  <div style="flex:1;">
-                    <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">เบอร์โทรศัพท์</label>
-                    <input type="tel" id="drop_ag_tel" placeholder="เบอร์โทรศัพท์" style="font-size:12px;padding:7px 10px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;height:32px;">
+                  <div style="flex:1;" id="drop_ag_coagentshare_group">
+                    <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">ส่วนแบ่งเริ่มต้น (%)</label>
+                    <input type="number" id="drop_ag_coagentshare" placeholder="40" value="40" min="0" max="100" style="font-size:12px;padding:7px 10px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;height:32px;">
                   </div>
+                </div>
+
+                <div>
+                  <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">เบอร์โทรศัพท์</label>
+                  <input type="tel" id="drop_ag_tel" placeholder="เบอร์โทรศัพท์" style="font-size:12px;padding:7px 10px;border-radius:8px;background:var(--dark);border:1px solid var(--border2);color:var(--text);width:100%;box-sizing:border-box;height:32px;">
                 </div>
 
                 <div style="display:flex;gap:6px;">
@@ -583,18 +588,6 @@
                   <label>
                     <input type="checkbox" name="mkt_channels" value="facebook" class="mkt-channel-cb" onchange="onComposerChange()">
                     <span class="mkt-channel-btn">🌐 Facebook (Auto)</span>
-                  </label>
-                  <label>
-                    <input type="checkbox" name="mkt_channels" value="ddproperty" class="mkt-channel-cb" onchange="onComposerChange()">
-                    <span class="mkt-channel-btn">🟩 DDproperty</span>
-                  </label>
-                  <label>
-                    <input type="checkbox" name="mkt_channels" value="zmyhome" class="mkt-channel-cb" onchange="onComposerChange()">
-                    <span class="mkt-channel-btn">🟧 ZmyHome</span>
-                  </label>
-                  <label>
-                    <input type="checkbox" name="mkt_channels" value="thaihometown" class="mkt-channel-cb" onchange="onComposerChange()">
-                    <span class="mkt-channel-btn">🟥 Thaihometown</span>
                   </label>
                 </div>
 
@@ -1827,10 +1820,14 @@
                 </div>
                 <div class="form-group">
                   <label style="font-size:11px;">รับ Co-Agent</label>
-                  <select id="u_ag_coagent">
+                  <select id="u_ag_coagent" onchange="toggleUserCoagentShare(this.value, 'u_ag_coagentshare_group')">
                     <option value="รับ">รับ</option>
                     <option value="ไม่รับ">ไม่รับ</option>
                   </select>
+                </div>
+                <div class="form-group" id="u_ag_coagentshare_group">
+                  <label style="font-size:11px;">ส่วนแบ่งเริ่มต้น (%)</label>
+                  <input type="number" id="u_ag_coagentshare" placeholder="40" value="40" min="0" max="100">
                 </div>
                 <div class="form-group">
                   <label style="font-size:11px;">เบอร์โทรศัพท์</label>
