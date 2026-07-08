@@ -2156,7 +2156,7 @@
     function toggleUserCoagentShare(val, targetId) {
       const el = document.getElementById(targetId);
       if (el) {
-        el.style.display = (val === 'รับ') ? 'block' : 'none';
+        el.style.display = (val === 'รับ') ? '' : 'none';
       }
     }
     window.toggleUserCoagentShare = toggleUserCoagentShare;
