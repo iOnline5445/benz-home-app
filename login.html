@@ -755,13 +755,19 @@
         <h4>🤝 การแชร์ระบบร่วมขาย (Co-Agent)</h4>
         <div class="coagent-row">
           <label>
-            <input type="checkbox" id="regCoagentAccept" checked>
+            <input type="checkbox" id="regCoagentAccept" checked onchange="document.getElementById('reg_coagent_controls').style.display = this.checked ? 'flex' : 'none';">
             เข้าร่วมเป็น Co-Agent
           </label>
-          <div class="coagent-pct">
+          <div id="reg_coagent_controls" class="coagent-pct" style="display: flex; align-items: center; gap: 8px;">
             <span>ส่วนแบ่งเริ่มต้น</span>
-            <input type="number" id="regCoagentShare" value="40" min="0" max="100">
-            <span>%</span>
+            <select id="regCoagentSplit" onchange="toggleRegCustomCoagent(this.value)" style="padding:4px;border-radius:6px;background:var(--dark);border:1px solid var(--border2);color:var(--text);font-size:12px;cursor:pointer;">
+              <option value="40">60:40 (เจ้าของทรัพย์ 60% : นายหน้าร่วม 40%)</option>
+              <option value="50">50:50 (แบ่งเท่ากันฝ่ายละ 50%)</option>
+              <option value="30">70:30 (เจ้าของทรัพย์ 70% : นายหน้าร่วม 30%)</option>
+              <option value="custom">อื่น ๆ (ระบุเอง...)</option>
+            </select>
+            <input type="number" id="regCoagentShare" value="40" min="0" max="100" style="display:none;width:50px;padding:4px;border-radius:6px;background:var(--dark);border:1px solid var(--border2);color:var(--text);font-size:12px;text-align:center;">
+            <span id="regCoagentSharePct" style="display:none;">%</span>
           </div>
         </div>
       </div>
@@ -1363,6 +1369,21 @@
     // reset alerts
     document.getElementById('loginError').style.display = 'none';
     document.getElementById('loginSuccess').style.display = 'none';
+  }
+
+  function toggleRegCustomCoagent(val) {
+    const input = document.getElementById('regCoagentShare');
+    const pct = document.getElementById('regCoagentSharePct');
+    if (!input) return;
+    if (val === 'custom') {
+      input.style.display = 'inline-block';
+      if (pct) pct.style.display = 'inline-block';
+      input.value = 40;
+    } else {
+      input.style.display = 'none';
+      if (pct) pct.style.display = 'none';
+      input.value = parseInt(val) || 40;
+    }
   }
 
   function selectRegRole(role) {

@@ -2389,7 +2389,7 @@
       const cur = AUTH.current;
       if (!cur) return;
 
-      const user = AUTH.users.find(u => u.email === cur.username);
+      const user = AUTH.users.find(u => u.email === cur.email);
       if (!user) return;
 
       // Profile info
@@ -2537,7 +2537,7 @@
         const displayname = user.displayName || email.split('@')[0];
         
         const cur = AUTH.current;
-        const found = AUTH.users.find(u => u.email === cur.username);
+        const found = AUTH.users.find(u => u.email === cur.email);
         if (found) {
           if (!found.socialProviders) found.socialProviders = {};
           found.socialProviders[type] = {
@@ -2559,7 +2559,7 @@
       if (!confirm(`คุณต้องการยกเลิกการเชื่อมต่อบัญชี ${type === 'google' ? 'Google' : 'Facebook'} หรือไม่?`)) return;
       
       const cur = AUTH.current;
-      const found = AUTH.users.find(u => u.email === cur.username);
+      const found = AUTH.users.find(u => u.email === cur.email);
       if (found && found.socialProviders && found.socialProviders[type]) {
         delete found.socialProviders[type];
         saveAuth();
@@ -2633,7 +2633,7 @@
     function renderDropdownProfile() {
       const cur = AUTH.current;
       if (!cur) return;
-      const user = AUTH.users.find(u => u.email === cur.username);
+      const user = AUTH.users.find(u => u.email === cur.email);
       if (!user) return;
 
       const displayName = user.displayname || user.email || '-';
@@ -2727,7 +2727,7 @@
     async function saveAgentProfileFromDrop() {
       const cur = AUTH.current;
       if (!cur) return;
-      const user = AUTH.users.find(u => u.email === cur.username);
+      const user = AUTH.users.find(u => u.email === cur.email);
       if (!user) return;
 
       const company = document.getElementById('drop_ag_company').value.trim();
@@ -2813,6 +2813,42 @@
       }
     }
 
+    function syncCoagentSplitUI(sharePct) {
+      const splitEl = document.getElementById('a_coagentSplit');
+      const shareEl = document.getElementById('a_coagentshare');
+      const pctEl = document.getElementById('a_coagentshare_pct');
+      if (!splitEl || !shareEl) return;
+
+      const val = parseInt(sharePct) || 0;
+      if (val === 40 || val === 50 || val === 30) {
+        splitEl.value = String(val);
+        shareEl.style.display = 'none';
+        if (pctEl) pctEl.style.display = 'none';
+        shareEl.value = val;
+      } else {
+        splitEl.value = 'custom';
+        shareEl.style.display = 'inline-block';
+        if (pctEl) pctEl.style.display = 'inline-block';
+        shareEl.value = val;
+      }
+    }
+    window.syncCoagentSplitUI = syncCoagentSplitUI;
+
+    window.toggleCustomCoagent = function(val) {
+      const shareEl = document.getElementById('a_coagentshare');
+      const pctEl = document.getElementById('a_coagentshare_pct');
+      if (!shareEl) return;
+      if (val === 'custom') {
+        shareEl.style.display = 'inline-block';
+        if (pctEl) pctEl.style.display = 'inline-block';
+        shareEl.value = 40;
+      } else {
+        shareEl.style.display = 'none';
+        if (pctEl) pctEl.style.display = 'none';
+        shareEl.value = parseInt(val) || 40;
+      }
+    };
+
 
 
     async function connectSocialAccountDrop(type) {
@@ -2838,7 +2874,7 @@
         const displayName = fbUser.displayName || email || fbUser.uid;
 
         const cur = AUTH.current;
-        const found = AUTH.users.find(u => u.email === cur.username);
+        const found = AUTH.users.find(u => u.email === cur.email);
         if (found) {
           if (!found.socialProviders) found.socialProviders = {};
           found.socialProviders[type] = { uid: fbUser.uid, email, displayName };
@@ -2859,7 +2895,7 @@
       const label = type === 'google' ? 'Google Mail' : 'Facebook';
       if (!confirm(`ยืนยันยกเลิกการเชื่อมต่อ ${label} หรือไม่?`)) return;
       const cur = AUTH.current;
-      const found = AUTH.users.find(u => u.email === cur.username);
+      const found = AUTH.users.find(u => u.email === cur.email);
       if (found && found.socialProviders && found.socialProviders[type]) {
         delete found.socialProviders[type];
         saveAuth();
@@ -2939,8 +2975,14 @@
 
         const curUser = AUTH.current ? AUTH.users.find(u => u.email === AUTH.current.email) : null;
         const userCoagent = curUser && curUser.socialProviders && curUser.socialProviders.coagent ? curUser.socialProviders.coagent : { accept: true, defaultShare: 40 };
-        document.getElementById('a_coagent').checked = userCoagent.accept !== false;
-        document.getElementById('a_coagentshare').value = userCoagent.defaultShare !== undefined ? userCoagent.defaultShare : 40;
+        const isCoagentAccept = userCoagent.accept !== false;
+        document.getElementById('a_coagent').checked = isCoagentAccept;
+        document.getElementById('a_coagent_controls').style.display = isCoagentAccept ? 'flex' : 'none';
+        const defShare = userCoagent.defaultShare !== undefined ? userCoagent.defaultShare : 40;
+        document.getElementById('a_coagentshare').value = defShare;
+        if (typeof syncCoagentSplitUI === 'function') {
+          syncCoagentSplitUI(defShare);
+        }
         
         // Reset deal type radio
         const dealSoldEl = document.getElementById('a_deal_sold');

@@ -551,8 +551,14 @@
       setV('a_price', a.price); setV('a_roomtype', a.roomtype); setV('a_area', a.area); setV('a_floor', a.floor);
       setV('a_link', a.link); setV('a_map', a.map); setV('a_linkpic', a.linkpic); setV('a_postdate', a.postdate); setV('a_updatedate', a.updatedate);
       setV('a_contact', a.contact); setV('a_note', a.note);
-      document.getElementById('a_coagent').checked = (a.coagent !== false);
-      setV('a_coagentshare', a.coagentshare !== undefined ? a.coagentshare : 40);
+      const isCoagent = a.coagent !== false;
+      document.getElementById('a_coagent').checked = isCoagent;
+      document.getElementById('a_coagent_controls').style.display = isCoagent ? 'flex' : 'none';
+      const shareVal = a.coagentshare !== undefined ? a.coagentshare : 40;
+      setV('a_coagentshare', shareVal);
+      if (typeof window.syncCoagentSplitUI === 'function') {
+        window.syncCoagentSplitUI(shareVal);
+      }
       populatePosterSelect(a.poster || '');
       setV('a_careContract', a.careContract || 'ยังไม่ทำ');
       setV('a_careRepair', a.careRepair || 'ไม่มี');

@@ -1588,15 +1588,21 @@
               </select>
             </div>
             <!-- Co-Agent Config ในตัวทรัพย์สิน -->
-            <div class="form-group" style="background:var(--dark3);padding:10px;border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <div class="form-group" style="background:var(--dark3);padding:10px;border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
               <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:700;margin-bottom:0;color:var(--text2);">
-                <input type="checkbox" id="a_coagent" checked style="accent-color:var(--gold);">
+                <input type="checkbox" id="a_coagent" checked style="accent-color:var(--gold);" onchange="document.getElementById('a_coagent_controls').style.display = this.checked ? 'flex' : 'none';">
                 เปิด Co-Agent
               </label>
-              <div style="display:flex;align-items:center;gap:4px;font-size:12px;">
+              <div id="a_coagent_controls" style="display:flex;align-items:center;gap:6px;font-size:12px;">
                 <span>ส่วนแบ่ง:</span>
-                <input type="number" id="a_coagentshare" value="40" style="width:56px;min-height:30px;padding:4px;text-align:center;background:var(--dark);border:1px solid var(--border2);border-radius:6px;color:var(--text);" min="0" max="100">
-                <span>%</span>
+                <select id="a_coagentSplit" onchange="toggleCustomCoagent(this.value)" style="padding:6px;border-radius:6px;background:var(--dark);border:1px solid var(--border2);color:var(--text);font-size:12px;cursor:pointer;min-height:32px;">
+                  <option value="40">60:40 (เจ้าของทรัพย์ 60% : นายหน้าร่วม 40%)</option>
+                  <option value="50">50:50 (แบ่งเท่ากันฝ่ายละ 50%)</option>
+                  <option value="30">70:30 (เจ้าของทรัพย์ 70% : นายหน้าร่วม 30%)</option>
+                  <option value="custom">อื่น ๆ (ระบุเอง...)</option>
+                </select>
+                <input type="number" id="a_coagentshare" value="40" style="display:none;width:56px;min-height:32px;padding:4px;text-align:center;background:var(--dark);border:1px solid var(--border2);border-radius:6px;color:var(--text);" min="0" max="100">
+                <span id="a_coagentshare_pct" style="display:none;">%</span>
               </div>
             </div>
             <!-- Property Care Checklist -->
