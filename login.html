@@ -903,18 +903,97 @@
   }
 
   function ensureDefaultAdmin() {
-    const hasAdmin = AUTH.users.some(u => u.role === 'admin');
+    const hasAdmin = AUTH.users.some(u => u.accessLevel === 'super_admin' || u.role === 'admin');
     if (!AUTH.users.length || !hasAdmin) {
-      AUTH.users = AUTH.users.filter(u => u.role !== 'admin');
+      AUTH.users = AUTH.users.filter(u => u.role !== 'admin' && u.accessLevel !== 'super_admin');
       AUTH.users.unshift({
         email: 'admin@benzhome.com',
-        password: 'admin1234',
+        password: 'e120a3092318cb7232959353914ea3df5ecddca18ff2eb269eb5d024b33aa0f3', // hashed admin1234
         displayname: 'ผู้ดูแลระบบ',
-        role: 'admin',
+        accessLevel: 'super_admin',
+        businessRole: 'agent',
+        status: 'active',
         note: 'Super Admin',
         linkedAgentId: null
       });
       localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+    }
+  }
+
+  async function hashPassword(plain) {
+    if (!plain) return '';
+    if (/^[a-f0-9]{64}$/i.test(plain)) return plain;
+    const encoder = new TextEncoder();
+    const data = encoder.encode(plain + 'benzhome_salt_2026');
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function migrateUserFields(user) {
+    if (!user) return user;
+    if (user.role && !user.accessLevel) {
+      const mapping = {
+        'super_admin': { accessLevel: 'super_admin', businessRole: 'agent' },
+        'admin':       { accessLevel: 'admin',       businessRole: 'agent' },
+        'agent':       { accessLevel: 'member',      businessRole: 'agent' },
+        'owner':       { accessLevel: 'member',      businessRole: 'owner' },
+        'customer':    { accessLevel: 'member',      businessRole: 'customer' },
+        'pending':     { accessLevel: 'member',      businessRole: 'agent', status: 'pending' },
+        'rejected':    { accessLevel: 'member',      businessRole: 'agent', status: 'suspended' },
+        'viewer':      { accessLevel: 'member',      businessRole: 'customer' },
+      };
+      const mapped = mapping[user.role] || mapping['viewer'];
+      Object.assign(user, mapped);
+      if (!user.status) user.status = 'active';
+    }
+    if (!user.accessLevel) user.accessLevel = 'member';
+    if (!user.businessRole) user.businessRole = 'customer';
+    if (!user.status) user.status = 'active';
+
+    if (user.email) {
+      const em = user.email.toLowerCase().trim();
+      if (em === 'online.ibnn@gmail.com' || em === 'admin@benzhome.com') {
+        user.accessLevel = 'super_admin';
+        user.businessRole = 'agent';
+        user.status = 'active';
+      }
+    }
+
+    if (user.status === 'pending') {
+      user.role = 'pending';
+    } else if (user.status === 'suspended') {
+      user.role = 'rejected';
+    } else if (user.accessLevel === 'super_admin' || user.accessLevel === 'admin') {
+      user.role = 'admin';
+    } else {
+      user.role = user.businessRole;
+    }
+    return user;
+  }
+
+  async function syncAuthFromFirebase() {
+    if (!_fbReady || !_db) return;
+    try {
+      const { collection, getDocs } = window._firestoreLib;
+      const snap = await getDocs(collection(_db, 'users'));
+      if (snap.docs.length > 0) {
+        const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const fbUsers = snap.docs.map(d => {
+          const u = d.data();
+          if (u.email) u.email = u.email.toLowerCase().trim();
+          return migrateUserFields(u);
+        }).filter(u => u.email && emailRe.test(u.email));
+
+        if (fbUsers.length > 0) {
+          AUTH.users = fbUsers;
+          ensureDefaultAdmin();
+          localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+          console.log('✅ Users synced from Firebase Cloud successfully.');
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load users from Firebase:', e);
     }
   }
 
@@ -966,30 +1045,6 @@
     });
   }
 
-  async function syncAuthFromFirebase() {
-    if (!_fbReady || !_db) return;
-    try {
-      const { collection, getDocs } = window._firestoreLib;
-      const snap = await getDocs(collection(_db, 'users'));
-      if (snap.docs.length > 0) {
-        const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const fbUsers = snap.docs.map(d => {
-          const u = d.data();
-          if (u.email) u.email = u.email.toLowerCase().trim();
-          return u;
-        }).filter(u => u.email && emailRe.test(u.email));
-
-        if (fbUsers.length > 0) {
-          AUTH.users = fbUsers;
-          ensureDefaultAdmin();
-          localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
-          console.log('✅ Users synced from Firebase Cloud successfully.');
-        }
-      }
-    } catch (e) {
-      console.warn('Failed to load users from Firebase:', e);
-    }
-  }
 
   async function saveUserToFirebase(user) {
     if (!_fbReady || !_db) return;
@@ -1028,18 +1083,47 @@
     // Simulate small latency to prevent brute force and show smooth premium feedback
     await new Promise(resolve => setTimeout(resolve, 600));
 
-    // Try finding in current local auth list
-    let found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === emailInput && u.password === pwInput);
+    // Hash password to check
+    const hashedPw = await hashPassword(pwInput);
+
+    // Try finding in current local auth list (supporting legacy plain text & hashed password)
+    let found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === emailInput && 
+      (u.password === hashedPw || u.password === pwInput)
+    );
 
     // If not found locally, and Firebase is ready, trigger a live resync check
     if (!found && _fbReady) {
       await syncAuthFromFirebase();
-      found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === emailInput && u.password === pwInput);
+      found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === emailInput && 
+        (u.password === hashedPw || u.password === pwInput)
+      );
     }
 
     if (!found) {
       // Login failed
       errEl.style.display = 'flex';
+      spinner.style.display = 'none';
+      btnText.textContent = 'เข้าสู่ระบบ';
+      submitBtn.disabled = false;
+      return;
+    }
+
+    // Auto-migrate legacy plain text passwords to hash
+    if (found.password === pwInput && found.password !== hashedPw) {
+      console.log('🔄 Migrating user password to hash...');
+      found.password = hashedPw;
+      localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
+      if (_fbReady && _db) {
+        await saveUserToFirebase(found);
+      }
+    }
+
+    // Migrate user model if they have legacy roles
+    found = migrateUserFields(found);
+
+    if (found.status === 'suspended') {
+      errEl.style.display = 'flex';
+      document.getElementById('errorText').textContent = '❌ บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ';
       spinner.style.display = 'none';
       btnText.textContent = 'เข้าสู่ระบบ';
       submitBtn.disabled = false;
@@ -1140,7 +1224,9 @@
           email: email,
           password: 'google-auth-login-provider-oauth2',
           displayname: displayname,
-          role: 'agent',
+          accessLevel: 'member',
+          businessRole: 'customer',
+          status: 'active',
           note: 'สมัครอัตโนมัติผ่าน Google Mail',
           linkedAgentId: null,
           socialProviders: {
@@ -1153,6 +1239,8 @@
         if (!found.socialProviders) found.socialProviders = {};
         found.socialProviders.google = { uid: user.uid, email: email, displayName: displayname };
       }
+
+      found = migrateUserFields(found);
       
       localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
       
@@ -1219,7 +1307,9 @@
           email: email,
           password: 'facebook-auth-login-provider-oauth2',
           displayname: displayname,
-          role: 'agent',
+          accessLevel: 'member',
+          businessRole: 'customer',
+          status: 'active',
           note: 'สมัครอัตโนมัติผ่าน Facebook',
           linkedAgentId: null,
           socialProviders: {
@@ -1232,6 +1322,8 @@
         if (!found.socialProviders) found.socialProviders = {};
         found.socialProviders.facebook = { uid: user.uid, email: email, displayName: displayname };
       }
+
+      found = migrateUserFields(found);
       
       localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
       
@@ -1319,16 +1411,16 @@
 
     try {
       // ── กำหนดบทบาทแรกเริ่ม ──
-      // Agent -> pending เสมอ
-      // Customer -> customer เลย
-      // Owner -> owner เลย
-      const finalRole = selectedRegRole === 'agent' ? 'pending' : selectedRegRole;
+      const finalStatus = selectedRegRole === 'agent' ? 'pending' : 'active';
+      const hashedPw = await hashPassword(password);
 
-      const newUser = {
+      let newUser = {
         email: email,
-        password: password,
+        password: hashedPw,
         displayname: name,
-        role: finalRole,
+        accessLevel: 'member',
+        businessRole: selectedRegRole,
+        status: finalStatus,
         phone: phone,
         note: `สมัครผ่านหน้าเว็บเมื่อ ${new Date().toLocaleDateString('th-TH')}`,
         linkedAgentId: null,
@@ -1339,13 +1431,13 @@
       if (selectedRegRole === 'agent') {
         const acceptCo = document.getElementById('regCoagentAccept').checked;
         const coPct = parseInt(document.getElementById('regCoagentShare').value) || 40;
-        newUser.socialProviders = {
-          coagent: {
-            accept: acceptCo,
-            defaultShare: coPct
-          }
+        newUser.coagent = {
+          accept: acceptCo,
+          defaultShare: coPct
         };
       }
+
+      newUser = migrateUserFields(newUser);
 
       AUTH.users.push(newUser);
       
@@ -1363,7 +1455,7 @@
 
       // แสดงความสำเร็จ
       successEl.style.display = 'flex';
-      const msg = finalRole === 'pending'
+      const msg = finalStatus === 'pending'
         ? 'สมัครสมาชิกสำเร็จ! กรุณารอการอนุมัติการเป็น Agent จากแอดมินก่อนเข้าใช้งานเต็มรูปแบบค่ะ'
         : 'สมัครสมาชิกสำเร็จ! คุณสามารถใช้ข้อมูลนี้เข้าสู่ระบบได้ทันที';
       document.getElementById('successText').textContent = msg;

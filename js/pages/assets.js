@@ -423,49 +423,116 @@
           if (la === 'sold' && a.closedDealType === 'rented' && a.rentEndDate) {
             try {
               const d = new Date(a.rentEndDate);
-              rentDateRow = `<div class="card-row"><span class="label">📅 หมดสัญญาเช่า</span><span class="value" style="color:var(--green);font-weight:600;">${d.toLocaleDateString('th-TH')}</span></div>`;
+              rentDateRow = `<div class="card-row" style="font-size:12px;display:flex;justify-content:between;margin-top:4px;"><span class="label" style="color:var(--text3);">📅 หมดสัญญาเช่า</span><span class="value" style="color:var(--green);font-weight:600;">${d.toLocaleDateString('th-TH')}</span></div>`;
             } catch (e) {
-              rentDateRow = `<div class="card-row"><span class="label">📅 หมดสัญญาเช่า</span><span class="value" style="color:var(--green);font-weight:600;">${a.rentEndDate}</span></div>`;
+              rentDateRow = `<div class="card-row" style="font-size:12px;display:flex;justify-content:between;margin-top:4px;"><span class="label" style="color:var(--text3);">📅 หมดสัญญาเช่า</span><span class="value" style="color:var(--green);font-weight:600;">${a.rentEndDate}</span></div>`;
             }
           }
 
-          return `<div class="card"${la === 'sold' ? ' style="opacity:0.6;"' : ''}>
-            <div class="card-header">
-              <div class="card-title">${a.name || '(ไม่มีชื่อ)'}</div>
-              <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;"><span class="badge ${badge}">${a.status || ''}</span>${laBadge}</div>
-            </div>
-            <div class="card-body">
-              <div class="card-row"><span class="label">💰 ราคา</span><span class="price-tag">${a.price || '-'}</span></div>
-              ${a.type ? `<div class="card-row"><span class="label">🏢 ประเภท</span><span class="value">${a.type}</span></div>` : ''}
-              ${a.roomtype ? `<div class="card-row"><span class="label">🛏️ ห้อง</span><span class="value">${a.roomtype}</span></div>` : ''}
-              ${a.area ? `<div class="card-row"><span class="label">📐 ขนาด</span><span class="value">${a.area}</span></div>` : ''}
-              ${a.floor ? `<div class="card-row"><span class="label">🏗️ ชั้น</span><span class="value">${a.floor}</span></div>` : ''}
-              ${a.location ? `<div class="card-row"><span class="label">📍 ทำเล</span><span class="value">${a.location}</span></div>` : ''}
-              ${a.contact ? `<div class="card-row"><span class="label">📞 ติดต่อ</span><span class="value">${window._canSeeContacts ? a.contact : '🔒 เฉพาะ Agent ที่อนุมัติแล้ว'}</span></div>` : ''}
-              ${(a.coagent && window._canSeeCoAgents) ? `<div class="card-row"><span class="label">🤝 Co-Agent</span><span class="value" style="color:var(--gold);font-weight:700;">รับ (${a.coagentshare || 40}%)</span></div>` : ''}
-              ${a.poster ? `<div class="card-row"><span class="label">👤 โพสต์โดย</span><span class="value">${a.poster} ${ownerBadge}</span></div>` : ''}
-              <div style="border-top:1px dashed var(--border);margin-top:8px;padding-top:8px;font-size:12px;">
-                <div style="font-weight:700;color:var(--gold);margin-bottom:6px;">🛠️ สถานะดูแลหลังปิดดีล</div>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                  <span class="care-badge care-${(a.careContract || 'ยังไม่ทำ') === 'เสร็จสิ้น' ? 'green' : (a.careContract || 'ยังไม่ทำ') === 'ดำเนินการ' ? 'gold' : 'grey'}">สัญญา: ${a.careContract || 'ยังไม่ทำ'}</span>
-                  <span class="care-badge care-${(a.careRepair || 'ไม่มี') === 'เสร็จสิ้น' ? 'green' : (a.careRepair || 'ไม่มี') === 'ดำเนินการ' ? 'gold' : 'grey'}">ซ่อม: ${a.careRepair || 'ไม่มี'}</span>
-                  <span class="care-badge care-${(a.careRent || 'ยังไม่เก็บ') === 'เสร็จสิ้น' ? 'green' : (a.careRent || 'ยังไม่เก็บ') === 'ดำเนินการ' ? 'gold' : 'grey'}">ค่าเช่า: ${a.careRent || 'ยังไม่เก็บ'}</span>
+          let imgHtml = '';
+          if (a.linkpic) {
+            imgHtml = `
+              <div class="card-media" style="position:relative;height:180px;border-radius:12px 12px 0 0;overflow:hidden;background:#252528;">
+                <img src="${a.linkpic}" alt="${a.name}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s ease;">
+                <div style="position:absolute;top:10px;left:10px;display:flex;gap:4px;flex-wrap:wrap;">
+                  <span class="badge ${badge}" style="box-shadow: 0 4px 10px rgba(0,0,0,0.3);">${a.status || ''}</span>
+                  ${laBadge}
                 </div>
               </div>
-              ${la === 'reserved' && a.reservationEndDate ? `<div class="card-row"><span class="label">🔔 ครบรอบ</span><span class="value" style="color:var(--gold);font-weight:600;">${new Date(a.reservationEndDate).toLocaleDateString('th-TH')}</span></div>` : ''}
-              ${rentDateRow}
-              ${reservationAlert}
+            `;
+          } else {
+            imgHtml = `
+              <div class="card-media" style="position:relative;height:140px;border-radius:12px 12px 0 0;overflow:hidden;
+                          background:linear-gradient(135deg, var(--dark2), var(--dark3));display:flex;align-items:center;justify-content:center;color:var(--text3);">
+                <div style="text-align:center;">
+                  <span style="font-size:42px;display:block;margin-bottom:6px;filter:grayscale(0.2);">🏢</span>
+                  <span style="font-size:11px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;">Benz Home Premium</span>
+                </div>
+                <div style="position:absolute;top:10px;left:10px;display:flex;gap:4px;flex-wrap:wrap;">
+                  <span class="badge ${badge}" style="box-shadow: 0 4px 10px rgba(0,0,0,0.3);">${a.status || ''}</span>
+                  ${laBadge}
+                </div>
+              </div>
+            `;
+          }
+
+          return `
+            <div class="card premium-asset-card" style="display:flex;flex-direction:column;border-radius:12px;background:var(--dark2);border:1px solid var(--border);transition:transform 0.2s, box-shadow 0.2s;overflow:hidden;${la === 'sold' ? 'opacity:0.6;' : ''}">
+              ${imgHtml}
+              <div class="card-body" style="padding:16px;flex:1;display:flex;flex-direction:column;gap:12px;">
+                <div>
+                  <div style="font-size:13px;color:var(--text3);font-weight:600;margin-bottom:2px;">${a.type || 'ไม่ระบุประเภท'}</div>
+                  <h3 class="card-title" style="font-size:17px;font-weight:700;color:var(--text);margin:0;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.name || '(ไม่มีชื่อ)'}</h3>
+                </div>
+                
+                <div style="display:flex;align-items:baseline;gap:6px;">
+                  <span style="font-size:12px;color:var(--text3);">เริ่มต้น</span>
+                  <span class="price-tag" style="font-size:22px;font-weight:800;color:var(--gold);line-height:1;">${a.price || '-'}</span>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;font-size:13px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:8px 0;color:var(--text2);">
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <span>🛌</span>
+                    <span style="font-weight:500;">${a.roomtype || 'สตูดิโอ'}</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <span>📐</span>
+                    <span style="font-weight:500;">${a.area || '-'}</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <span>🏗️</span>
+                    <span style="font-weight:500;">ชั้น ${a.floor || '-'}</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <span>🚇</span>
+                    <span style="font-weight:500;color:var(--blue);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.bts || 'ไม่ระบุสถานี'}</span>
+                  </div>
+                </div>
+
+                <div style="font-size:13px;display:flex;flex-direction:column;gap:4px;">
+                  <div style="display:flex;justify-content:between;align-items:center;gap:8px;">
+                    <span style="color:var(--text3);flex-shrink:0;">📍 ทำเล</span>
+                    <span style="color:var(--text2);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">${a.location || '-'}</span>
+                  </div>
+                  <div style="display:flex;justify-content:between;align-items:center;gap:8px;">
+                    <span style="color:var(--text3);flex-shrink:0;">📞 ติดต่อ</span>
+                    <span style="color:var(--text2);font-weight:600;text-align:right;flex:1;">${window._canSeeContacts ? a.contact : '🔒 เฉพาะ Agent ที่อนุมัติแล้ว'}</span>
+                  </div>
+                  ${(a.coagent && window._canSeeCoAgents) ? `
+                  <div style="display:flex;justify-content:between;align-items:center;gap:8px;">
+                    <span style="color:var(--text3);flex-shrink:0;">🤝 Co-Agent</span>
+                    <span style="color:var(--gold);font-weight:700;text-align:right;flex:1;">รับ (${a.coagentshare || 40}%)</span>
+                  </div>` : ''}
+                  ${a.poster ? `
+                  <div style="display:flex;justify-content:between;align-items:center;gap:8px;">
+                    <span style="color:var(--text3);flex-shrink:0;">👤 โพสต์โดย</span>
+                    <span style="color:var(--text2);text-align:right;flex:1;">${a.poster} ${ownerBadge}</span>
+                  </div>` : ''}
+                </div>
+
+                <div style="border-top:1px dashed var(--border);padding-top:8px;font-size:12px;margin-top:auto;">
+                  <div style="font-weight:700;color:var(--gold);margin-bottom:6px;">🛠️ สถานะดูแลหลังปิดดีล</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <span class="care-badge care-${(a.careContract || 'ยังไม่ทำ') === 'เสร็จสิ้น' ? 'green' : (a.careContract || 'ยังไม่ทำ') === 'ดำเนินการ' ? 'gold' : 'grey'}">สัญญา: ${a.careContract || 'ยังไม่ทำ'}</span>
+                    <span class="care-badge care-${(a.careRepair || 'ไม่มี') === 'เสร็จสิ้น' ? 'green' : (a.careRepair || 'ไม่มี') === 'ดำเนินการ' ? 'gold' : 'grey'}">ซ่อม: ${a.careRepair || 'ไม่มี'}</span>
+                    <span class="care-badge care-${(a.careRent || 'ยังไม่เก็บ') === 'เสร็จสิ้น' ? 'green' : (a.careRent || 'ยังไม่เก็บ') === 'ดำเนินการ' ? 'gold' : 'grey'}">ค่าเช่า: ${a.careRent || 'ยังไม่เก็บ'}</span>
+                  </div>
+                </div>
+                ${la === 'reserved' && a.reservationEndDate ? `<div class="card-row" style="font-size:12px;display:flex;justify-content:between;margin-top:4px;"><span class="label" style="color:var(--text3);">🔔 ครบรอบจอง</span><span class="value" style="color:var(--gold);font-weight:600;">${new Date(a.reservationEndDate).toLocaleDateString('th-TH')}</span></div>` : ''}
+                ${rentDateRow}
+                ${reservationAlert}
+              </div>
+              <div class="card-footer" style="padding:12px 16px;background:var(--dark3);border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;justify-content:end;align-items:center;">
+                ${a.linkpic ? `<a href="${a.linkpic}" target="_blank" class="btn btn-purple btn-sm" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="ดูรูปภาพ">🖼️</a>` : ''}
+                ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="ลิงก์รายละเอียด">🔗</a>` : ''}
+                ${a.map ? `<a href="${a.map}" target="_blank" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="พิกัดแผนที่">📍</a>` : ''}
+                <button class="btn btn-blue btn-sm" onclick="quickClip(${ri})" style="font-size:12px;padding:6px 10px;border-radius:8px;font-weight:600;">📋 คัดลอก</button>
+                <button class="btn btn-outline btn-sm" style="border-color:var(--gold);color:var(--gold);font-size:12px;padding:6px 10px;border-radius:8px;font-weight:600;" onclick="showCustomerMatchesForAsset(${ri})">🤝 จับคู่</button>
+                ${isOwner ? `<button class="btn btn-outline btn-sm" onclick="editAsset(${ri})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="แก้ไข">✏️</button>` : ''}
+                ${(isOwner || canDelete) ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="ลบ">🗑️</button>` : ''}
+              </div>
             </div>
-            <div class="card-footer">
-              ${a.linkpic ? `<a href="${a.linkpic}" target="_blank" class="btn btn-purple btn-sm">🖼️ รูป</a>` : ''}
-              ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm">🔗 Link</a>` : ''}
-              ${a.map ? `<a href="${a.map}" target="_blank" class="btn btn-outline btn-sm">📍 Map</a>` : ''}
-              <button class="btn btn-blue btn-sm" onclick="quickClip(${ri})">📋 ClipB</button>
-              <button class="btn btn-outline btn-sm" style="border-color:var(--gold);color:var(--gold);" onclick="showCustomerMatchesForAsset(${ri})">🤝 จับคู่ลูกค้า</button>
-              ${isOwner ? `<button class="btn btn-outline btn-sm" onclick="editAsset(${ri})">✏️</button>` : ''}
-              ${(isOwner || canDelete) ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>` : ''}
-            </div>
-          </div>`;
+          `;
         }).join('');
       }
       renderStats();

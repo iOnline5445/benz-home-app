@@ -119,6 +119,84 @@
       } catch (e) { console.warn('saveAuthToFirebase fail:', e); }
     }
 
+    async function hashPassword(plain) {
+      if (!plain) return '';
+      if (/^[a-f0-9]{64}$/i.test(plain)) return plain;
+      const encoder = new TextEncoder();
+      const data = encoder.encode(plain + 'benzhome_salt_2026');
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function migrateUserFields(user) {
+      if (!user) return user;
+      if (user.role && !user.accessLevel) {
+        const mapping = {
+          'super_admin': { accessLevel: 'super_admin', businessRole: 'agent' },
+          'admin':       { accessLevel: 'admin',       businessRole: 'agent' },
+          'agent':       { accessLevel: 'member',      businessRole: 'agent' },
+          'owner':       { accessLevel: 'member',      businessRole: 'owner' },
+          'customer':    { accessLevel: 'member',      businessRole: 'customer' },
+          'pending':     { accessLevel: 'member',      businessRole: 'agent', status: 'pending' },
+          'rejected':    { accessLevel: 'member',      businessRole: 'agent', status: 'suspended' },
+          'viewer':      { accessLevel: 'member',      businessRole: 'customer' },
+        };
+        const mapped = mapping[user.role] || mapping['viewer'];
+        Object.assign(user, mapped);
+        if (!user.status) user.status = 'active';
+      }
+      if (!user.accessLevel) user.accessLevel = 'member';
+      if (!user.businessRole) user.businessRole = 'customer';
+      if (!user.status) user.status = 'active';
+
+      if (user.email) {
+        const em = user.email.toLowerCase().trim();
+        if (em === 'online.ibnn@gmail.com' || em === 'admin@benzhome.com') {
+          user.accessLevel = 'super_admin';
+          user.businessRole = 'agent';
+          user.status = 'active';
+        }
+      }
+
+      if (user.status === 'pending') {
+        user.role = 'pending';
+      } else if (user.status === 'suspended') {
+        user.role = 'rejected';
+      } else if (user.accessLevel === 'super_admin' || user.accessLevel === 'admin') {
+        user.role = 'admin';
+      } else {
+        user.role = user.businessRole;
+      }
+      return user;
+    }
+
+    function getRoleUIBadge(accessLevel, businessRole, status) {
+      if (status === 'pending') {
+        return ['⏳ รออนุมัติ', 'role role-viewer'];
+      }
+      if (status === 'suspended') {
+        return ['⛔ ระงับการใช้งาน', 'role role-viewer'];
+      }
+      if (accessLevel === 'super_admin') {
+        return ['👑 Super Admin', 'role role-admin'];
+      }
+      if (accessLevel === 'admin') {
+        return ['⭐ Admin', 'role role-admin'];
+      }
+      if (businessRole === 'agent') {
+        return ['🏠 Agent', 'role role-agent'];
+      }
+      if (businessRole === 'owner') {
+        return ['🏡 Owner', 'role role-agent'];
+      }
+      if (businessRole === 'customer') {
+        return ['👤 Member', 'role role-viewer'];
+      }
+      return ['👁️ Viewer', 'role role-viewer'];
+    }
+    window.getRoleUIBadge = getRoleUIBadge;
+
     async function migrateOldAuthData() {
       if (!_fbReady || !_db) return;
       try {
@@ -136,7 +214,13 @@
                 const userRef = doc(collection(_db, 'users'), safeId);
                 const checkSnap = await getDoc(userRef);
                 if (!checkSnap.exists()) {
-                  await setDoc(userRef, { ...u, email });
+                  let migratedUser = migrateUserFields(u);
+                  if (email === 'online.ibnn@gmail.com' || email === 'admin@benzhome.com') {
+                    migratedUser.accessLevel = 'super_admin';
+                    migratedUser.businessRole = 'agent';
+                    migratedUser.status = 'active';
+                  }
+                  await setDoc(userRef, { ...migratedUser, email });
                   console.log('Migrated user:', email);
                 }
               }
@@ -153,32 +237,30 @@
       const currentEmail = (AUTH.current.email || '').toLowerCase().trim();
       const updatedUser = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === currentEmail);
       if (updatedUser) {
-        const roleChanged = updatedUser.role !== AUTH.current.role;
-        const nameChanged = updatedUser.displayname !== AUTH.current.displayname;
-        if (roleChanged || nameChanged) {
+        const uMigrated = migrateUserFields({ ...updatedUser });
+        const cMigrated = migrateUserFields({ ...AUTH.current });
+
+        const accessChanged = uMigrated.accessLevel !== cMigrated.accessLevel;
+        const roleChanged = uMigrated.businessRole !== cMigrated.businessRole;
+        const statusChanged = uMigrated.status !== cMigrated.status;
+        const nameChanged = uMigrated.displayname !== cMigrated.displayname;
+
+        if (accessChanged || roleChanged || statusChanged || nameChanged) {
           console.log('🔄 User role/name updated. Re-applying permissions.');
-          AUTH.current = { ...AUTH.current, ...updatedUser };
+          AUTH.current = { ...AUTH.current, ...uMigrated };
           saveSession(AUTH.current);
-          applyRoleAccess(AUTH.current.role);
+          applyRoleAccess(AUTH.current);
           
           // Update header name & role UI
           const headerName = document.getElementById('headerUserName');
           if (headerName) headerName.textContent = AUTH.current.displayname || AUTH.current.email;
           const roleEl = document.getElementById('headerUserRole');
           if (roleEl) {
-            const ROLE_LABELS = {
-              admin:    ['⭐ Admin',   'role role-admin'],
-              agent:    ['🏠 Agent',   'role role-agent'],
-              owner:    ['🏡 Owner',   'role role-agent'],
-              customer: ['👤 Member',  'role role-viewer'],
-              pending:  ['⏳ รออนุมัติ','role role-viewer'],
-              viewer:   ['👁️ Viewer', 'role role-viewer'],
-            };
-            const [label, cls] = ROLE_LABELS[AUTH.current.role] || ['👤', 'role'];
+            const [label, cls] = getRoleUIBadge(AUTH.current.accessLevel, AUTH.current.businessRole, AUTH.current.status);
             roleEl.textContent = label;
             roleEl.className = cls;
           }
-          _renderPendingBanner(AUTH.current.role);
+          _renderPendingBanner(AUTH.current);
 
           // Re-render UI components that depend on permissions/role
           if (typeof renderAssets === 'function') renderAssets();
@@ -200,7 +282,12 @@
           const fbUsers = snap.docs.map(d => {
             const u = d.data();
             if (u.email) u.email = u.email.toLowerCase().trim();
-            return u;
+            let migrated = migrateUserFields(u);
+            // Force Super Admin email promotion
+            if (migrated.email === 'online.ibnn@gmail.com' || migrated.email === 'admin@benzhome.com') {
+              migrated.accessLevel = 'super_admin';
+            }
+            return migrated;
           }).filter(u => u.email && emailRe.test(u.email));
 
           if (fbUsers.length > 0) {
@@ -208,9 +295,18 @@
             checkCurrentUserSessionSync();
 
             // ตรวจ hasAdmin หลัง sync
-            const hasAdmin = AUTH.users.some(u => u.role === 'admin');
+            const hasAdmin = AUTH.users.some(u => u.accessLevel === 'super_admin' || u.role === 'admin');
             if (!hasAdmin) {
-              AUTH.users.unshift({ email: 'admin@benzhome.com', password: 'admin1234', displayname: 'ผู้ดูแลระบบ', role: 'admin', note: 'Super Admin', linkedAgentId: null });
+              AUTH.users.unshift({
+                email: 'admin@benzhome.com',
+                password: 'e120a3092318cb7232959353914ea3df5ecddca18ff2eb269eb5d024b33aa0f3', // hashed admin1234
+                displayname: 'ผู้ดูแลระบบ',
+                accessLevel: 'super_admin',
+                businessRole: 'agent',
+                status: 'active',
+                note: 'Super Admin',
+                linkedAgentId: null
+              });
             }
             // บันทึกลง localStorage (ไม่ sync กลับ Firebase เพื่อป้องกัน loop)
             localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
@@ -260,18 +356,18 @@
 
     // Helper: ทำ login จริง (ใช้ร่วมกันระหว่าง doLogin และ retry)
     function performLogin(found, remember) {
-      found = { ...found, email: (found.email || '').toLowerCase().trim(), username: (found.email || '').toLowerCase().trim() };
+      found = migrateUserFields(found);
       const email = found.email;
       const pw = found.password;
       const errEl = document.getElementById('loginError');
       if (errEl) errEl.style.display = 'none';
 
-      // ── บล็อก rejected ──
-      if (found.role === 'rejected') {
+      // ── บล็อก suspended ──
+      if (found.status === 'suspended') {
         if (errEl) {
           errEl.style.display = 'flex';
           errEl.querySelector('#errorText') && (errEl.querySelector('#errorText').textContent =
-            '❌ บัญชีของคุณไม่ผ่านการอนุมัติ กรุณาติดต่อผู้ดูแลระบบ');
+            '❌ บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ');
         }
         return;
       }
@@ -291,30 +387,24 @@
       if (headerName) headerName.textContent = found.displayname || found.email;
       const roleEl = document.getElementById('headerUserRole');
       if (roleEl) {
-        const ROLE_LABELS = {
-          admin:    ['⭐ Admin',   'role role-admin'],
-          agent:    ['🏠 Agent',   'role role-agent'],
-          owner:    ['🏡 Owner',   'role role-agent'],
-          customer: ['👤 Member',  'role role-viewer'],
-          pending:  ['⏳ รออนุมัติ','role role-viewer'],
-          viewer:   ['👁️ Viewer', 'role role-viewer'],
-        };
-        const [label, cls] = ROLE_LABELS[found.role] || ['👤', 'role'];
+        const [label, cls] = getRoleUIBadge(found.accessLevel, found.businessRole, found.status);
         roleEl.textContent = label;
         roleEl.className = cls;
       }
 
-      applyRoleAccess(found.role);
+      applyRoleAccess(found);
       loadDB();
       updateSettingsProfileUI();
 
       // ── Banner: แจ้งเตือน pending ──
-      _renderPendingBanner(found.role);
+      _renderPendingBanner(found);
     }
 
-    function _renderPendingBanner(role) {
+    function _renderPendingBanner(userObj) {
+      const user = migrateUserFields(userObj || AUTH.current);
+      const isPending = user && user.status === 'pending';
       let banner = document.getElementById('pendingBanner');
-      if (role === 'pending') {
+      if (isPending) {
         if (!banner) {
           banner = document.createElement('div');
           banner.id = 'pendingBanner';
@@ -340,26 +430,35 @@
       }
     }
 
-    function tryRestoreSession(fromFirebase) {
+    async function tryRestoreSession(fromFirebase) {
       try {
         const s = localStorage.getItem(SESSION_KEY);
         if (!s) return false;
         const raw = JSON.parse(s);
         const email = (raw.email || '').toLowerCase().trim();
         const pw = raw.pw;
-        const found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email && u.password === pw);
+        const hashedPw = await hashPassword(pw);
+
+        let found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email && 
+          (u.password === pw || u.password === hashedPw)
+        );
+
         if (!found) {
           if (fromFirebase) {
-            // Firebase sync เสร็จแล้ว ยังหา user ไม่เจอ = session ผิดจริง
             clearSession(); return false;
           }
           if (!_fbReady) {
-            // ไม่มี Firebase + หาไม่เจอ = session ผิดจริง
             clearSession(); return false;
           }
-          // Firebase กำลังโหลด — รอก่อน อย่าลบ session
           return false;
         }
+
+        // Auto-migrate local storage session to hash
+        if (found.password === hashedPw && pw !== hashedPw) {
+          console.log('🔄 Migrating session credentials to hash...');
+          saveSession(found);
+        }
+
         performLogin(found, false);
         return true;
       } catch (e) { clearSession(); return false; }
@@ -375,19 +474,27 @@
             parsed.users = parsed.users
               .map(u => {
                 if (!u.email && u.username) u.email = u.username;
-                // normalize email lowercase
                 if (u.email) u.email = u.email.toLowerCase().trim();
-                return u;
+                return migrateUserFields(u);
               })
               .filter(u => u.email && emailRe.test(u.email));
           }
           AUTH = { users: parsed.users || [], current: null };
         }
       } catch (e) { console.warn('loadAuth error:', e); }
-      const hasAdmin = AUTH.users.some(u => u.role === 'admin');
+      const hasAdmin = AUTH.users.some(u => u.accessLevel === 'super_admin' || u.role === 'admin');
       if (!AUTH.users.length || !hasAdmin) {
-        AUTH.users = AUTH.users.filter(u => u.role !== 'admin');
-        AUTH.users.unshift({ email: 'admin@benzhome.com', password: 'admin1234', displayname: 'ผู้ดูแลระบบ', role: 'admin', note: 'Super Admin', linkedAgentId: null });
+        AUTH.users = AUTH.users.filter(u => u.role !== 'admin' && u.accessLevel !== 'super_admin');
+        AUTH.users.unshift({
+          email: 'admin@benzhome.com',
+          password: 'e120a3092318cb7232959353914ea3df5ecddca18ff2eb269eb5d024b33aa0f3', // hashed admin1234
+          displayname: 'ผู้ดูแลระบบ',
+          accessLevel: 'super_admin',
+          businessRole: 'agent',
+          status: 'active',
+          note: 'Super Admin',
+          linkedAgentId: null
+        });
         localStorage.setItem('yb_auth', JSON.stringify({ users: AUTH.users }));
       }
     }
@@ -412,54 +519,70 @@
       } catch (e) { }
     })();
 
-    loadRemembered(); // โหลด remembered credentials (กรอก form)
-    // ลอง restore session ทันที (สำหรับ offline/localStorage mode)
-    // ถ้า Firebase active จะเรียก tryRestoreSession อีกครั้งหลัง sync
-    tryRestoreSession();
+    (async function initApp() {
+      loadRemembered(); // โหลด remembered credentials (กรอก form)
+      // ลอง restore session ทันที (สำหรับ offline/localStorage mode)
+      // ถ้า Firebase active จะเรียก tryRestoreSession อีกครั้งหลัง sync
+      await tryRestoreSession();
 
-    const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
-    const isFirebaseConfigured = FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY" && FIREBASE_CONFIG.apiKey !== "";
+      const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
+      const isFirebaseConfigured = FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY" && FIREBASE_CONFIG.apiKey !== "";
 
-    if (storageMode === 'firebase' && isFirebaseConfigured) {
-      initFirebase().then(async (ok) => {
-        if (ok) {
-          const synced = await loadAuthFromFirebase();
-          if (synced) console.log('✅ Auth synced from Firebase');
-          // ตรวจ hasAdmin อีกครั้งหลัง sync
-          const hasAdmin = AUTH.users.some(u => u.role === 'admin');
-          if (!hasAdmin) {
-            AUTH.users.unshift({ email: 'admin@benzhome.com', password: 'admin1234', displayname: 'ผู้ดูแลระบบ', role: 'admin', note: 'Super Admin', linkedAgentId: null });
-            saveAuth();
+      if (storageMode === 'firebase' && isFirebaseConfigured) {
+        initFirebase().then(async (ok) => {
+          if (ok) {
+            const synced = await loadAuthFromFirebase();
+            if (synced) console.log('✅ Auth synced from Firebase');
+            // ตรวจ hasAdmin อีกครั้งหลัง sync
+            const hasAdmin = AUTH.users.some(u => u.accessLevel === 'super_admin' || u.role === 'admin');
+            if (!hasAdmin) {
+              AUTH.users.unshift({
+                email: 'admin@benzhome.com',
+                password: 'e120a3092318cb7232959353914ea3df5ecddca18ff2eb269eb5d024b33aa0f3', // hashed admin1234
+                displayname: 'ผู้ดูแลระบบ',
+                accessLevel: 'super_admin',
+                businessRole: 'agent',
+                status: 'active',
+                note: 'Super Admin',
+                linkedAgentId: null
+              });
+              saveAuth();
+            }
+            // เริ่ม real-time sync อัตโนมัติ
+            startRealtimeSync();
+            // เริ่มระบบ scheduled backup
+            initScheduledBackup();
           }
-          // เริ่ม real-time sync อัตโนมัติ
-          startRealtimeSync();
-          // เริ่มระบบ scheduled backup
-          initScheduledBackup();
-        }
+          updateFirebaseStatus();
+          if (!AUTH.current) {
+            await tryRestoreSession(true); // true = fromFirebase sync เสร็จแล้ว ลบ session ได้ถ้าหาไม่เจอ
+          }
+          if (!AUTH.current) {
+            window.location.href = 'login.html';
+          }
+        });
+      } else {
+        console.log('📴 Running in Offline Local Mode');
+        _fbReady = false;
         updateFirebaseStatus();
+        initScheduledBackup();
         if (!AUTH.current) {
-          tryRestoreSession(true); // true = fromFirebase sync เสร็จแล้ว ลบ session ได้ถ้าหาไม่เจอ
+          await tryRestoreSession(false);
         }
         if (!AUTH.current) {
           window.location.href = 'login.html';
         }
-      });
-    } else {
-      console.log('📴 Running in Offline Local Mode');
-      _fbReady = false;
-      updateFirebaseStatus();
-      initScheduledBackup();
-      if (!AUTH.current) {
-        tryRestoreSession(false);
       }
-      if (!AUTH.current) {
-        window.location.href = 'login.html';
-      }
-    }
+    })();
 
     function resetAuthData() {
+      const cur = migrateUserFields(AUTH.current);
+      if (!cur || cur.accessLevel !== 'super_admin') {
+        alert('❌ ขออภัย เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้นที่สามารถรีเซ็ตข้อมูลได้');
+        return;
+      }
       // แสดง users ที่มีอยู่ก่อน เพื่อ debug
-      const userList = AUTH.users.map(u => u.email + ' [' + u.role + ']').join('\n') || '(ว่าง)';
+      const userList = AUTH.users.map(u => u.email + ' [' + (u.accessLevel || u.role) + ']').join('\n') || '(ว่าง)';
       if (!confirm('รีเซ็ตข้อมูล User ทั้งหมด?\n\nUsers ปัจจุบัน:\n' + userList + '\n\n(จะสร้าง admin default ใหม่ email: admin@benzhome.com / admin1234)')) return;
       localStorage.removeItem('yb_auth');
       localStorage.removeItem('yb_session');
@@ -475,10 +598,18 @@
     // UNIFIED SETTINGS HELPERS
     // ========================================================
     function switchSettingsTab(tabName, btn) {
-      const cur = AUTH.current;
-      const isAdmin = cur && cur.role === 'admin';
+      const cur = migrateUserFields(AUTH.current);
+      const isSuperAdmin = cur && cur.accessLevel === 'super_admin';
+      const isAdmin = cur && (cur.accessLevel === 'super_admin' || cur.accessLevel === 'admin');
       
-      const adminTabs = ['users', 'firebase', 'backup', 'csv', 'reset', 'quota'];
+      const superAdminTabs = ['reset', 'quota'];
+      const adminTabs = ['users', 'firebase', 'backup', 'csv', 'platforms', 'bots'];
+      
+      if (superAdminTabs.includes(tabName) && !isSuperAdmin) {
+        alert('❌ ขออภัย เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้นที่สามารถเข้าถึงส่วนนี้ได้');
+        switchSettingsTab('profile');
+        return;
+      }
       if (adminTabs.includes(tabName) && !isAdmin) {
         alert('❌ ขออภัย เฉพาะผู้ดูแลระบบ (Admin) เท่านั้นที่สามารถเข้าถึงส่วนนี้ได้');
         switchSettingsTab('profile');
@@ -725,9 +856,9 @@
       
       if (dNameEl) dNameEl.textContent = cur.displayname || 'ผู้ใช้งาน';
       if (dRoleEl) {
-        if (cur.role === 'admin') dRoleEl.textContent = '⭐ Admin';
-        else if (cur.role === 'agent') dRoleEl.textContent = '🏠 Agent';
-        else dRoleEl.textContent = '👁️ Viewer';
+        const u = migrateUserFields(cur);
+        const [label, cls] = getRoleUIBadge(u.accessLevel, u.businessRole, u.status);
+        dRoleEl.textContent = label;
       }
       if (dAvatarEl) {
         const initial = (cur.displayname || cur.email || '?').charAt(0).toUpperCase();
@@ -1017,29 +1148,38 @@
 
 
 
-    function doLogin() {
+    async function doLogin() {
       const email = document.getElementById('loginUsername').value.trim().toLowerCase();
       const pw = document.getElementById('loginPassword').value;
       const errEl = document.getElementById('loginError');
       const remember = document.getElementById('rememberMe').checked;
 
-      // debug: log users ที่มีอยู่ (ไม่แสดง password)
-      console.log('🔐 Login attempt:', email, '| Users in AUTH:', AUTH.users.map(u => u.email + '[' + u.role + ']'));
+      console.log('🔐 Login attempt:', email);
 
-      // ตรวจสอบ AUTH.users ปัจจุบัน (case-insensitive email)
-      let found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email && u.password === pw);
+      const hashedPw = await hashPassword(pw);
+
+      // Try finding in current local auth list (supporting legacy plain text & hashed password)
+      let found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email && 
+        (u.password === hashedPw || u.password === pw)
+      );
 
       if (!found) {
-        // ลอง reload จาก localStorage อีกครั้ง (กรณี AUTH อาจยังไม่ sync)
         loadAuth();
-        found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email && u.password === pw);
-        console.log('🔄 After reload, found:', found ? found.email : 'none', '| Total users:', AUTH.users.length);
+        found = AUTH.users.find(u => (u.email || '').toLowerCase().trim() === email && 
+          (u.password === hashedPw || u.password === pw)
+        );
       }
 
       if (!found) {
         errEl.style.display = 'flex';
-        console.warn('❌ Login failed. Users available:', AUTH.users.map(u => u.email));
         return;
+      }
+
+      // Auto-migrate legacy plain text password to hash
+      if (found.password === pw && found.password !== hashedPw) {
+        console.log('🔄 Migrating user password to hash...');
+        found.password = hashedPw;
+        saveAuth();
       }
 
       performLogin(found, remember);
@@ -1100,7 +1240,9 @@
             email: email,
             password: 'google-auth-login-provider-oauth2',
             displayname: displayname,
-            role: 'agent',
+            accessLevel: 'member',
+            businessRole: 'customer',
+            status: 'active',
             note: 'สมัครอัตโนมัติผ่าน Google Mail',
             linkedAgentId: null,
             socialProviders: {
@@ -1109,13 +1251,13 @@
           };
           
           AUTH.users.push(found);
-          saveAuth();
         } else {
           if (!found.socialProviders) found.socialProviders = {};
           found.socialProviders.google = { uid: user.uid, email: email, displayName: displayname };
-          saveAuth();
         }
-        
+
+        found = migrateUserFields(found);
+        saveAuth();
         performLogin(found, true);
         
       } catch (e) {
@@ -1165,7 +1307,9 @@
             email: email,
             password: 'facebook-auth-login-provider-oauth2',
             displayname: displayname,
-            role: 'agent',
+            accessLevel: 'member',
+            businessRole: 'customer',
+            status: 'active',
             note: 'สมัครอัตโนมัติผ่าน Facebook',
             linkedAgentId: null,
             socialProviders: {
@@ -1174,13 +1318,13 @@
           };
           
           AUTH.users.push(found);
-          saveAuth();
         } else {
           if (!found.socialProviders) found.socialProviders = {};
           found.socialProviders.facebook = { uid: user.uid, email: email, displayName: displayname };
-          saveAuth();
         }
-        
+
+        found = migrateUserFields(found);
+        saveAuth();
         performLogin(found, true);
         
       } catch (e) {
@@ -1209,35 +1353,41 @@
     // ROLE MATRIX CONSTANTS
     // ============================
     const ROLE = {
-      ADMIN:    'admin',
-      AGENT:    'agent',
-      OWNER:    'owner',
-      CUSTOMER: 'customer',
-      PENDING:  'pending',
-      REJECTED: 'rejected',
-      VIEWER:   'viewer',
+      SUPER_ADMIN: 'super_admin',
+      ADMIN:       'admin',
+      MEMBER:      'member',
+      AGENT:       'agent',
+      OWNER:       'owner',
+      CUSTOMER:    'customer',
+      PENDING:     'pending',
+      SUSPENDED:   'suspended'
     };
 
-    function applyRoleAccess(role) {
-      const r = role || 'viewer';
-      const isAdmin    = r === ROLE.ADMIN;
-      const isAgent    = r === ROLE.AGENT;
-      const isOwner    = r === ROLE.OWNER;
-      const isCustomer = r === ROLE.CUSTOMER;
-      const isPending  = r === ROLE.PENDING;
-      const isViewer   = r === ROLE.VIEWER;
+    function applyRoleAccess(userObj) {
+      const user = migrateUserFields(userObj || AUTH.current);
+      
+      const accessLevel = user ? user.accessLevel : 'member';
+      const businessRole = user ? user.businessRole : 'customer';
+      const status = user ? user.status : 'active';
 
-      // ─── สิทธิ์รวม ───
-      const canPost        = isAdmin || isAgent || isOwner;         // โพสต์ทรัพย์ได้
-      const canSeeContacts = isAdmin || isAgent || isOwner || isCustomer; // เห็นข้อมูลติดต่อ
-      const canSeeCustomers= isAdmin || isAgent;                   // เห็นแท็บลูกค้า/ความต้องการ
-      const canSeeCoAgents = isAdmin || isAgent;                   // เห็น co-agent info
-      const canMarketing   = isAdmin || isAgent;                   // แท็บโพสต์/การตลาด
-      const canCommission  = isAdmin || isAgent;                   // คำนวณค่าคอม
+      const isSuperAdmin = accessLevel === 'super_admin';
+      const isAdmin      = accessLevel === 'super_admin' || accessLevel === 'admin';
+      const isAgent      = businessRole === 'agent' && status === 'active';
+      const isOwner      = businessRole === 'owner' && status === 'active';
+      const isCustomer   = businessRole === 'customer' && status === 'active';
+      const isPending    = status === 'pending';
+
+      // Permissions
+      const canPost        = isAdmin || isAgent || isOwner;
+      const canSeeContacts = isAdmin || isAgent || isOwner || isCustomer;
+      const canSeeCustomers= isAdmin || isAgent || isOwner;
+      const canSeeCoAgents = isAdmin || isAgent;
+      const canMarketing   = isAdmin || isAgent;
+      const canCommission  = isAdmin || isAgent;
       const canClipboard   = isAdmin || isAgent;
       const canAdminPanel  = isAdmin;
 
-      // บันทึกสิทธิ์ไว้ระดับ global
+      // Globals
       window._canPost        = canPost;
       window._canSeeContacts = canSeeContacts;
       window._canSeeCoAgents = canSeeCoAgents;
@@ -1246,22 +1396,34 @@
 
       window._canEditAsset = function(asset) {
         if (!AUTH.current) return false;
-        if (AUTH.current.role === ROLE.ADMIN) return true;
-        if (canPost && asset.creatorEmail && AUTH.current.email)
-          return asset.creatorEmail.toLowerCase() === AUTH.current.email.toLowerCase();
-        if (canPost && asset.poster && AUTH.current.displayname)
-          return asset.poster === AUTH.current.displayname;
-        return false;
-      };
-      window._canDeleteAsset = function(asset) {
-        if (!AUTH.current) return false;
-        if (AUTH.current.role === ROLE.ADMIN) return true;
-        if (asset.creatorEmail && AUTH.current.email)
-          return asset.creatorEmail.toLowerCase() === AUTH.current.email.toLowerCase();
+        const curr = migrateUserFields(AUTH.current);
+        const currIsAdmin = curr.accessLevel === 'super_admin' || curr.accessLevel === 'admin';
+        if (currIsAdmin) return true;
+        
+        // Agent or Owner can edit their own asset
+        if (canPost && asset.creatorEmail && curr.email) {
+          if (asset.creatorEmail.toLowerCase() === curr.email.toLowerCase()) return true;
+        }
+        if (canPost && asset.poster && curr.displayname) {
+          if (asset.poster === curr.displayname) return true;
+        }
         return false;
       };
 
-      // ─── Desktop header tabs ───
+      window._canDeleteAsset = function(asset) {
+        if (!AUTH.current) return false;
+        const curr = migrateUserFields(AUTH.current);
+        const currIsAdmin = curr.accessLevel === 'super_admin' || curr.accessLevel === 'admin';
+        if (currIsAdmin) return true;
+
+        // Agent or Owner can delete their own asset
+        if (canPost && asset.creatorEmail && curr.email) {
+          if (asset.creatorEmail.toLowerCase() === curr.email.toLowerCase()) return true;
+        }
+        return false;
+      };
+
+      // UI Tab Visibility
       const _tab = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
       _tab('tabCustomers', canSeeCustomers);
       _tab('tabSettings',  true);
@@ -1269,54 +1431,68 @@
       _tab('tabMarketing', canMarketing);
       _tab('tabCommission',canCommission);
 
-      // ─── Settings: admin-only nav items ───
-      document.querySelectorAll('.settings-nav .admin-only').forEach(el => {
-        el.style.display = canAdminPanel ? '' : 'none';
-      });
-      // pending users nav (admin only)
-      const snavPending = document.getElementById('snav-pending');
-      if (snavPending) snavPending.style.display = canAdminPanel ? '' : 'none';
-
-      // ─── Bottom nav ───
+      // Bottom nav (mobile)
       _tab('bnav-customers', canSeeCustomers);
       _tab('bnav-clipboard', canClipboard);
       _tab('bnav-marketing', canMarketing);
 
-      // ─── Admin-only panels ───
+      // Settings admin-only nav items
+      document.querySelectorAll('.settings-nav .admin-only').forEach(el => {
+        el.style.display = canAdminPanel ? '' : 'none';
+      });
+      // Super admin-only elements
+      document.querySelectorAll('.super-admin-only').forEach(el => {
+        el.style.display = isSuperAdmin ? '' : 'none';
+      });
+
+      // pending users nav (admin only)
+      const snavPending = document.getElementById('snav-pending');
+      if (snavPending) snavPending.style.display = canAdminPanel ? '' : 'none';
+
+      // Admin-only panels
       const _panel = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
-      _panel('clearDataPanel',     canAdminPanel);
+      _panel('clearDataPanel',     isSuperAdmin); // Only super admin can reset
       _panel('importPanel',        canAdminPanel);
       _panel('exportPanel',        canAdminPanel);
       _panel('btnImportCustomerCSV', canAdminPanel);
-      _panel('ssec-pending',       canAdminPanel); // pending approval section
+      _panel('ssec-pending',       canAdminPanel);
 
-      // ─── Add buttons ───
+      // Add buttons
       _panel('btnAddAsset',    canPost);
       _panel('btnAddCustomer', canSeeCustomers && (isAdmin || isAgent));
 
-      // ─── Mobile title ───
+      // Mobile title
       if (window.innerWidth <= 768) {
         const titleEl = document.getElementById('mobileSectionTitle');
         if (titleEl) { titleEl.textContent = _sectionTitles['assets'] || ''; titleEl.style.display = 'block'; }
       }
 
-      buildMoreDrawer(role);
+      buildMoreDrawer(user);
       closeMoreDrawer();
     }
 
     // Build More drawer menu based on role
-    function buildMoreDrawer(role) {
-      const r = role || 'viewer';
+    function buildMoreDrawer(userObj) {
+      const user = migrateUserFields(userObj || AUTH.current);
+      const accessLevel = user ? user.accessLevel : 'member';
+      const businessRole = user ? user.businessRole : 'customer';
+      const status = user ? user.status : 'active';
+
+      const isSuperAdmin = accessLevel === 'super_admin';
+      const isAdmin      = accessLevel === 'super_admin' || accessLevel === 'admin';
+      const isAgent      = businessRole === 'agent' && status === 'active';
+      const isPending    = status === 'pending';
+
       const container = document.getElementById('moreDrawerItems');
       if (!container) return;
 
       const items = [];
-      if (r === ROLE.ADMIN || r === ROLE.AGENT) {
+      if (isAdmin || isAgent) {
         items.push({ icon: '💰', label: 'คำนวณค่าคอม', sub: 'คำนวณส่วนแบ่งค่าคอมมิชชั่น', tab: 'commission' });
       }
-      if (r === ROLE.ADMIN) {
+      if (isAdmin) {
         items.push({ icon: '⚙️', label: 'ตั้งค่าระบบ', sub: 'ผู้ใช้, Firebase, Backup, CSV', tab: 'settings' });
-      } else if (r === ROLE.PENDING) {
+      } else if (isPending) {
         items.push({ icon: '⏳', label: 'รอการอนุมัติ', sub: 'บัญชีของคุณอยู่ระหว่างตรวจสอบ', tab: 'settings' });
       } else {
         items.push({ icon: '⚙️', label: 'ตั้งค่า', sub: 'บัญชีของฉัน & ข้อมูลระบบ', tab: 'settings' });
@@ -1752,11 +1928,11 @@
 
       // Desktop table
       tb.innerHTML = AUTH.users.map((u, i) => {
-        const isMe = AUTH.current && AUTH.current.username === u.email;
+        const isMe = AUTH.current && AUTH.current.email === u.email;
         const linkedAgent = u.linkedAgentId ? (DB.agents.find(a => a.id === u.linkedAgentId) || null) : null;
         
         // Co-Agent status & default share
-        const coDetails = u.socialProviders && u.socialProviders.coagent ? u.socialProviders.coagent : null;
+        const coDetails = u.coagent || (u.socialProviders && u.socialProviders.coagent ? u.socialProviders.coagent : null);
         const coText = coDetails 
           ? `<span style="color:${coDetails.accept ? 'var(--green)' : 'var(--text3)'};font-weight:700;">${coDetails.accept ? '✔️ รับ' : '❌ ไม่รับ'} (${coDetails.defaultShare || 40}%)</span>`
           : '<span style="color:var(--text3)">—</span>';
@@ -1767,7 +1943,7 @@
         `;
         
         // ถ้าเป็น pending ให้มีปุ่ม Approve / Reject ด่วน
-        if (u.role === 'pending') {
+        if (u.status === 'pending') {
           actionButtons = `
             <button class="btn btn-primary btn-sm" style="background:#5cb85c;border-color:#4cae4c;" onclick="approveAgentUser(${i})">✔️ อนุมัติ</button>
             <button class="btn btn-danger btn-sm" style="background:#d9534f;border-color:#d43f3a;" onclick="rejectAgentUser(${i})">❌ ปฏิเสธ</button>
@@ -1782,7 +1958,7 @@
             <span style="font-weight:400;color:var(--text3);font-size:12px">${u.displayname || ''}</span></td>
           <td style="font-size:13px;font-weight:600;">${u.phone || '-'}</td>
           <td style="font-size:12px;">${coText}</td>
-          <td>${_roleBadge(u.role)}</td>
+          <td>${_roleBadge(u)}</td>
           <td style="font-size:12px">${linkedAgent ? `<span style="color:var(--green)">✅ ${linkedAgent.name}</span>` : '<span style="color:var(--text3)">—</span>'}</td>
           <td style="font-size:12px;color:var(--text3)">${u.note || '-'}</td>
           <td><div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
@@ -1793,10 +1969,10 @@
 
       // Mobile card list
       if (ml) ml.innerHTML = AUTH.users.map((u, i) => {
-        const isMe = AUTH.current && AUTH.current.username === u.email;
+        const isMe = AUTH.current && AUTH.current.email === u.email;
         const linkedAgent = u.linkedAgentId ? (DB.agents.find(a => a.id === u.linkedAgentId) || null) : null;
         
-        const coDetails = u.socialProviders && u.socialProviders.coagent ? u.socialProviders.coagent : null;
+        const coDetails = u.coagent || (u.socialProviders && u.socialProviders.coagent ? u.socialProviders.coagent : null);
         const coText = coDetails 
           ? `${coDetails.accept ? '✔️ รับ' : '❌ ไม่รับ'} (${coDetails.defaultShare || 40}%)`
           : '—';
@@ -1806,7 +1982,7 @@
           ${!isMe ? `<button class="btn btn-danger" onclick="deleteUser(${i})">🗑️ ลบ</button>` : ''}
         `;
         
-        if (u.role === 'pending') {
+        if (u.status === 'pending') {
           actionButtons = `
             <button class="btn" style="background:#5cb85c;color:#fff;flex:1;" onclick="approveAgentUser(${i})">✔️ อนุมัติ</button>
             <button class="btn" style="background:#d9534f;color:#fff;flex:1;" onclick="rejectAgentUser(${i})">❌ ปฏิเสธ</button>
@@ -1822,7 +1998,7 @@
               <div class="m-card-name">${u.displayname || u.email}${isMe ? ' <span style="font-size:12px;color:var(--gold)">(คุณ)</span>' : ''}</div>
               <div class="m-card-sub" style="font-size:12px">${u.email || ''}</div>
             </div>
-            ${_roleBadge(u.role)}
+            ${_roleBadge(u)}
           </div>
           <div class="m-card-row"><span class="m-card-label">📞 เบอร์โทร</span><span class="m-card-val" style="font-weight:600;">${u.phone || '-'}</span></div>
           <div class="m-card-row"><span class="m-card-label">🤝 Co-Agent</span><span class="m-card-val" style="font-weight:600;">${coText}</span></div>
@@ -1838,14 +2014,39 @@
       updatePendingCountNotification();
     }
 
-    function _roleBadge(r) {
-      if (r === 'admin') return `<span style="background:var(--red);color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;">Admin</span>`;
-      if (r === 'agent') return `<span style="background:var(--green);color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;">Agent</span>`;
-      if (r === 'owner') return `<span style="background:var(--blue);color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;">Owner</span>`;
-      if (r === 'customer') return `<span style="background:#5bc0de;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;">Customer</span>`;
-      if (r === 'pending') return `<span style="background:#e8a020;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;animation:pulse 1.5s infinite;">Pending</span>`;
-      if (r === 'rejected') return `<span style="background:#555;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;">Rejected</span>`;
-      return `<span style="background:var(--border);color:var(--text3);padding:2px 6px;border-radius:4px;font-size:11px;">${r || 'viewer'}</span>`;
+    function _roleBadge(userObj) {
+      const u = migrateUserFields(userObj);
+      const [label, cls] = getRoleUIBadge(u.accessLevel, u.businessRole, u.status);
+      
+      let bg = 'var(--border)';
+      let fg = 'var(--text3)';
+      let animation = '';
+
+      if (u.status === 'pending') {
+        bg = '#e8a020';
+        fg = '#fff';
+        animation = 'animation:pulse 1.5s infinite;';
+      } else if (u.status === 'suspended') {
+        bg = '#555';
+        fg = '#fff';
+      } else if (u.accessLevel === 'super_admin') {
+        bg = 'linear-gradient(135deg, #FFD700, #FFA500)';
+        fg = '#000';
+      } else if (u.accessLevel === 'admin') {
+        bg = 'var(--red)';
+        fg = '#fff';
+      } else if (u.businessRole === 'agent') {
+        bg = 'var(--green)';
+        fg = '#fff';
+      } else if (u.businessRole === 'owner') {
+        bg = 'var(--blue)';
+        fg = '#fff';
+      } else if (u.businessRole === 'customer') {
+        bg = '#5bc0de';
+        fg = '#fff';
+      }
+
+      return `<span style="background:${bg};color:${fg};padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;${animation}">${label}</span>`;
     }
 
     async function approveAgentUser(idx) {
@@ -1853,11 +2054,12 @@
       if (!u) return;
       if (!confirm(`ยืนยันอนุมัติคุณ ${u.displayname || u.email} เป็น Agent หรือไม่?`)) return;
 
-      u.role = 'agent';
+      u.status = 'active';
+      u.businessRole = 'agent';
       u.note = `อนุมัติเป็น Agent เมื่อ ${new Date().toLocaleDateString('th-TH')}`;
 
       // extract co-agent configurations
-      const extra = u.socialProviders && u.socialProviders.coagent ? u.socialProviders.coagent : { accept: true, defaultShare: 40 };
+      const extra = u.coagent || (u.socialProviders && u.socialProviders.coagent ? u.socialProviders.coagent : { accept: true, defaultShare: 40 });
 
       // Automatically create matching Agent profile
       const newAgent = {
@@ -1890,7 +2092,7 @@
       if (!u) return;
       if (!confirm(`ปฏิเสธการสมัครของ ${u.displayname || u.email} ใช่หรือไม่?`)) return;
 
-      u.role = 'rejected';
+      u.status = 'suspended';
       u.note = `ปฏิเสธการสมัครเมื่อ ${new Date().toLocaleDateString('th-TH')}`;
 
       saveAuth();
@@ -1899,10 +2101,10 @@
     }
 
     function toggleLinkedAgent() {
-      const role = document.getElementById('u_role').value;
+      const bRole = document.getElementById('u_businessRole').value;
       const sect = document.getElementById('u_agentDetailsSection');
       if (sect) {
-        sect.style.display = (role !== 'viewer') ? 'block' : 'none';
+        sect.style.display = (bRole === 'agent' || bRole === 'owner') ? 'block' : 'none';
       }
     }
 
@@ -1910,14 +2112,26 @@
       const email = document.getElementById('u_email').value.trim().toLowerCase();
       const pw = document.getElementById('u_password').value;
       const dname = document.getElementById('u_displayname').value.trim();
-      const role = document.getElementById('u_role').value;
+      const accessLevel = document.getElementById('u_accessLevel').value;
+      const businessRole = document.getElementById('u_businessRole').value;
+      const status = document.getElementById('u_status').value;
       const note = document.getElementById('u_note').value.trim();
 
       if (!email) { alert('กรุณาใส่อีเมล'); return; }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('รูปแบบอีเมลไม่ถูกต้อง'); return; }
 
+      // Super Admin protection guard:
+      // A regular admin (not super admin) cannot assign accessLevel: admin or super_admin!
+      const current = migrateUserFields(AUTH.current);
+      if (current.accessLevel !== 'super_admin') {
+        if (accessLevel === 'super_admin' || accessLevel === 'admin') {
+          alert('❌ เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้นที่สามารถแต่งตั้งสิทธิ์ผู้ดูแลระบบได้');
+          return;
+        }
+      }
+
       let linkedAgentId = null;
-      const isAgentOrOwner = (role !== 'viewer' && role !== 'customer');
+      const isAgentOrOwner = (businessRole === 'agent' || businessRole === 'owner');
 
       if (isAgentOrOwner) {
         const ag = {
@@ -1972,33 +2186,56 @@
       const telVal = document.getElementById('u_ag_tel').value.trim();
       const coagentVal = document.getElementById('u_ag_coagent').value;
 
+      // Hash password if supplied
+      let finalPw = undefined;
+      if (pw) {
+        finalPw = await hashPassword(pw);
+      }
+
+      const lineVal = document.getElementById('u_ag_line').value.trim();
+
       if (editMode.idx >= 0) {
         const u = AUTH.users[editMode.idx];
         u.email = email;
         u.displayname = dname;
-        u.role = role;
+        u.accessLevel = accessLevel;
+        u.businessRole = businessRole;
+        u.status = status;
         u.note = note;
         u.linkedAgentId = linkedAgentId;
-        if (pw) u.password = pw;
+        if (finalPw) u.password = finalPw;
         u.phone = telVal;
         
+        if (!u.coagent) u.coagent = {};
+        u.coagent.accept = (coagentVal === 'รับ');
+
         if (!u.socialProviders) u.socialProviders = {};
-        if (!u.socialProviders.coagent) u.socialProviders.coagent = {};
-        u.socialProviders.coagent.accept = (coagentVal === 'รับ');
+        if (lineVal) {
+          u.socialProviders.line = { lineId: lineVal.replace(/^@/, '') };
+        } else {
+          delete u.socialProviders.line;
+        }
       } else {
         if (!pw || pw.length < 6) { alert('Password ต้องมีอย่างน้อย 6 ตัวอักษร'); return; }
         if (AUTH.users.find(x => x.email === email)) { alert('อีเมลนี้มีในระบบแล้ว'); return; }
+        
+        const socialProvs = { coagent: { accept: (coagentVal === 'รับ'), defaultShare: 40 } };
+        if (lineVal) {
+          socialProvs.line = { lineId: lineVal.replace(/^@/, '') };
+        }
+
         AUTH.users.push({ 
           email, 
-          password: pw, 
+          password: finalPw, 
           displayname: dname, 
-          role, 
+          accessLevel,
+          businessRole,
+          status,
           note, 
           linkedAgentId,
           phone: telVal,
-          socialProviders: {
-            coagent: { accept: (coagentVal === 'รับ'), defaultShare: 40 }
-          }
+          coagent: { accept: (coagentVal === 'รับ'), defaultShare: 40 },
+          socialProviders: socialProvs
         });
       }
 
@@ -2010,17 +2247,28 @@
     }
 
     function editUser(i) {
-      const u = AUTH.users[i];
+      const u = migrateUserFields(AUTH.users[i]);
       document.getElementById('modalUserTitle').textContent = '✏️ แก้ไขผู้ใช้';
       document.getElementById('u_email').value = u.email || '';
       document.getElementById('u_password').value = '';
       document.getElementById('u_displayname').value = u.displayname || '';
-      document.getElementById('u_role').value = u.role || 'viewer';
+      
+      document.getElementById('u_accessLevel').value = u.accessLevel || 'member';
+      document.getElementById('u_businessRole').value = u.businessRole || 'customer';
+      document.getElementById('u_status').value = u.status || 'active';
+      
       document.getElementById('u_note').value = u.note || '';
       document.getElementById('u_pw_hint').style.display = 'inline';
 
+      // Super Admin protection guard for inputs
+      const current = migrateUserFields(AUTH.current);
+      const isSuperAdmin = current.accessLevel === 'super_admin';
+      
+      // Regular admin cannot change accessLevel dropdown
+      document.getElementById('u_accessLevel').disabled = !isSuperAdmin;
+
       document.getElementById('u_ag_company').value = '';
-      document.getElementById('u_ag_coagent').value = (u.socialProviders && u.socialProviders.coagent && u.socialProviders.coagent.accept === false) ? 'ไม่รับ' : 'รับ';
+      document.getElementById('u_ag_coagent').value = (u.coagent && u.coagent.accept === false) ? 'ไม่รับ' : 'รับ';
       document.getElementById('u_ag_tel').value = u.phone || '';
       document.getElementById('u_ag_line').value = '';
       document.getElementById('u_ag_linelink').value = '';
@@ -2072,7 +2320,18 @@
     }
 
     async function deleteUser(i) {
-      const u = AUTH.users[i];
+      const u = migrateUserFields(AUTH.users[i]);
+
+      // Super Admin protection guard:
+      // Regular admin cannot delete admin or super_admin!
+      const current = migrateUserFields(AUTH.current);
+      if (current.accessLevel !== 'super_admin') {
+        if (u.accessLevel === 'super_admin' || u.accessLevel === 'admin') {
+          alert('❌ ข้อผิดพลาด: เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้นที่สามารถลบบัญชีผู้ดูแลระบบได้');
+          return;
+        }
+      }
+
       if (!confirm(`ยืนยันลบ user "${u.email}"?`)) return;
       
       if (u.linkedAgentId) {
@@ -2090,19 +2349,39 @@
       if (!_realtimeSyncActive) { saveTolocalStorage(); }
     }
 
-    function doChangePw() {
+    async function doChangePw() {
       const oldPw = document.getElementById('cp_old').value;
       const newPw = document.getElementById('cp_new').value;
       const con = document.getElementById('cp_confirm').value;
       const errEl = document.getElementById('cp_error');
       const cur = AUTH.current;
-      if (cur.password !== oldPw) { errEl.textContent = 'รหัสผ่านปัจจุบันไม่ถูกต้อง'; errEl.style.display = 'block'; return; }
-      if (!newPw || newPw.length < 6) { errEl.textContent = 'รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร'; errEl.style.display = 'block'; return; }
-      if (newPw !== con) { errEl.textContent = 'รหัสผ่านใหม่ไม่ตรงกัน'; errEl.style.display = 'block'; return; }
+      
+      const hashedOldPw = await hashPassword(oldPw);
+      if (cur.password !== oldPw && cur.password !== hashedOldPw) {
+        errEl.textContent = 'รหัสผ่านปัจจุบันไม่ถูกต้อง';
+        errEl.style.display = 'block';
+        return;
+      }
+      if (!newPw || newPw.length < 6) {
+        errEl.textContent = 'รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร';
+        errEl.style.display = 'block';
+        return;
+      }
+      if (newPw !== con) {
+        errEl.textContent = 'รหัสผ่านใหม่ไม่ตรงกัน';
+        errEl.style.display = 'block';
+        return;
+      }
       errEl.style.display = 'none';
-      const idx = AUTH.users.findIndex(u => u.email === cur.username);
-      if (idx >= 0) { AUTH.users[idx].password = newPw; AUTH.current.password = newPw; }
-      saveAuth(); closeModal('changePw');
+
+      const hashedNewPw = await hashPassword(newPw);
+      const idx = AUTH.users.findIndex(u => u.email.toLowerCase() === cur.email.toLowerCase());
+      if (idx >= 0) {
+        AUTH.users[idx].password = hashedNewPw;
+        AUTH.current.password = hashedNewPw;
+      }
+      saveAuth();
+      closeModal('changePw');
       alert('✅ เปลี่ยนรหัสผ่านสำเร็จ');
     }
 
@@ -2120,8 +2399,9 @@
       if (dnEl) dnEl.textContent = user.displayname || '-';
       if (emEl) emEl.textContent = user.email || '-';
       if (roEl) {
-        const roleMap = { admin: '⭐ Admin', agent: '🏷 Agent', viewer: '👁 Viewer' };
-        roEl.textContent = roleMap[user.role] || user.role || '-';
+        const u = migrateUserFields(user);
+        const [label, cls] = getRoleUIBadge(u.accessLevel, u.businessRole, u.status);
+        roEl.textContent = label;
       }
 
       // Clear pw fields
@@ -2174,6 +2454,34 @@
           lineEl.appendChild(addBtn);
         }
       }
+    }
+
+    async function _editLineId(user) {
+      const currentLineId = (user.socialProviders && user.socialProviders.line && user.socialProviders.line.lineId) || '';
+      const newLineId = prompt('กรุณากรอก Line ID ของคุณ:', currentLineId);
+      if (newLineId === null) return; // user cancelled
+
+      const cleaned = newLineId.trim().replace(/^@/, '');
+      if (!user.socialProviders) user.socialProviders = {};
+      if (cleaned) {
+        user.socialProviders.line = { lineId: cleaned };
+      } else {
+        delete user.socialProviders.line;
+      }
+
+      // Also update matching agent profile if exists
+      if (user.linkedAgentId) {
+        let ag = DB.agents.find(x => x.id === user.linkedAgentId);
+        if (ag) {
+          ag.line = cleaned;
+          await saveItem('agents', ag, ag.id);
+        }
+      }
+
+      saveAuth();
+      alert('✅ บันทึก Line ID สำเร็จแล้วค่ะ');
+      renderDropdownProfile();
+      renderProfileSettings();
     }
 
     // Helper: render a social slot in the modal using DOM (avoids innerHTML onclick issues)
@@ -2344,8 +2652,9 @@
       if (nameEl) nameEl.textContent = displayName;
       if (emailEl) emailEl.textContent = user.email || '-';
       if (roleEl) {
-        const roleMap = { admin: '⭐ Admin', agent: '🏠 Agent', viewer: '👁️ Viewer', owner: '👤 Owner', customer: '🤝 Customer', pending: '⏳ Pending' };
-        roleEl.textContent = roleMap[user.role] || user.role || '-';
+        const u = migrateUserFields(user);
+        const [label, cls] = getRoleUIBadge(u.accessLevel, u.businessRole, u.status);
+        roleEl.textContent = label;
       }
 
       // Social connection status
@@ -2362,7 +2671,8 @@
       // Populate agent profile section in dropdown
       const dropAgentSection = document.getElementById('dropAgentProfileSection');
       if (dropAgentSection) {
-        if (user.role === 'agent' || user.role === 'admin' || user.role === 'owner' || user.role === 'pending' || user.role === 'rejected') {
+        const u = migrateUserFields(user);
+        if (u.businessRole === 'agent' || u.accessLevel === 'admin' || u.accessLevel === 'super_admin' || u.businessRole === 'owner' || u.status === 'pending') {
           dropAgentSection.style.display = 'block';
           const linkedAgent = user.linkedAgentId ? DB.agents.find(a => a.id === user.linkedAgentId) : null;
           document.getElementById('drop_ag_company').value = linkedAgent ? (linkedAgent.company || '') : '';
@@ -2379,9 +2689,10 @@
     }
 
     function updatePendingCountNotification() {
-      if (!AUTH.current || AUTH.current.role !== 'admin') return;
+      const cur = migrateUserFields(AUTH.current);
+      if (!cur || (cur.accessLevel !== 'admin' && cur.accessLevel !== 'super_admin')) return;
 
-      const pendingCount = AUTH.users.filter(u => u.role === 'pending').length;
+      const pendingCount = AUTH.users.filter(u => migrateUserFields(u).status === 'pending').length;
       
       // Update Desktop Settings Tab
       const tabSettings = document.getElementById('tabSettings');
@@ -2429,7 +2740,8 @@
 
       // Check if user has linkedAgentId
       let agentId = user.linkedAgentId;
-      if (!agentId && (user.role === 'agent' || user.role === 'admin' || user.role === 'owner' || user.role === 'pending')) {
+      const u = migrateUserFields(user);
+      if (!agentId && (u.businessRole === 'agent' || u.accessLevel === 'admin' || u.accessLevel === 'super_admin' || u.businessRole === 'owner' || u.status === 'pending')) {
         agentId = genId();
         user.linkedAgentId = agentId;
       }
@@ -2451,11 +2763,11 @@
         ag.fb = fb;
 
         // update co-agent default share in user profile too
-        if (!user.socialProviders) user.socialProviders = {};
-        if (!user.socialProviders.coagent) user.socialProviders.coagent = {};
-        user.socialProviders.coagent.accept = (coagent === 'รับ');
+        if (!user.coagent) user.coagent = {};
+        user.coagent.accept = (coagent === 'รับ');
         
         // Sync Line ID to socialProviders
+        if (!user.socialProviders) user.socialProviders = {};
         if (line) {
           user.socialProviders.line = { lineId: line.replace(/^@/, '') };
         } else {
@@ -2471,7 +2783,7 @@
       saveAuth();
       alert('✅ บันทึกข้อมูลส่วนตัวเรียบร้อยแล้วค่ะ!');
       renderDropdownProfile();
-      if (user.role === 'admin') {
+      if (u.accessLevel === 'admin' || u.accessLevel === 'super_admin') {
         renderUsers();
       }
     }
@@ -2557,7 +2869,7 @@
       }
     }
 
-    function doChangePwDrop() {
+    async function doChangePwDrop() {
       const oldPw = (document.getElementById('drop_cp_old').value || '').trim();
       const newPw = (document.getElementById('drop_cp_new').value || '').trim();
       const con   = (document.getElementById('drop_cp_confirm').value || '').trim();
@@ -2572,7 +2884,8 @@
         cur.password.includes('google-auth') || cur.password.includes('facebook-auth')
       );
 
-      if (!isSocialOnly && cur.password !== oldPw) {
+      const hashedOldPw = await hashPassword(oldPw);
+      if (!isSocialOnly && cur.password !== oldPw && cur.password !== hashedOldPw) {
         errEl.textContent = '❌ รหัสผ่านปัจจุบันไม่ถูกต้อง';
         errEl.style.display = 'block'; return;
       }
@@ -2585,10 +2898,11 @@
         errEl.style.display = 'block'; return;
       }
 
-      const idx = AUTH.users.findIndex(u => u.email === cur.username);
+      const hashedNewPw = await hashPassword(newPw);
+      const idx = AUTH.users.findIndex(u => u.email.toLowerCase() === cur.email.toLowerCase());
       if (idx >= 0) {
-        AUTH.users[idx].password = newPw;
-        AUTH.current.password = newPw;
+        AUTH.users[idx].password = hashedNewPw;
+        AUTH.current.password = hashedNewPw;
       }
       saveAuth();
       closeProfileDropdown();
@@ -2738,9 +3052,11 @@
         }
       } else {
         // ตรวจสอบโควตารายวันสำหรับ Agent
-        if (AUTH.current && AUTH.current.role !== 'admin') {
+        const cur = migrateUserFields(AUTH.current);
+        const isAdmin = cur && (cur.accessLevel === 'super_admin' || cur.accessLevel === 'admin');
+        if (cur && !isAdmin) {
           const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-          const userEmail = AUTH.current.email ? AUTH.current.email.toLowerCase() : '';
+          const userEmail = cur.email ? cur.email.toLowerCase() : '';
           
           // นับเคสที่เอเจนต์คนนี้สร้างขึ้นในวันนี้
           const todayCount = DB.assets.filter(item => {
@@ -2906,7 +3222,9 @@
         sel.innerHTML += `<option value="${currentVal}" selected>${currentVal}</option>`;
       }
       // Disable the select if the logged-in user is not an admin
-      if (AUTH.current && AUTH.current.role !== 'admin') {
+      const cur = migrateUserFields(AUTH.current);
+      const isAdmin = cur && (cur.accessLevel === 'super_admin' || cur.accessLevel === 'admin');
+      if (cur && !isAdmin) {
         sel.disabled = true;
       } else {
         sel.disabled = false;
@@ -3152,7 +3470,8 @@
     // CLEAR ALL
     // ============================
     async function clearAllData() {
-      if (AUTH.current?.role !== 'admin') { alert('เฉพาะ Admin เท่านั้น'); return; }
+      const cur = migrateUserFields(AUTH.current);
+      if (!cur || cur.accessLevel !== 'super_admin') { alert('เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้น'); return; }
       if (!confirm('⚠️ ยืนยันลบข้อมูลทั้งหมด?\nการกระทำนี้ไม่สามารถย้อนกลับได้')) return;
       DB = { assets: [], agents: [], customers: [] };
       saveTolocalStorage();

@@ -1739,11 +1739,27 @@
               <input id="u_displayname" placeholder="เช่น กรองเกียรติ (เบนซ์)">
             </div>
             <div class="form-group">
-              <label>Role</label>
-              <select id="u_role" onchange="toggleLinkedAgent()">
-                <option value="admin">⭐ admin — ผู้ดูแลระบบ</option>
-                <option value="agent">🏠 agent — นายหน้า</option>
-                <option value="viewer">👁️ viewer — ดูอย่างเดียว</option>
+              <label>ระดับสิทธิ์เข้าระบบ (Access Level)</label>
+              <select id="u_accessLevel">
+                <option value="member">👤 Member — สมาชิกทั่วไป</option>
+                <option value="admin">🛡️ Admin — ผู้ดูแลระบบ</option>
+                <option value="super_admin">👑 Super Admin — ผู้ดูแลสูงสุด</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>บทบาทธุรกิจ (Business Role)</label>
+              <select id="u_businessRole" onchange="toggleLinkedAgent()">
+                <option value="customer">👤 Customer — ลูกค้า/ผู้ซื้อ</option>
+                <option value="agent">🏠 Agent — ตัวแทน/นายหน้า</option>
+                <option value="owner">🏡 Owner — เจ้าของทรัพย์</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>สถานะบัญชี (Status)</label>
+              <select id="u_status">
+                <option value="active">🟢 Active — ใช้งานได้ปกติ</option>
+                <option value="pending">⏳ Pending — รออนุมัติ</option>
+                <option value="suspended">⛔ Suspended — ระงับการใช้งาน</option>
               </select>
             </div>
             <div class="form-group">

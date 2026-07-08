@@ -120,6 +120,55 @@
 
     // Toggle reservation fields visibility
     // ============================
+    function checkCustomerMatchAsset(c, asset) {
+      const assetPrice = parsePriceValue(asset.price);
+      const assetStatus = asset.status; 
+      const assetType = asset.type; 
+      const assetBts = asset.bts;
+
+      let statusMatch = false;
+      if (c.status === 'เช่า/ขาย' || !c.status) {
+        statusMatch = true;
+      } else {
+        statusMatch = c.status === assetStatus;
+      }
+      if (!statusMatch) return false;
+      
+      let typeMatch = false;
+      if (!c.type) {
+        typeMatch = true;
+      } else {
+        typeMatch = (assetType || '').includes(c.type) || (c.type || '').includes(assetType);
+      }
+      if (!typeMatch) return false;
+      
+      if (assetPrice > 0) {
+        const custBudget = parsePriceValue(c.budget);
+        if (custBudget > 0 && assetPrice > custBudget) {
+          return false;
+        }
+      }
+      
+      if (c.line) {
+        const stations = TRANSIT_LINES[c.line] || [];
+        if (c.stationStart && c.stationEnd) {
+          const cIdx1 = stations.indexOf(c.stationStart);
+          const cIdx2 = stations.indexOf(c.stationEnd);
+          if (cIdx1 !== -1 && cIdx2 !== -1) {
+            const minIdx = Math.min(cIdx1, cIdx2);
+            const maxIdx = Math.max(cIdx1, cIdx2);
+            const validStations = stations.slice(minIdx, maxIdx + 1);
+            if (!validStations.includes(assetBts)) {
+              return false;
+            }
+          }
+        } else if (c.stationStart) {
+          if (assetBts && assetBts !== c.stationStart) return false;
+        }
+      }
+      return true;
+    }
+
     function renderCustomers() {
       const q = (document.getElementById('customerSearch')?.value || '').toLowerCase();
       const priceMin = parseFloat(document.getElementById('customerPriceMin')?.value) || null;
@@ -129,7 +178,27 @@
       const startFilter = document.getElementById('filterCustStartStation')?.value || '';
       const endFilter = document.getElementById('filterCustEndStation')?.value || '';
 
+      const cur = (typeof migrateUserFields === 'function') ? migrateUserFields(AUTH.current) : (AUTH.current || {});
+      const isOwner = cur.businessRole === 'owner' && cur.accessLevel === 'member';
+
       let list = DB.customers.filter(a => {
+        // If owner, check if the customer matches at least one of their properties
+        if (isOwner) {
+          const ownerEmail = (cur.email || '').toLowerCase().trim();
+          const ownerDName = cur.displayname || '';
+          
+          const ownerAssets = DB.assets.filter(ast => {
+            if (ast.creatorEmail && ownerEmail && ast.creatorEmail.toLowerCase() === ownerEmail) return true;
+            if (ast.poster && ownerDName && ast.poster === ownerDName) return true;
+            return false;
+          });
+          
+          if (!ownerAssets.length) return false;
+          
+          const matchesAny = ownerAssets.some(ast => checkCustomerMatchAsset(a, ast));
+          if (!matchesAny) return false;
+        }
+
         const mQ = !q || (a.name || '').toLowerCase().includes(q) || (a.contact || '').toLowerCase().includes(q) || (a.type || '').toLowerCase().includes(q);
         let mPrice = true;
         if (priceMin || priceMax) {
