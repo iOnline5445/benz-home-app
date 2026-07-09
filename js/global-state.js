@@ -3,7 +3,7 @@
     // FIREBASE CONFIG — แก้ค่านี้ให้ตรงกับ project ของคุณ
     // ============================
     const FIREBASE_CONFIG = {
-      apiKey: "AIzaSyBLQmKVKnLcmQgIRm-WsNOKhvW44nDz9Lg",
+      apiKey: "AIzaSyBLQmKVknLcmQgIRm-WsNOkHvW44nDz9Lg",
       authDomain: "benz-home-db.firebaseapp.com",
       databaseURL: "https://benz-home-db-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "benz-home-db",
