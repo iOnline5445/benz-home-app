@@ -345,6 +345,14 @@
               .replace(/'/g, "&#039;");
   }
 
+  function filterConsignByStatus(status) {
+    const statusSelect = document.getElementById('filterConsignStatus');
+    if (statusSelect) {
+      statusSelect.value = status;
+      renderConsignments();
+    }
+  }
+
   // Expose to window context
   window.renderConsignments = renderConsignments;
   window.openConsignmentAddModal = openConsignmentAddModal;
@@ -352,5 +360,6 @@
   window.saveConsignment = saveConsignment;
   window.deleteConsignment = deleteConsignment;
   window.convertToAsset = convertToAsset;
+  window.filterConsignByStatus = filterConsignByStatus;
 
 })();

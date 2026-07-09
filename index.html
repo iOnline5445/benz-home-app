@@ -497,21 +497,21 @@
       <div id="sec-consignments" class="section">
         <!-- Stats Summary -->
         <div class="stats-row" style="margin-bottom: 20px;">
-          <div class="stat-card">
-            <span class="val" id="statConsignTotal" style="color: var(--gold);">0</span>
-            <span class="lbl">รายการฝากทั้งหมด</span>
+          <div class="stat-box" onclick="filterConsignByStatus('')" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+            <div class="num" id="statConsignTotal" style="color: var(--gold);">0</div>
+            <div class="lbl">รายการฝากทั้งหมด</div>
           </div>
-          <div class="stat-card">
-            <span class="val" id="statConsignNew" style="color: var(--red);">0</span>
-            <span class="lbl">รายการใหม่</span>
+          <div class="stat-box" onclick="filterConsignByStatus('ใหม่')" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+            <div class="num" id="statConsignNew" style="color: var(--red);">0</div>
+            <div class="lbl">รายการใหม่</div>
           </div>
-          <div class="stat-card">
-            <span class="val" id="statConsignPending" style="color: var(--gold-light);">0</span>
-            <span class="lbl">รอดำเนินการ</span>
+          <div class="stat-box" onclick="filterConsignByStatus('รอดำเนินการ')" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+            <div class="num" id="statConsignPending" style="color: var(--gold-light);">0</div>
+            <div class="lbl">รอดำเนินการ</div>
           </div>
-          <div class="stat-card">
-            <span class="val" id="statConsignCompleted" style="color: var(--green);">0</span>
-            <span class="lbl">ประสานงานสำเร็จ</span>
+          <div class="stat-box" onclick="filterConsignByStatus('สำเร็จ')" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+            <div class="num" id="statConsignCompleted" style="color: var(--green);">0</div>
+            <div class="lbl">ประสานงานสำเร็จ</div>
           </div>
         </div>
 
@@ -520,18 +520,18 @@
           <div class="toolbar-row">
             <div class="search-box" style="flex:2;min-width:160px;position:relative;">
               <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;">🔍</span>
-              <input type="text" id="consignSearch" placeholder="ค้นหาชื่อโครงการ, ทำเล, ชื่อผู้ฝาก..." oninput="renderConsignments()">
+              <input type="text" id="consignSearch" placeholder="ค้นหาชื่อโครงการ, ทำเล, ชื่อผู้ฝาก..." oninput="renderConsignments()" style="padding-left:36px;">
             </div>
             
             <div class="toolbar-group">
-              <select id="filterConsignService" onchange="renderConsignments()">
+              <select class="filter-select" id="filterConsignService" onchange="renderConsignments()">
                 <option value="">บริการทั้งหมด (All)</option>
                 <option value="ฝากขาย">ฝากขาย</option>
                 <option value="ฝากเช่า">ฝากเช่า</option>
                 <option value="จำนอง/ขายฝาก">จำนอง/ขายฝาก</option>
               </select>
 
-              <select id="filterConsignStatus" onchange="renderConsignments()">
+              <select class="filter-select" id="filterConsignStatus" onchange="renderConsignments()">
                 <option value="">สถานะทั้งหมด (All)</option>
                 <option value="ใหม่">ใหม่</option>
                 <option value="รอดำเนินการ">รอดำเนินการ</option>
