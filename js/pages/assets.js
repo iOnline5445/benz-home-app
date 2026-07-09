@@ -442,7 +442,6 @@
             }
           }
 
-          const isOwner = (typeof window._canEditAsset === 'function') ? window._canEditAsset(a) : false;
           const canEdit = window._canEdit === true;
           const hasEditPermission = isOwner || canEdit;
 
