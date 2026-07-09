@@ -3206,4 +3206,60 @@
         transition-delay: 0s !important;
       }
     }
+
+    /* Prevent header tabs wrapping and keep layout clean on medium screens */
+    .header-tabs {
+      flex-wrap: nowrap !important;
+    }
+
+    @media (max-width: 1420px) {
+      .header {
+        padding: 0 12px !important;
+        gap: 8px !important;
+      }
+      .logo {
+        font-size: 17px !important;
+      }
+      .logo span {
+        display: none !important;
+      }
+      .header-tabs {
+        gap: 4px !important;
+      }
+      .htab {
+        padding: 5px 8px !important;
+        font-size: 12px !important;
+      }
+      .header-user {
+        gap: 6px !important;
+      }
+      .user-badge {
+        padding: 4px 8px !important;
+        font-size: 12px !important;
+      }
+      .user-badge .role {
+        font-size: 9px !important;
+        padding: 1px 4px !important;
+      }
+      .logout-btn {
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+      }
+      #fbStatusText {
+        display: none !important;
+      }
+    }
+
+    @media (max-width: 1150px) {
+      .htab {
+        padding: 5px 6px !important;
+        font-size: 11.5px !important;
+      }
+      .tp-btn-text {
+        display: none !important;
+      }
+      .user-badge .role {
+        display: none !important;
+      }
+    }
   
