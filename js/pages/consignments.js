@@ -155,6 +155,27 @@
   // ============================
   // OPEN & EDIT MODAL
   // ============================
+  function openConsignmentAddModal() {
+    _editingConsignId = null;
+
+    // Reset all fields
+    document.getElementById('cs_serviceType').value = 'ฝากขาย';
+    document.getElementById('cs_propertyType').value = 'คอนโด';
+    document.getElementById('cs_propertyName').value = '';
+    document.getElementById('cs_location').value = '';
+    document.getElementById('cs_price').value = '';
+    document.getElementById('cs_size').value = '';
+    document.getElementById('cs_details').value = '';
+    document.getElementById('cs_senderName').value = '';
+    document.getElementById('cs_contact').value = '';
+    document.getElementById('cs_photoLink').value = '';
+    document.getElementById('cs_status').value = 'ใหม่';
+    document.getElementById('cs_note').value = '';
+
+    document.getElementById('modalConsignmentTitle').textContent = '📝 เพิ่มรายการฝากขาย/จำนอง';
+    document.getElementById('modalConsignment').classList.add('open');
+  }
+
   function editConsignment(idx) {
     const cs = _activeConsignmentsList[idx];
     if (!cs) return;
@@ -175,6 +196,9 @@
     document.getElementById('cs_status').value = cs.status || 'ใหม่';
     document.getElementById('cs_note').value = cs.note || '';
 
+    // Set Modal Title
+    document.getElementById('modalConsignmentTitle').textContent = '📝 แก้ไขรายการฝากขาย/จำนอง';
+
     // Open Modal
     document.getElementById('modalConsignment').classList.add('open');
   }
@@ -183,7 +207,8 @@
   // SAVE CONSIGNMENT
   // ============================
   async function saveConsignment() {
-    if (!_editingConsignId) return;
+    const isNew = !_editingConsignId;
+    const docId = _editingConsignId || (Date.now().toString(36) + Math.random().toString(36).slice(2, 7));
 
     const propertyName = document.getElementById('cs_propertyName').value.trim();
     const location = document.getElementById('cs_location').value.trim();
@@ -197,7 +222,7 @@
     }
 
     const updatedData = {
-      id: _editingConsignId,
+      id: docId,
       serviceType: document.getElementById('cs_serviceType').value,
       propertyType: document.getElementById('cs_propertyType').value,
       propertyName: propertyName,
@@ -210,20 +235,25 @@
       photoLink: document.getElementById('cs_photoLink').value.trim(),
       status: document.getElementById('cs_status').value,
       note: document.getElementById('cs_note').value.trim(),
-      createdAt: _activeConsignmentsList.find(c => c.id === _editingConsignId)?.createdAt || new Date().toISOString()
+      createdAt: isNew ? new Date().toISOString() : (_activeConsignmentsList.find(c => c.id === _editingConsignId)?.createdAt || new Date().toISOString())
     };
 
     try {
-      await saveItem('consignments', updatedData, _editingConsignId);
+      await saveItem('consignments', updatedData, docId);
       
-      // Fallback: manually update locally
-      const localIdx = DB.consignments.findIndex(c => c.id === _editingConsignId);
-      if (localIdx >= 0) DB.consignments[localIdx] = updatedData;
+      // Fallback manual local update
+      if (isNew) {
+        if (!DB.consignments) DB.consignments = [];
+        DB.consignments.push(updatedData);
+      } else {
+        const localIdx = DB.consignments.findIndex(c => c.id === _editingConsignId);
+        if (localIdx >= 0) DB.consignments[localIdx] = updatedData;
+      }
       saveTolocalStorage();
       
       closeModal('consignment');
       renderConsignments();
-      showToast('💾 บันทึกการแก้ไขข้อมูลฝากเรียบร้อยแล้ว');
+      showToast(isNew ? '💾 เพิ่มรายการฝากขายเรียบร้อยแล้ว' : '💾 บันทึกการแก้ไขข้อมูลฝากเรียบร้อยแล้ว');
     } catch (err) {
       alert('❌ บันทึกไม่สำเร็จ: ' + err.message);
     }
@@ -317,6 +347,7 @@
 
   // Expose to window context
   window.renderConsignments = renderConsignments;
+  window.openConsignmentAddModal = openConsignmentAddModal;
   window.editConsignment = editConsignment;
   window.saveConsignment = saveConsignment;
   window.deleteConsignment = deleteConsignment;

@@ -1462,6 +1462,7 @@
       // UI Tab Visibility
       const _tab = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
       _tab('tabCustomers', canSeeCustomers);
+      _tab('tabConsignments', canSeeCustomers);
       _tab('tabSettings',  true);
       _tab('tabClipboard', canClipboard);
       _tab('tabMarketing', canMarketing);
@@ -1496,6 +1497,7 @@
       // Add buttons
       _panel('btnAddAsset',    canPost);
       _panel('btnAddCustomer', canSeeCustomers && (isAdmin || isAgent));
+      _panel('btnAddConsignment', canSeeCustomers && (isAdmin || isAgent));
 
       // Mobile title
       if (window.innerWidth <= 768) {
@@ -1524,6 +1526,7 @@
 
       const items = [];
       if (isAdmin || isAgent) {
+        items.push({ icon: '📝', label: 'ฝากขาย/จำนอง', sub: 'รายการฝากขายและจำนองของลูกค้า', tab: 'consignments' });
         items.push({ icon: '💰', label: 'คำนวณค่าคอม', sub: 'คำนวณส่วนแบ่งค่าคอมมิชชั่น', tab: 'commission' });
       }
       if (isAdmin) {
