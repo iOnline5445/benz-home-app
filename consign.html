@@ -218,10 +218,20 @@
           <input type="text" id="cs_contact" placeholder="เช่น โทร 081-xxx-xxxx, Line ID: xxx" required>
         </div>
 
-        <!-- ลิงก์รูปภาพ -->
+        <!-- รูปภาพทรัพย์สิน -->
         <div class="form-group full">
-          <label for="cs_photoLink">ลิงก์รูปภาพทรัพย์สิน (ถ้ามี)</label>
-          <input type="url" id="cs_photoLink" placeholder="ลิงก์ Google Drive, Dropbox, Line Album หรือรูปฝากออนไลน์">
+          <label for="cs_photoLink">รูปภาพทรัพย์สิน (Link หรือ อัปโหลดไฟล์)</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="cs_photoLink" placeholder="วาง Link รูปภาพ หรือ อัลบั้มรูปภาพ" style="flex: 1;">
+            <input type="file" id="cs_filepic" accept="image/*" style="display: none;" onchange="handleConsignFileChange(event)">
+            <button type="button" class="btn btn-outline" onclick="document.getElementById('cs_filepic').click()" style="white-space: nowrap; height: 38px; display: flex; align-items: center; gap: 4px; border-color: var(--gold); color: var(--gold); border-radius: 8px; font-size: 13px;">
+              📤 เลือกไฟล์รูปภาพ
+            </button>
+          </div>
+          <div id="cs_pic_preview_container" style="display: none; position: relative; width: 140px; height: 105px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--dark3); margin-top: 8px;">
+            <img id="cs_pic_preview" src="" style="width: 100%; height: 100%; object-fit: cover;">
+            <button type="button" onclick="clearConsignImage()" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1;">✕</button>
+          </div>
         </div>
 
         <!-- รายละเอียดพิเศษ / ความต้องการเพิ่มเติม -->
@@ -270,6 +280,77 @@
     window.updateFirebaseStatus = () => {};
     window.showToast = (msg, color) => console.log('Toast:', msg, color);
 
+    function compressImage(file, maxWidth, maxHeight, quality, callback) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          callback(compressedDataUrl);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleConsignFileChange(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const uploadBtn = e.target.nextElementSibling;
+      const originalText = uploadBtn ? uploadBtn.innerHTML : '';
+      if (uploadBtn) {
+        uploadBtn.innerHTML = '⏳ กำลังประมวลผล...';
+        uploadBtn.disabled = true;
+      }
+
+      compressImage(file, 800, 800, 0.7, function(base64Url) {
+        document.getElementById('cs_photoLink').value = base64Url;
+        
+        const previewContainer = document.getElementById('cs_pic_preview_container');
+        const previewImg = document.getElementById('cs_pic_preview');
+        if (previewContainer && previewImg) {
+          previewImg.src = base64Url;
+          previewContainer.style.display = 'block';
+        }
+
+        if (uploadBtn) {
+          uploadBtn.innerHTML = originalText;
+          uploadBtn.disabled = false;
+        }
+      });
+    }
+
+    function clearConsignImage() {
+      document.getElementById('cs_photoLink').value = '';
+      document.getElementById('cs_filepic').value = '';
+      
+      const previewContainer = document.getElementById('cs_pic_preview_container');
+      const previewImg = document.getElementById('cs_pic_preview');
+      if (previewContainer && previewImg) {
+        previewImg.src = '';
+        previewContainer.style.display = 'none';
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       // 1. Initialize Firebase
       const connected = await initFirebase();
@@ -277,6 +358,23 @@
 
       // 2. Setup form submit listener
       document.getElementById('consignForm').addEventListener('submit', handleFormSubmit);
+
+      // 3. Setup photo link listener for input preview
+      const photoLinkEl = document.getElementById('cs_photoLink');
+      if (photoLinkEl) {
+        photoLinkEl.addEventListener('input', function(e) {
+          const url = e.target.value.trim();
+          const previewContainer = document.getElementById('cs_pic_preview_container');
+          const previewImg = document.getElementById('cs_pic_preview');
+          if (url) {
+            previewImg.src = url;
+            previewContainer.style.display = 'block';
+          } else {
+            previewImg.src = '';
+            previewContainer.style.display = 'none';
+          }
+        });
+      }
     });
 
     async function handleFormSubmit(e) {
@@ -359,6 +457,12 @@
     function closeSuccessOverlay() {
       document.getElementById('successOverlay').style.display = 'none';
       document.getElementById('consignForm').reset();
+      const previewContainer = document.getElementById('cs_pic_preview_container');
+      const previewImg = document.getElementById('cs_pic_preview');
+      if (previewContainer && previewImg) {
+        previewImg.src = '';
+        previewContainer.style.display = 'none';
+      }
     }
   </script>
 </body>

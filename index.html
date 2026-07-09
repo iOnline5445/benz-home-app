@@ -1678,8 +1678,20 @@
               <label>Location Map</label>
               <input id="a_map" placeholder="https://maps.app.goo.gl/...">
             </div>
-            <div class="form-group full"><label>🖼️ Link รูปภาพ (Google Drive / Album)</label><input id="a_linkpic"
-                placeholder="https://drive.google.com/... หรือ Link อัลบั้มรูป"></div>
+            <div class="form-group full">
+              <label>🖼️ รูปภาพทรัพย์สิน (Link หรือ อัปโหลดไฟล์)</label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input id="a_linkpic" placeholder="วาง Link รูปภาพ หรือ อัลบั้มรูปภาพ" style="flex: 1;">
+                <input type="file" id="a_filepic" accept="image/*" style="display: none;" onchange="handleAssetFileChange(event)">
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('a_filepic').click()" style="white-space: nowrap; height: 38px; display: flex; align-items: center; gap: 4px; border-color: var(--gold); color: var(--gold); border-radius: 8px;">
+                  📤 เลือกไฟล์รูปภาพ
+                </button>
+              </div>
+              <div id="a_pic_preview_container" style="display: none; position: relative; width: 140px; height: 105px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--dark3); margin-top: 8px;">
+                <img id="a_pic_preview" src="" style="width: 100%; height: 100%; object-fit: cover;">
+                <button type="button" onclick="clearAssetImage()" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1;">✕</button>
+              </div>
+            </div>
             <div class="form-group"><label>วันที่โพสต์</label><input id="a_postdate" type="date"></div>
             <div class="form-group"><label>วันที่ Update</label><input id="a_updatedate" type="date"></div>
             <div class="form-group full"><label>Contact</label><input id="a_contact" placeholder="ชื่อ-เบอร์โทร-Line">

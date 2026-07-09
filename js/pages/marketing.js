@@ -399,7 +399,24 @@
           formData.append('user', profile);
           formData.append('platform[]', 'facebook');
           formData.append('title', text);
-          formData.append('photos[]', imageLink);
+          if (imageLink.startsWith('data:')) {
+            try {
+              const arr = imageLink.split(',');
+              const mime = arr[0].match(/:(.*?);/)[1];
+              const bstr = atob(arr[1]);
+              let n = bstr.length;
+              const u8arr = new Uint8Array(n);
+              while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+              }
+              const blob = new Blob([u8arr], { type: mime });
+              formData.append('photos[]', blob, 'image.jpg');
+            } catch (err) {
+              formData.append('photos[]', imageLink);
+            }
+          } else {
+            formData.append('photos[]', imageLink);
+          }
           if (pageId) {
             formData.append('facebook_page_id', pageId);
           }

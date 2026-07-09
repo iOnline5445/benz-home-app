@@ -337,6 +337,7 @@
           }
           const isOwner = (typeof window._canEditAsset === 'function') ? window._canEditAsset(a) : false;
           const ownerBadge = isOwner ? '' : '<span style="font-size:10px;color:var(--text3);" title="โพสต์โดยผู้อื่น">🔒</span>';
+          const hasEditPermission = isOwner || canEdit;
 
           const careContract = a.careContract || 'ยังไม่ทำ';
           const careRepair = a.careRepair || 'ไม่มี';
@@ -362,7 +363,17 @@
 
           return `<tr${la === 'sold' ? ' style="opacity:0.6;"' : ''}>
             <td style="color:var(--text3)">${ri + 1}</td>
-            <td style="font-weight:600">${a.name || '-'} ${daysAlert}</td>
+            <td style="font-weight:600">
+              <div style="display:flex;align-items:center;gap:8px;">
+                ${a.linkpic ? 
+                  `<img src="${a.linkpic}" style="width:40px;height:30px;object-fit:cover;border-radius:4px;${hasEditPermission ? 'cursor:pointer;' : ''}" ${hasEditPermission ? `onclick="triggerCardUpload(${ri})" title="คลิกเพื่อเปลี่ยนรูปภาพ"` : 'title="รูปภาพทรัพย์สิน"'}>` : 
+                  `<div style="width:40px;height:30px;background:var(--dark3);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;${hasEditPermission ? 'cursor:pointer;' : ''}" ${hasEditPermission ? `onclick="triggerCardUpload(${ri})" title="คลิกเพื่ออัปโหลดรูปภาพ"` : ''}>🏢</div>`
+                }
+                <div>
+                  ${a.name || '-'} ${daysAlert}
+                </div>
+              </div>
+            </td>
             <td><span class="badge ${badge}">${a.status || '-'}</span> ${laBadge}</td>
             <td>${a.type || '-'}</td>
             <td style="color:var(--gold);white-space:nowrap">${a.price || '-'}</td>
@@ -372,10 +383,12 @@
             <td>${a.poster || '-'} ${ownerBadge}</td>
             <td>${careInfo}</td>
             <td><div style="display:flex;gap:4px">
-              ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm" style="padding:4px 8px">🔗</a>` : ''}
-              <button class="btn btn-outline btn-sm" style="border-color:var(--gold);color:var(--gold);padding:4px 8px" onclick="showCustomerMatchesForAsset(${ri})" title="จับคู่ลูกค้า">🤝 จับคู่</button>
-              <button class="btn btn-outline btn-sm" onclick="editAsset(${ri})" title="แก้ไข">✏️</button>
-              ${(isOwner || canDelete) ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})">🗑️</button>` : ''}
+              ${a.linkpic ? `<a href="${a.linkpic}" target="_blank" class="btn btn-purple btn-sm" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="ดูรูปภาพ">🖼️</a>` : ''}
+              ${hasEditPermission ? `<button class="btn btn-outline btn-sm" onclick="triggerCardUpload(${ri})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;border-color:var(--gold);color:var(--gold);" title="อัปโหลด/เปลี่ยนรูปภาพ">📤</button>` : ''}
+              ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="ลิงก์รายละเอียด">🔗</a>` : ''}
+              <button class="btn btn-outline btn-sm" style="border-color:var(--gold);color:var(--gold);font-size:12px;padding:6px 10px;border-radius:8px;font-weight:600;" onclick="showCustomerMatchesForAsset(${ri})" title="จับคู่ลูกค้า">🤝 จับคู่</button>
+              <button class="btn btn-outline btn-sm" onclick="editAsset(${ri})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="แก้ไข">✏️</button>
+              ${(isOwner || canDelete) ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="ลบ">🗑️</button>` : ''}
             </div></td>
           </tr>`;
         }).join('');
@@ -429,12 +442,22 @@
             }
           }
 
+          const isOwner = (typeof window._canEditAsset === 'function') ? window._canEditAsset(a) : false;
+          const canEdit = window._canEdit === true;
+          const hasEditPermission = isOwner || canEdit;
+
           let imgHtml = '';
           if (a.linkpic) {
             imgHtml = `
-              <div class="card-media" style="position:relative;height:180px;border-radius:12px 12px 0 0;overflow:hidden;background:#252528;">
+              <div class="card-media" style="position:relative;height:180px;border-radius:12px 12px 0 0;overflow:hidden;background:#252528;${hasEditPermission ? 'cursor:pointer;' : ''}"
+                   ${hasEditPermission ? `onclick="triggerCardUpload(${ri})"` : ''}
+                   ${hasEditPermission ? 'title="คลิกเพื่ออัปโหลด/เปลี่ยนรูปภาพ"' : ''}>
                 <img src="${a.linkpic}" alt="${a.name}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s ease;">
-                <div style="position:absolute;top:10px;left:10px;display:flex;gap:4px;flex-wrap:wrap;">
+                ${hasEditPermission ? `
+                <div class="media-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;color:#fff;font-size:13px;font-weight:600;gap:6px;">
+                  📷 เปลี่ยนรูปภาพ
+                </div>` : ''}
+                <div style="position:absolute;top:10px;left:10px;display:flex;gap:4px;flex-wrap:wrap;z-index:2;">
                   <span class="badge ${badge}" style="box-shadow: 0 4px 10px rgba(0,0,0,0.3);">${a.status || ''}</span>
                   ${laBadge}
                 </div>
@@ -443,10 +466,12 @@
           } else {
             imgHtml = `
               <div class="card-media" style="position:relative;height:140px;border-radius:12px 12px 0 0;overflow:hidden;
-                          background:linear-gradient(135deg, var(--dark2), var(--dark3));display:flex;align-items:center;justify-content:center;color:var(--text3);">
+                          background:linear-gradient(135deg, var(--dark2), var(--dark3));display:flex;align-items:center;justify-content:center;color:var(--text3);${hasEditPermission ? 'cursor:pointer;' : ''}"
+                   ${hasEditPermission ? `onclick="triggerCardUpload(${ri})"` : ''}
+                   ${hasEditPermission ? 'title="คลิกเพื่ออัปโหลดรูปภาพ"' : ''}>
                 <div style="text-align:center;">
                   <span style="font-size:42px;display:block;margin-bottom:6px;filter:grayscale(0.2);">🏢</span>
-                  <span style="font-size:11px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;">Benz Home Premium</span>
+                  <span style="font-size:11px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;">${hasEditPermission ? '📷 คลิกเพื่ออัปโหลดรูปภาพ' : 'Benz Home Premium'}</span>
                 </div>
                 <div style="position:absolute;top:10px;left:10px;display:flex;gap:4px;flex-wrap:wrap;">
                   <span class="badge ${badge}" style="box-shadow: 0 4px 10px rgba(0,0,0,0.3);">${a.status || ''}</span>
@@ -524,6 +549,7 @@
               </div>
               <div class="card-footer" style="padding:12px 16px;background:var(--dark3);border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;justify-content:end;align-items:center;">
                 ${a.linkpic ? `<a href="${a.linkpic}" target="_blank" class="btn btn-purple btn-sm" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="ดูรูปภาพ">🖼️</a>` : ''}
+                ${hasEditPermission ? `<button class="btn btn-outline btn-sm" onclick="triggerCardUpload(${ri})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;border-color:var(--gold);color:var(--gold);" title="อัปโหลด/เปลี่ยนรูปภาพ">📤</button>` : ''}
                 ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="ลิงก์รายละเอียด">🔗</a>` : ''}
                 ${a.map ? `<a href="${a.map}" target="_blank" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="พิกัดแผนที่">📍</a>` : ''}
                 <button class="btn btn-blue btn-sm" onclick="quickClip(${ri})" style="font-size:12px;padding:6px 10px;border-radius:8px;font-weight:600;">📋 คัดลอก</button>
@@ -550,6 +576,20 @@
       setV('a_name', a.name); setV('a_location', a.location); setV('a_bts', a.bts); setV('a_status', a.status); setV('a_type', a.type);
       setV('a_price', a.price); setV('a_roomtype', a.roomtype); setV('a_area', a.area); setV('a_floor', a.floor);
       setV('a_link', a.link); setV('a_map', a.map); setV('a_linkpic', a.linkpic); setV('a_postdate', a.postdate); setV('a_updatedate', a.updatedate);
+      
+      // โหลดพรีวิวรูปภาพ
+      const previewContainer = document.getElementById('a_pic_preview_container');
+      const previewImg = document.getElementById('a_pic_preview');
+      if (previewContainer && previewImg) {
+        if (a.linkpic) {
+          previewImg.src = a.linkpic;
+          previewContainer.style.display = 'block';
+        } else {
+          previewImg.src = '';
+          previewContainer.style.display = 'none';
+        }
+      }
+      
       setV('a_contact', a.contact); setV('a_note', a.note);
       const isCoagent = a.coagent !== false;
       document.getElementById('a_coagent').checked = isCoagent;
@@ -590,3 +630,40 @@
       editMode = { type: 'asset', idx: i };
       document.getElementById('modalAsset').classList.add('open');
     }
+
+    function triggerCardUpload(idx) {
+      const a = DB.assets[idx];
+      if (!window._canEditAsset(a)) {
+        alert('🔒 ขออภัยค่ะ คุณไม่มีสิทธิ์แก้ไขทรัพย์สินนี้เนื่องจากถูกโพสต์โดยเอเจนต์ท่านอื่น (สิทธิ์การแก้ไขเฉพาะผู้ดูแลระบบหรือเจ้าของโพสต์เท่านั้นค่ะ)\n\nโพสต์โดย: ' + (a.poster || 'ไม่ระบุ'));
+        return;
+      }
+
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        showToast('⏳ กำลังประมวลผลรูปภาพ...', 'var(--gold)');
+
+        window.compressImage(file, 800, 800, 0.7, async function(base64Url) {
+          a.linkpic = base64Url;
+          
+          try {
+            await saveItem('assets', a, a.id);
+            if (!window._realtimeSyncActive) {
+              DB.assets[idx] = a;
+              saveTolocalStorage();
+              renderAssets();
+            }
+            showToast('✅ อัปโหลดรูปภาพสำเร็จ!', 'var(--green)');
+          } catch (err) {
+            console.error(err);
+            showToast('❌ อัปโหลดผิดพลาด: ' + err.message, 'var(--red)');
+          }
+        });
+      };
+      input.click();
+    }
+    window.triggerCardUpload = triggerCardUpload;

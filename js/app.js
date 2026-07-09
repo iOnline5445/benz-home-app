@@ -1949,6 +1949,23 @@
       if (startDateEl) {
         startDateEl.addEventListener('change', calculateReservationEnd);
       }
+
+      const linkPicEl = document.getElementById('a_linkpic');
+      if (linkPicEl) {
+        linkPicEl.addEventListener('input', function(e) {
+          const url = e.target.value.trim();
+          const previewContainer = document.getElementById('a_pic_preview_container');
+          const previewImg = document.getElementById('a_pic_preview');
+          if (url) {
+            previewImg.src = url;
+            previewContainer.style.display = 'block';
+          } else {
+            previewImg.src = '';
+            previewContainer.style.display = 'none';
+          }
+        });
+      }
+
       populateTrainLineSelects();
       populateAssetBtsSelect();
       initAllSearchableSelects();
@@ -3070,6 +3087,13 @@
         document.getElementById('a_reservationPeriod').value = '';
         document.getElementById('a_active_available').checked = true;
 
+        const previewContainer = document.getElementById('a_pic_preview_container');
+        const previewImg = document.getElementById('a_pic_preview');
+        if (previewContainer && previewImg) {
+          previewImg.src = '';
+          previewContainer.style.display = 'none';
+        }
+
         const curUser = AUTH.current ? AUTH.users.find(u => u.email === AUTH.current.email) : null;
         const userCoagent = curUser && (curUser.coagent || (curUser.socialProviders && curUser.socialProviders.coagent))
           ? (curUser.coagent || curUser.socialProviders.coagent)
@@ -3128,6 +3152,90 @@
       }
     }
     function closeModal(t) { document.getElementById('modal' + t.charAt(0).toUpperCase() + t.slice(1)).classList.remove('open'); }
+
+    // ============================
+    // IMAGE COMPRESSION & UPLOAD FOR ASSET
+    // ============================
+    function compressImage(file, maxWidth, maxHeight, quality, callback) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          let width = img.width;
+          let height = img.height;
+
+          // Keep aspect ratio
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Convert to compressed jpeg base64
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          callback(compressedDataUrl);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleAssetFileChange(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const uploadBtn = e.target.nextElementSibling;
+      const originalText = uploadBtn ? uploadBtn.innerHTML : '';
+      if (uploadBtn) {
+        uploadBtn.innerHTML = '⏳ กำลังประมวลผล...';
+        uploadBtn.disabled = true;
+      }
+
+      compressImage(file, 800, 800, 0.7, function(base64Url) {
+        document.getElementById('a_linkpic').value = base64Url;
+        
+        const previewContainer = document.getElementById('a_pic_preview_container');
+        const previewImg = document.getElementById('a_pic_preview');
+        if (previewContainer && previewImg) {
+          previewImg.src = base64Url;
+          previewContainer.style.display = 'block';
+        }
+
+        if (uploadBtn) {
+          uploadBtn.innerHTML = originalText;
+          uploadBtn.disabled = false;
+        }
+      });
+    }
+
+    function clearAssetImage() {
+      document.getElementById('a_linkpic').value = '';
+      document.getElementById('a_filepic').value = '';
+      
+      const previewContainer = document.getElementById('a_pic_preview_container');
+      const previewImg = document.getElementById('a_pic_preview');
+      if (previewContainer && previewImg) {
+        previewImg.src = '';
+        previewContainer.style.display = 'none';
+      }
+    }
+
+    window.handleAssetFileChange = handleAssetFileChange;
+    window.clearAssetImage = clearAssetImage;
+    window.compressImage = compressImage;
 
     // ============================
     // SAVE ASSET

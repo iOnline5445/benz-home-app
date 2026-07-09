@@ -3262,4 +3262,9 @@
         display: none !important;
       }
     }
+
+    /* Card Media Hover Effect */
+    .card-media:hover .media-overlay {
+      opacity: 1 !important;
+    }
   

@@ -314,7 +314,11 @@
       document.getElementById('a_type').value = 'อื่นๆ';
     }
 
-    document.getElementById('a_linkpic').value = cs.photoLink || '';
+    const linkPicEl = document.getElementById('a_linkpic');
+    if (linkPicEl) {
+      linkPicEl.value = cs.photoLink || '';
+      linkPicEl.dispatchEvent(new Event('input'));
+    }
     document.getElementById('a_contact').value = `ผู้ฝาก: คุณ${cs.senderName || '-'} (ช่องทางติดต่อ: ${cs.contact || '-'})`;
     
     const formattedNote = `[ข้อมูลฝากขายต้นทาง: ${cs.serviceType}]
