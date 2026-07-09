@@ -10,6 +10,7 @@
           DB.assets = d.assets || [];
           DB.agents = d.agents || [];
           DB.customers = d.customers || [];
+          DB.consignments = d.consignments || [];
           DB.mktQueue = d.mktQueue || [];
           DB.mktScheduleSlots = d.mktScheduleSlots || ['09:00', '12:00', '15:00', '18:00'];
         }

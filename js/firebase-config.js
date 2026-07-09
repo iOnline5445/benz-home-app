@@ -44,7 +44,7 @@
       _realtimeSyncActive = true;
 
       const { collection, onSnapshot } = window._firestoreLib;
-      const cols = ['assets', 'agents', 'customers', 'mktQueue', 'mktScheduleSlots', 'users'];
+      const cols = ['assets', 'agents', 'customers', 'consignments', 'mktQueue', 'mktScheduleSlots', 'users'];
 
       // unsubscribe listeners เก่าก่อน
       _unsubscribeListeners.forEach(fn => fn());
@@ -85,6 +85,7 @@
           if (col === 'assets') { renderAssets(); renderStats(); populateCbSelect(); }
           if (col === 'agents') { renderAgents(); populateCbSelect(); }
           if (col === 'customers') renderCustomers();
+          if (col === 'consignments') { if (typeof renderConsignments === 'function') renderConsignments(); }
           if (col === 'mktQueue') { renderMktQueue(); updateMktQueueBadge(); }
           if (col === 'mktScheduleSlots') renderMktSlots();
           updateSyncBadge();

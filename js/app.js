@@ -5,7 +5,7 @@
         if (!_realtimeSyncActive) {
           const { collection, getDocs } = window._firestoreLib;
           let anyFail = false;
-          for (const col of ['assets', 'agents', 'customers', 'mktQueue', 'mktScheduleSlots', 'platformCredentials']) {
+          for (const col of ['assets', 'agents', 'customers', 'consignments', 'mktQueue', 'mktScheduleSlots', 'platformCredentials']) {
             try {
               const snap = await getDocs(collection(_db, col));
               if (col === 'mktScheduleSlots') {
@@ -49,14 +49,14 @@
             // Re-sync from Firebase to ensure UI is accurate (no dupes, no missing)
             if (_fbReady && _db && window._firestoreLib) {
               const { collection: col2, getDocs: gd2 } = window._firestoreLib;
-              for (const c of ['assets', 'agents', 'customers']) {
+              for (const c of ['assets', 'agents', 'customers', 'consignments']) {
                 gd2(col2(_db, c)).then(snap => {
                   DB[c] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 }).catch(() => { });
               }
               setTimeout(() => {
                 saveTolocalStorage();
-                renderAssets(); renderAgents(); renderCustomers(); renderStats(); populateCbSelect();
+                renderAssets(); renderAgents(); renderCustomers(); if (typeof renderConsignments === 'function') renderConsignments(); renderStats(); populateCbSelect();
               }, 150);
             }
           }, 600);
@@ -1593,6 +1593,7 @@
       assets: '🏠 ทรัพย์สิน',
       agents: '👤 Agent',
       customers: '🤝 ลูกค้า',
+      consignments: '📝 ฝากขาย/จำนอง',
       clipboard: '📋 ClipB',
       marketing: '🚀 Auto-Post',
       settings: '⚙️ ตั้งค่า'
@@ -1623,6 +1624,7 @@
       updateBnav(t);
       if (t === 'assets') { renderAssets(); renderStats(); }
       if (t === 'customers') renderCustomers();
+      if (t === 'consignments' && typeof renderConsignments === 'function') renderConsignments();
       if (t === 'clipboard') populateCbSelect();
       if (t === 'marketing') {
         populateMktSelect();

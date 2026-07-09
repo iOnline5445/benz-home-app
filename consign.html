@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ฝากขาย/จำนองทรัพย์สิน - BenzHome Agency</title>
+  <meta name="description" content="ฝากขาย ฝากเช่า หรือจำนอง/ขายฝากทรัพย์สินของคุณ คอนโด บ้าน ที่ดิน ทาวน์โฮม กับ BenzHome Agency">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    body {
+      background: radial-gradient(circle at top, #FFFDFC 0%, #FAF5EA 100%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      font-family: inherit;
+    }
+    .consign-container {
+      width: 100%;
+      max-width: 650px;
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(192, 120, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+    .consign-header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .consign-logo {
+      height: 75px;
+      width: auto;
+      margin-bottom: 12px;
+      transition: transform 0.3s ease;
+    }
+    .consign-logo:hover {
+      transform: scale(1.05);
+    }
+    .consign-title {
+      font-size: 26px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+      display: inline-block;
+    }
+    .consign-subtitle {
+      font-size: 14px;
+      color: var(--text2);
+    }
+    .form-group.mandatory label::after {
+      content: " *";
+      color: var(--red);
+    }
+    .success-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 20px;
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+    .success-card {
+      background: var(--dark2);
+      border: 2px solid var(--green);
+      border-radius: 20px;
+      padding: 40px 30px;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 10px 40px rgba(80, 200, 120, 0.15);
+      transform: scale(0.9);
+      animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    .success-icon {
+      font-size: 60px;
+      margin-bottom: 20px;
+      animation: pulse 1.5s infinite;
+    }
+    .success-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--green);
+      margin-bottom: 12px;
+    }
+    .success-text {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes popIn {
+      to { transform: scale(1); }
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+    @media (max-width: 768px) {
+      .consign-container {
+        padding: 20px;
+      }
+      .consign-title {
+        font-size: 20px;
+      }
+    }
+    #submitBtn {
+      background: var(--green) !important;
+      border-color: var(--green) !important;
+      color: #ffffff !important;
+      font-weight: 700;
+      font-size: 16px;
+      box-shadow: 0 4px 12px rgba(30, 142, 62, 0.2);
+      transition: all 0.2s ease;
+    }
+    #submitBtn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(30, 142, 62, 0.3);
+    }
+    #submitBtn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="consign-container">
+    <div class="consign-header">
+      <img class="consign-logo" src="icon.png" alt="BenzHome Agency Logo">
+      <h1 class="consign-title">📝 ฝากขาย/จำนองทรัพย์สิน</h1>
+      <p class="consign-subtitle">ฝากข้อมูลทรัพย์สินของคุณเพื่อลงประกาศขาย เช่า หรือจำนอง/ขายฝาก</p>
+    </div>
+
+    <form id="consignForm">
+      <div class="form-grid">
+        
+        <!-- ประเภทบริการ -->
+        <div class="form-group mandatory">
+          <label for="cs_serviceType">ประเภทบริการที่ต้องการ</label>
+          <select id="cs_serviceType" required>
+            <option value="ฝากขาย">ฝากขาย (Sale)</option>
+            <option value="ฝากเช่า">ฝากเช่า (Rent)</option>
+            <option value="จำนอง/ขายฝาก">จำนอง / ขายฝาก (Mortgage/Redemption)</option>
+          </select>
+        </div>
+
+        <!-- ประเภททรัพย์ -->
+        <div class="form-group mandatory">
+          <label for="cs_propertyType">ประเภททรัพย์สิน</label>
+          <select id="cs_propertyType" required>
+            <option value="คอนโด">คอนโด (Condo)</option>
+            <option value="บ้านเดี่ยว">บ้านเดี่ยว (Single House)</option>
+            <option value="ทาวน์โฮม">ทาวน์โฮม / ทาวน์เฮ้าส์</option>
+            <option value="ที่ดิน">ที่ดิน (Land)</option>
+            <option value="อาคารพาณิชย์">อาคารพาณิชย์ / ตึกแถว</option>
+            <option value="อื่นๆ">อื่นๆ</option>
+          </select>
+        </div>
+
+        <!-- ชื่อโครงการ/ชื่อทรัพย์ -->
+        <div class="form-group full mandatory">
+          <label for="cs_propertyName">ชื่อโครงการ / ชื่อทรัพย์สิน</label>
+          <input type="text" id="cs_propertyName" placeholder="เช่น ไอดีโอ พระราม 9, หรือ บ้านเดี่ยวพร้อมที่ดินย่านลาดพร้าว" required>
+        </div>
+
+        <!-- ทำเล/ที่ตั้ง -->
+        <div class="form-group full mandatory">
+          <label for="cs_location">ทำเลที่ตั้ง / ที่อยู่ของทรัพย์สิน</label>
+          <input type="text" id="cs_location" placeholder="ระบุซอย, ถนน, เขต/อำเภอ, จังหวัด หรือใกล้ BTS/MRT" required>
+        </div>
+
+        <!-- ราคา/งบเสนอ -->
+        <div class="form-group mandatory">
+          <label for="cs_price">ราคาเสนอขาย / ค่าเช่า / ยอดเงินจำนอง</label>
+          <input type="text" id="cs_price" placeholder="เช่น 3,500,000 บาท หรือ 15,000/เดือน" required>
+        </div>
+
+        <!-- ขนาดพื้นที่ -->
+        <div class="form-group">
+          <label for="cs_size">ขนาดพื้นที่ (ตร.ม. หรือ ตารางวา)</label>
+          <input type="text" id="cs_size" placeholder="เช่น 35 ตร.ม. หรือ 50 ตร.ว.">
+        </div>
+
+        <!-- รายละเอียดภายใน -->
+        <div class="form-group full">
+          <label for="cs_details">รายละเอียดเพิ่มเติม (จำนวนห้องนอน/ห้องน้ำ/ชั้น)</label>
+          <input type="text" id="cs_details" placeholder="เช่น 2 ห้องนอน 1 ห้องน้ำ ชั้น 15 ทิศเหนือ วิวสระว่ายน้ำ">
+        </div>
+
+        <!-- ชื่อผู้ฝาก * -->
+        <div class="form-group mandatory">
+          <label for="cs_senderName">ชื่อผู้ฝาก (เจ้าของ หรือตัวแทน)</label>
+          <input type="text" id="cs_senderName" placeholder="ระบุชื่อจริงหรือชื่อเล่นของคุณ" required autocomplete="name">
+        </div>
+
+        <!-- ข้อมูลติดต่อกลับ * -->
+        <div class="form-group mandatory">
+          <label for="cs_contact">ข้อมูลการติดต่อ (เบอร์โทร / Line ID)</label>
+          <input type="text" id="cs_contact" placeholder="เช่น โทร 081-xxx-xxxx, Line ID: xxx" required>
+        </div>
+
+        <!-- ลิงก์รูปภาพ -->
+        <div class="form-group full">
+          <label for="cs_photoLink">ลิงก์รูปภาพทรัพย์สิน (ถ้ามี)</label>
+          <input type="url" id="cs_photoLink" placeholder="ลิงก์ Google Drive, Dropbox, Line Album หรือรูปฝากออนไลน์">
+        </div>
+
+        <!-- รายละเอียดพิเศษ / ความต้องการเพิ่มเติม -->
+        <div class="form-group full">
+          <label for="cs_note">หมายเหตุ / ข้อมูลจุดเด่นเพิ่มเติม</label>
+          <textarea id="cs_note" rows="3" placeholder="ระบุข้อมูลสำคัญเพิ่มเติม เช่น เครื่องใช้ไฟฟ้าครบ, เฟอร์นิเจอร์บิวท์อิน หรือต้องการเงินด่วน"></textarea>
+        </div>
+
+      </div>
+
+      <div style="margin-top:25px; display:flex; gap:10px;">
+        <button type="submit" id="submitBtn" class="btn btn-primary" style="flex:1; justify-content:center; padding:12px; font-size:16px;">💾 ส่งข้อมูลการฝากขาย/จำนอง</button>
+      </div>
+      <div style="margin-top: 20px; text-align: center; border-top: 1px solid var(--border2); padding-top: 15px;">
+        <a href="login.html" style="color: var(--text2); text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; transition: color 0.2s;" onmouseover="this.style.color='var(--gold)';" onmouseout="this.style.color='var(--text2)';">
+          ⬅️ ย้อนกลับหน้าเข้าใช้งานระบบ (Login)
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Success Overlay -->
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-card">
+      <div class="success-icon">✅</div>
+      <h2 class="success-title">ส่งข้อมูลฝากสำเร็จ!</h2>
+      <p class="success-text" id="successText">เราได้รับข้อมูลฝากขาย/จำนองทรัพย์สินของคุณเรียบร้อยแล้ว เจ้าหน้าที่ของ BenzHome Agency จะรีบดำเนินการตรวจสอบและติดต่อกลับเพื่อประสานงานต่อไปครับ</p>
+      <button class="btn btn-primary" onclick="closeSuccessOverlay()" style="width:100%; justify-content:center;">ตกลง</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/global-state.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script>
+    // Global elements stubs
+    window.renderAssets = () => {};
+    window.renderStats = () => {};
+    window.renderAgents = () => {};
+    window.renderCustomers = () => {};
+    window.renderMktQueue = () => {};
+    window.renderMktSlots = () => {};
+    window.updateMktQueueBadge = () => {};
+    window.updateSyncBadge = () => {};
+    window.populateCbSelect = () => {};
+    window.updateFirebaseStatus = () => {};
+    window.showToast = (msg, color) => console.log('Toast:', msg, color);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Initialize Firebase
+      const connected = await initFirebase();
+      console.log('Firebase ready status:', connected);
+
+      // 2. Setup form submit listener
+      document.getElementById('consignForm').addEventListener('submit', handleFormSubmit);
+    });
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      
+      const propertyName = document.getElementById('cs_propertyName').value.trim();
+      const location = document.getElementById('cs_location').value.trim();
+      const price = document.getElementById('cs_price').value.trim();
+      const senderName = document.getElementById('cs_senderName').value.trim();
+      const contact = document.getElementById('cs_contact').value.trim();
+      
+      if (!propertyName || !location || !price || !senderName || !contact) {
+        alert('❌ กรุณากรอกข้อมูลในช่องที่จำเป็น (*) ให้ครบถ้วน');
+        return;
+      }
+      
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = '⏳ กำลังบันทึกข้อมูล...';
+      
+      const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      const docId = genId();
+
+      const data = {
+        id: docId,
+        serviceType: document.getElementById('cs_serviceType').value,
+        propertyType: document.getElementById('cs_propertyType').value,
+        propertyName: propertyName,
+        location: location,
+        price: price,
+        size: document.getElementById('cs_size').value.trim(),
+        details: document.getElementById('cs_details').value.trim(),
+        senderName: senderName,
+        contact: contact,
+        photoLink: document.getElementById('cs_photoLink').value.trim(),
+        note: document.getElementById('cs_note').value.trim(),
+        status: 'ใหม่', // default status is "ใหม่" (New)
+        createdAt: new Date().toISOString()
+      };
+      
+      try {
+        let isCloud = false;
+        if (_fbReady && window._db && window._firestoreLib) {
+          const { collection, doc, setDoc } = window._firestoreLib;
+          const ref = doc(collection(window._db, 'consignments'), docId);
+          await setDoc(ref, data);
+          isCloud = true;
+        } else {
+          // Fallback to offline localStorage
+          let localDb = { assets: [], agents: [], customers: [], consignments: [], mktQueue: [] };
+          try {
+            const raw = localStorage.getItem('yb_db');
+            if (raw) localDb = JSON.parse(raw);
+          } catch(e) {}
+          if (!localDb.consignments) localDb.consignments = [];
+          localDb.consignments.push(data);
+          localStorage.setItem('yb_db', JSON.stringify(localDb));
+        }
+        
+        // Show success notification
+        const textEl = document.getElementById('successText');
+        if (textEl) {
+          if (isCloud) {
+            textEl.innerHTML = `เราได้รับข้อมูลการฝากขาย/จำนองทรัพย์สินของคุณแล้ว (บันทึกข้อมูลเข้าระบบ Cloud เรียบร้อย)<br><br>เจ้าหน้าที่ของ BenzHome Agency จะรีบตรวจสอบและติดต่อกลับเพื่อประสานงานต่อไปครับ`;
+          } else {
+            textEl.innerHTML = `<span style="color:var(--red); font-weight:bold;">⚠️ ระบบบันทึกแบบ Offline ในเครื่องเนื่องจากไม่ได้ต่อ Firebase</span><br>ข้อมูลได้รับการบันทึกบนเครื่องนี้แล้ว เจ้าหน้าที่จะซิงค์ข้อมูลภายหลังเมื่อทำการเชื่อมต่อครับ`;
+          }
+        }
+        document.getElementById('successOverlay').style.display = 'flex';
+        
+      } catch (err) {
+        console.error('Submit error:', err);
+        alert('❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '💾 ส่งข้อมูลการฝากขาย/จำนอง';
+      }
+    }
+
+    function closeSuccessOverlay() {
+      document.getElementById('successOverlay').style.display = 'none';
+      document.getElementById('consignForm').reset();
+    }
+  </script>
+</body>
+</html>

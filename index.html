@@ -97,6 +97,7 @@
       <div class="header-tabs" id="headerTabs">
         <button class="htab active" onclick="switchTab('assets',this)">🏠 ทรัพย์สิน</button>
         <button class="htab" id="tabCustomers" onclick="switchTab('customers',this)">🤝 ลูกค้า</button>
+        <button class="htab" id="tabConsignments" onclick="switchTab('consignments',this)">📝 ฝากขาย/จำนอง</button>
         <button class="htab" id="tabClipboard" onclick="switchTab('clipboard',this)">📋 ClipB</button>
         <button class="htab" id="tabMarketing" onclick="switchTab('marketing',this)">🚀 โพสต์</button>
         <button class="htab" id="tabCommission" onclick="switchTab('commission',this)">💰 ค่าคอม</button>
@@ -490,6 +491,79 @@
         </div>
         <!-- Mobile card list for customers -->
         <div class="m-list" id="customerMList"></div>
+      </div>
+
+      <!-- =================== CONSIGNMENTS =================== -->
+      <div id="sec-consignments" class="section">
+        <!-- Stats Summary -->
+        <div class="stats-row" style="margin-bottom: 20px;">
+          <div class="stat-card">
+            <span class="val" id="statConsignTotal" style="color: var(--gold);">0</span>
+            <span class="lbl">รายการฝากทั้งหมด</span>
+          </div>
+          <div class="stat-card">
+            <span class="val" id="statConsignNew" style="color: var(--red);">0</span>
+            <span class="lbl">รายการใหม่</span>
+          </div>
+          <div class="stat-card">
+            <span class="val" id="statConsignPending" style="color: var(--gold-light);">0</span>
+            <span class="lbl">รอดำเนินการ</span>
+          </div>
+          <div class="stat-card">
+            <span class="val" id="statConsignCompleted" style="color: var(--green);">0</span>
+            <span class="lbl">ประสานงานสำเร็จ</span>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <!-- Row 1: Search + Filters -->
+          <div class="toolbar-row">
+            <div class="search-box" style="flex:2;min-width:160px;position:relative;">
+              <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;">🔍</span>
+              <input type="text" id="consignSearch" placeholder="ค้นหาชื่อโครงการ, ทำเล, ชื่อผู้ฝาก..." oninput="renderConsignments()">
+            </div>
+            
+            <div class="toolbar-group">
+              <select id="filterConsignService" onchange="renderConsignments()">
+                <option value="">บริการทั้งหมด (All)</option>
+                <option value="ฝากขาย">ฝากขาย</option>
+                <option value="ฝากเช่า">ฝากเช่า</option>
+                <option value="จำนอง/ขายฝาก">จำนอง/ขายฝาก</option>
+              </select>
+
+              <select id="filterConsignStatus" onchange="renderConsignments()">
+                <option value="">สถานะทั้งหมด (All)</option>
+                <option value="ใหม่">ใหม่</option>
+                <option value="รอดำเนินการ">รอดำเนินการ</option>
+                <option value="ติดต่อแล้ว">ติดต่อแล้ว</option>
+                <option value="สำเร็จ">สำเร็จ</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table View -->
+        <div class="table-container pc-only">
+          <table style="width: 100%;">
+            <thead>
+              <tr>
+                <th style="width: 120px;">ประเภทบริการ</th>
+                <th style="width: 100px;">ประเภททรัพย์</th>
+                <th>ชื่อโครงการ / ทำเลที่ตั้ง</th>
+                <th style="width: 140px;">ราคา/เสนอ</th>
+                <th style="width: 100px;">ขนาด</th>
+                <th>ผู้ฝาก / ช่องทางติดต่อ</th>
+                <th style="width: 80px;">รูปภาพ</th>
+                <th style="width: 110px;">สถานะ</th>
+                <th style="width: 190px;">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="consignTable"></tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="m-list" id="consignMList"></div>
       </div>
 
       <!-- =================== CLIPBOARD =================== -->
@@ -1748,6 +1822,76 @@
       </div>
     </div>
 
+    <!-- Consignment Modal -->
+    <div class="modal-bg" id="modalConsignment">
+      <div class="modal">
+        <div class="modal-head">
+          <h2 id="modalConsignmentTitle">📝 แก้ไขรายการฝากขาย/จำนอง</h2>
+          <button class="close-btn" onclick="closeModal('consignment')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group"><label>ประเภทบริการ</label>
+              <select id="cs_serviceType">
+                <option value="ฝากขาย">ฝากขาย</option>
+                <option value="ฝากเช่า">ฝากเช่า</option>
+                <option value="จำนอง/ขายฝาก">จำนอง/ขายฝาก</option>
+              </select>
+            </div>
+            <div class="form-group"><label>ประเภททรัพย์สิน</label>
+              <select id="cs_propertyType">
+                <option value="คอนโด">คอนโด</option>
+                <option value="บ้านเดี่ยว">บ้านเดี่ยว</option>
+                <option value="ทาวน์โฮม">ทาวน์โฮม</option>
+                <option value="ที่ดิน">ที่ดิน</option>
+                <option value="อาคารพาณิชย์">อาคารพาณิชย์</option>
+                <option value="อื่นๆ">อื่นๆ</option>
+              </select>
+            </div>
+            <div class="form-group full mandatory"><label>ชื่อโครงการ / ชื่อทรัพย์สิน</label>
+              <input id="cs_propertyName" placeholder="ชื่อโครงการ หรือทรัพย์สิน" required>
+            </div>
+            <div class="form-group full mandatory"><label>ทำเลที่ตั้ง / ที่อยู่</label>
+              <input id="cs_location" placeholder="รายละเอียดที่ตั้ง" required>
+            </div>
+            <div class="form-group"><label>ราคา/เสนอ</label>
+              <input id="cs_price" placeholder="ราคาเสนอขาย/เช่า/ยอดจำนอง" required>
+            </div>
+            <div class="form-group"><label>ขนาดพื้นที่</label>
+              <input id="cs_size" placeholder="เช่น 35 ตร.ม. หรือ 50 ตร.ย.">
+            </div>
+            <div class="form-group full"><label>รายละเอียดภายใน</label>
+              <input id="cs_details" placeholder="จำนวนห้องนอน/ห้องน้ำ/ชั้น">
+            </div>
+            <div class="form-group"><label>ชื่อผู้ฝาก</label>
+              <input id="cs_senderName" placeholder="ชื่อผู้ฝาก" required>
+            </div>
+            <div class="form-group"><label>ข้อมูลการติดต่อ</label>
+              <input id="cs_contact" placeholder="เบอร์โทร / Line ID" required>
+            </div>
+            <div class="form-group full"><label>🔗 ลิงก์รูปภาพ</label>
+              <input id="cs_photoLink" placeholder="Google Drive, Dropbox, Line Album Link">
+            </div>
+            <div class="form-group full"><label>สถานะประสานงาน</label>
+              <select id="cs_status">
+                <option value="ใหม่">ใหม่ (New)</option>
+                <option value="รอดำเนินการ">รอดำเนินการ (Pending)</option>
+                <option value="ติดต่อแล้ว">ติดต่อแล้ว (Contacted)</option>
+                <option value="สำเร็จ">สำเร็จ (Completed)</option>
+              </select>
+            </div>
+            <div class="form-group full"><label>หมายเหตุ / รายละเอียดพิเศษ</label>
+              <textarea id="cs_note" placeholder="จุดเด่นของทรัพย์ หรือหมายเหตุสำหรับเอเจนต์..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeModal('consignment')">ยกเลิก</button>
+          <button class="btn btn-primary" onclick="saveConsignment()">💾 บันทึก</button>
+        </div>
+      </div>
+    </div>
+
     <!-- User Modal (Admin) -->
     <div class="modal-bg" id="modalUser">
       <div class="modal">
@@ -2093,6 +2237,7 @@
   <script src="js/firebase-config.js?v=1.0.1"></script>
   <script src="js/pages/assets.js?v=1.0.1"></script>
   <script src="js/pages/customers.js?v=1.0.1"></script>
+  <script src="js/pages/consignments.js?v=1.0.1"></script>
   <script src="js/pages/marketing.js?v=1.0.1"></script>
   <script src="js/pages/calculator.js?v=1.0.1"></script>
   <script src="js/app.js?v=1.0.1"></script>
