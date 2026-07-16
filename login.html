@@ -653,7 +653,7 @@
         <a href="request.html" class="guest-request-link" style="flex: 1;">
           🏡 ฝากหาทรัพย์
         </a>
-        <a href="consign.html" class="guest-request-link" style="flex: 1;">
+        <a href="consign.html" class="guest-request-link" style="flex: 1;" onclick="return handleConsignLinkClick(event)">
           📝 ฝากขาย/จำนอง
         </a>
       </div>
@@ -869,11 +869,51 @@
       initFirebase().then(async (ok) => {
         if (ok) {
           await syncAuthFromFirebase();
+          await checkConsignmentSystemStatus();
         }
         updateConnectionModeUI();
       });
+    } else {
+      checkConsignmentSystemStatusLocal();
     }
   };
+
+  let _isConsignDisabled = false;
+
+  async function checkConsignmentSystemStatus() {
+    if (!_db || !window._firestoreLib) return;
+    try {
+      const { doc, getDoc } = window._firestoreLib;
+      const snap = await getDoc(doc(_db, 'systemSettings', 'general'));
+      if (snap.exists() && snap.data().disableConsignments === true) {
+        _isConsignDisabled = true;
+      }
+    } catch(e) {
+      console.warn('Failed to check consignment status:', e);
+    }
+  }
+
+  function checkConsignmentSystemStatusLocal() {
+    try {
+      const raw = localStorage.getItem('yb_db');
+      if (raw) {
+        const db = JSON.parse(raw);
+        const general = (db.systemSettings || []).find(s => s.id === 'general');
+        if (general && general.disableConsignments === true) {
+          _isConsignDisabled = true;
+        }
+      }
+    } catch(e) {}
+  }
+
+  function handleConsignLinkClick(e) {
+    if (_isConsignDisabled) {
+      e.preventDefault();
+      alert('⚠️ ขออภัยค่ะ ระบบรับฝากขาย/จำนอง ปิดปรับปรุงชั่วคราวตามนโยบายของบริษัทค่ะ');
+      return false;
+    }
+    return true;
+  }
 
   // ============================
   // LOGIC FUNCTIONS

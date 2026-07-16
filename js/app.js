@@ -603,7 +603,7 @@
       const isAdmin = cur && (cur.accessLevel === 'super_admin' || cur.accessLevel === 'admin');
       
       const superAdminTabs = ['reset', 'quota'];
-      const adminTabs = ['users', 'firebase', 'backup', 'csv', 'platforms', 'bots'];
+      const adminTabs = ['users', 'firebase', 'backup', 'csv', 'platforms', 'bots', 'system'];
       
       if (superAdminTabs.includes(tabName) && !isSuperAdmin) {
         alert('❌ ขออภัย เฉพาะผู้ดูแลระบบสูงสุด (Super Admin) เท่านั้นที่สามารถเข้าถึงส่วนนี้ได้');
@@ -650,6 +650,8 @@
         loadQuotaSettingsUI();
       } else if (tabName === 'platforms') {
         loadPlatformCredentials();
+      } else if (tabName === 'system') {
+        if (typeof loadSystemSettingsUI === 'function') loadSystemSettingsUI();
       }
     }
 
@@ -1641,8 +1643,9 @@
       initCommissionTab();
       }
       if (t === 'settings') {
-      switchSettingsTab('profile');
-      updateSettingsProfileUI();
+        switchSettingsTab('profile');
+        updateSettingsProfileUI();
+        if (typeof loadSystemSettingsUI === 'function') loadSystemSettingsUI();
       }
     }
 
@@ -3943,4 +3946,67 @@
       }
     }
     window.fetchFacebookPagesFromUploadPost = fetchFacebookPagesFromUploadPost;
+
+    function loadSystemSettingsUI() {
+      const general = (DB.systemSettings || []).find(s => s.id === 'general');
+      const disableVal = general ? (general.disableConsignments === true) : false;
+      
+      const radioOn = document.querySelector('input[name="sys_disableConsignments"][value="false"]');
+      const radioOff = document.querySelector('input[name="sys_disableConsignments"][value="true"]');
+      
+      if (radioOn && radioOff) {
+        if (disableVal) {
+          radioOff.checked = true;
+        } else {
+          radioOn.checked = true;
+        }
+      }
+    }
+
+    async function saveSystemSettings() {
+      const selectedRadio = document.querySelector('input[name="sys_disableConsignments"]:checked');
+      if (!selectedRadio) return;
+      
+      const disableVal = selectedRadio.value === 'true';
+      const statusText = document.getElementById('systemSettingsStatus');
+      
+      if (statusText) {
+        statusText.textContent = '⏳ กำลังบันทึก...';
+        statusText.style.color = 'var(--gold)';
+      }
+      
+      const configDoc = {
+        id: 'general',
+        disableConsignments: disableVal,
+        updatedAt: new Date().toISOString()
+      };
+
+      try {
+        await saveItem('systemSettings', configDoc, 'general');
+        
+        // Save to DB and local storage
+        if (!DB.systemSettings) DB.systemSettings = [];
+        const idx = DB.systemSettings.findIndex(s => s.id === 'general');
+        if (idx >= 0) {
+          DB.systemSettings[idx] = configDoc;
+        } else {
+          DB.systemSettings.push(configDoc);
+        }
+        saveTolocalStorage();
+        
+        if (statusText) {
+          statusText.textContent = '✅ บันทึกและซิงก์ข้อมูลระบบเรียบร้อยแล้ว!';
+          statusText.style.color = 'var(--green)';
+          setTimeout(() => { statusText.textContent = ''; }, 3000);
+        }
+      } catch (err) {
+        if (statusText) {
+          statusText.textContent = '❌ บันทึกไม่สำเร็จ: ' + err.message;
+          statusText.style.color = 'var(--red)';
+        }
+      }
+    }
+
+    window.loadSystemSettingsUI = loadSystemSettingsUI;
+    window.saveSystemSettings = saveSystemSettings;
     

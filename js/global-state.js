@@ -29,7 +29,7 @@
     // ============================
     // DATA STORE
     // ============================
-    let DB = { assets: [], agents: [], customers: [], consignments: [], mktQueue: [], mktScheduleSlots: ['09:00', '12:00', '15:00', '18:00'], platformCredentials: [] };
+    let DB = { assets: [], agents: [], customers: [], consignments: [], mktQueue: [], mktScheduleSlots: ['09:00', '12:00', '15:00', '18:00'], platformCredentials: [], systemSettings: [] };
 
     // ============================
     // TRANSIT LINES CONFIG

@@ -351,10 +351,64 @@
       }
     }
 
+    function showSystemDisabledOverlay() {
+      const container = document.querySelector('.consign-container');
+      if (container) container.style.display = 'none';
+      
+      const div = document.createElement('div');
+      div.className = 'consign-container';
+      div.style.textAlign = 'center';
+      div.style.padding = '60px 20px';
+      div.innerHTML = `
+        <div style="font-size: 64px; margin-bottom: 24px; animation: pulse 2s infinite;">⚠️</div>
+        <h2 style="font-family: 'Prompt', sans-serif; font-size: 24px; font-weight: 700; color: var(--gold); margin-bottom: 16px;">
+          ระบบรับฝากขาย/จำนอง ปิดปรับปรุงชั่วคราว
+        </h2>
+        <p style="font-size: 15px; color: var(--text2); line-height: 1.6; max-width: 480px; margin: 0 auto 30px;">
+          ขออภัยในความไม่สะดวกค่ะ ขณะนี้ระบบรับฝากขาย/จำนองทรัพย์สินออนไลน์อยู่ระหว่างการปรับปรุงระบบหรือปิดรับชั่วคราวตามนโยบายของบริษัท
+        </p>
+        <button class="btn btn-primary" onclick="window.location.href='login.html'" style="display: inline-flex; align-items: center; gap: 8px;">
+          ⬅️ กลับหน้าหลัก
+        </button>
+      `;
+      document.body.prepend(div);
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       // 1. Initialize Firebase
       const connected = await initFirebase();
       console.log('Firebase ready status:', connected);
+
+      // Check system settings
+      let isSystemDisabled = false;
+      if (connected && window._db && window._firestoreLib) {
+        try {
+          const { doc, getDoc } = window._firestoreLib;
+          const snap = await getDoc(doc(window._db, 'systemSettings', 'general'));
+          if (snap.exists() && snap.data().disableConsignments === true) {
+            isSystemDisabled = true;
+          }
+        } catch (e) {
+          console.warn('Failed to fetch systemSettings:', e);
+        }
+      } else {
+        // Local storage check
+        try {
+          const raw = localStorage.getItem('yb_db');
+          if (raw) {
+            const db = JSON.parse(raw);
+            const general = (db.systemSettings || []).find(s => s.id === 'general');
+            if (general && general.disableConsignments === true) {
+              isSystemDisabled = true;
+            }
+          }
+        } catch(e) {}
+      }
+
+      if (isSystemDisabled) {
+        showSystemDisabledOverlay();
+        return;
+      }
 
       // 2. Setup form submit listener
       document.getElementById('consignForm').addEventListener('submit', handleFormSubmit);
