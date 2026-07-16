@@ -13,6 +13,8 @@
           DB.consignments = d.consignments || [];
           DB.mktQueue = d.mktQueue || [];
           DB.mktScheduleSlots = d.mktScheduleSlots || ['09:00', '12:00', '15:00', '18:00'];
+          DB.platformCredentials = d.platformCredentials || [];
+          DB.systemSettings = d.systemSettings || [];
         }
       } catch (e) { }
     }
