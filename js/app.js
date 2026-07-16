@@ -5,7 +5,7 @@
         if (!_realtimeSyncActive) {
           const { collection, getDocs } = window._firestoreLib;
           let anyFail = false;
-          for (const col of ['assets', 'agents', 'customers', 'consignments', 'mktQueue', 'mktScheduleSlots', 'platformCredentials']) {
+          for (const col of ['assets', 'agents', 'customers', 'consignments', 'mktQueue', 'mktScheduleSlots', 'platformCredentials', 'systemSettings']) {
             try {
               const snap = await getDocs(collection(_db, col));
               if (col === 'mktScheduleSlots') {
@@ -1463,7 +1463,8 @@
 
       // UI Tab Visibility
       const isConsignDisabled = (DB.systemSettings || []).some(s => s.id === 'general' && s.disableConsignments === true);
-      const canSeeConsignments = canSeeCustomers && !isConsignDisabled;
+      // Admin always sees consignment tab; other roles only see if system is On
+      const canSeeConsignments = isAdmin || (canSeeCustomers && !isConsignDisabled);
 
       const _tab = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
       _tab('tabCustomers', canSeeCustomers);
@@ -1538,7 +1539,7 @@
       if (!container) return;
 
       const items = [];
-      if ((isAdmin || isAgent) && !isConsignDisabled) {
+      if (isAdmin || (isAgent && !isConsignDisabled)) {
         items.push({ icon: '📝', label: 'ฝากขาย/จำนอง', sub: 'รายการฝากขายและจำนองของลูกค้า', tab: 'consignments' });
       }
       if (isAdmin || isAgent) {
@@ -3999,22 +4000,21 @@
       };
 
       try {
-        await saveItem('systemSettings', configDoc, 'general');
-        
-        // Save to DB and local storage
+        // Update DB immediately so applyRoleAccess reads the latest value
         if (!DB.systemSettings) DB.systemSettings = [];
-        const idx = DB.systemSettings.findIndex(s => s.id === 'general');
-        if (idx >= 0) {
-          DB.systemSettings[idx] = configDoc;
+        const idxPre = DB.systemSettings.findIndex(s => s.id === 'general');
+        if (idxPre >= 0) {
+          DB.systemSettings[idxPre] = configDoc;
         } else {
           DB.systemSettings.push(configDoc);
         }
         saveTolocalStorage();
-        
-        if (typeof applyRoleAccess === 'function') {
-          applyRoleAccess();
-        }
-        
+
+        // Apply new visibility rules immediately (before Firebase round-trip)
+        if (typeof applyRoleAccess === 'function') applyRoleAccess();
+
+        await saveItem('systemSettings', configDoc, 'general');
+
         if (statusText) {
           statusText.textContent = '✅ บันทึกและซิงก์ข้อมูลระบบเรียบร้อยแล้ว!';
           statusText.style.color = 'var(--green)';
