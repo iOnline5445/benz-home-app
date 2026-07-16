@@ -1463,8 +1463,8 @@
 
       // UI Tab Visibility
       const isConsignDisabled = (DB.systemSettings || []).some(s => s.id === 'general' && s.disableConsignments === true);
-      // Admin always sees consignment tab; other roles only see if system is On
-      const canSeeConsignments = isAdmin || (canSeeCustomers && !isConsignDisabled);
+      // All roles hide consignment tab when system is Off
+      const canSeeConsignments = canSeeCustomers && !isConsignDisabled;
 
       const _tab = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
       _tab('tabCustomers', canSeeCustomers);
@@ -1539,7 +1539,7 @@
       if (!container) return;
 
       const items = [];
-      if (isAdmin || (isAgent && !isConsignDisabled)) {
+      if ((isAdmin || isAgent) && !isConsignDisabled) {
         items.push({ icon: '📝', label: 'ฝากขาย/จำนอง', sub: 'รายการฝากขายและจำนองของลูกค้า', tab: 'consignments' });
       }
       if (isAdmin || isAgent) {
