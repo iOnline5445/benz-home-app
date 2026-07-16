@@ -1462,9 +1462,12 @@
       };
 
       // UI Tab Visibility
+      const isConsignDisabled = (DB.systemSettings || []).some(s => s.id === 'general' && s.disableConsignments === true);
+      const canSeeConsignments = canSeeCustomers && (!isConsignDisabled || isAdmin);
+
       const _tab = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
       _tab('tabCustomers', canSeeCustomers);
-      _tab('tabConsignments', canSeeCustomers);
+      _tab('tabConsignments', canSeeConsignments);
       _tab('tabSettings',  true);
       _tab('tabClipboard', canClipboard);
       _tab('tabMarketing', canMarketing);
@@ -1509,7 +1512,13 @@
 
       buildMoreDrawer(user);
       closeMoreDrawer();
+
+      const isConsignmentsActive = document.getElementById('sec-consignments') && document.getElementById('sec-consignments').classList.contains('active');
+      if (!canSeeConsignments && isConsignmentsActive) {
+        switchTab('assets', document.querySelector('.htab[onclick*="switchTab(\'assets\'"]'));
+      }
     }
+    window.applyRoleAccess = applyRoleAccess;
 
     // Build More drawer menu based on role
     function buildMoreDrawer(userObj) {
@@ -1523,12 +1532,16 @@
       const isAgent      = businessRole === 'agent' && status === 'active';
       const isPending    = status === 'pending';
 
+      const isConsignDisabled = (DB.systemSettings || []).some(s => s.id === 'general' && s.disableConsignments === true);
+
       const container = document.getElementById('moreDrawerItems');
       if (!container) return;
 
       const items = [];
-      if (isAdmin || isAgent) {
+      if (isAdmin || (isAgent && !isConsignDisabled)) {
         items.push({ icon: '📝', label: 'ฝากขาย/จำนอง', sub: 'รายการฝากขายและจำนองของลูกค้า', tab: 'consignments' });
+      }
+      if (isAdmin || isAgent) {
         items.push({ icon: '💰', label: 'คำนวณค่าคอม', sub: 'คำนวณส่วนแบ่งค่าคอมมิชชั่น', tab: 'commission' });
       }
       if (isAdmin) {
@@ -3960,6 +3973,10 @@
         } else {
           radioOn.checked = true;
         }
+      }
+
+      if (typeof applyRoleAccess === 'function') {
+        applyRoleAccess();
       }
     }
 
