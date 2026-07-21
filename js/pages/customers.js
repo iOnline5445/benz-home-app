@@ -121,36 +121,39 @@
     // Toggle reservation fields visibility
     // ============================
     function checkCustomerMatchAsset(c, asset) {
-      const assetPrice = parsePriceValue(asset.price);
-      const assetStatus = asset.status; 
-      const assetType = asset.type; 
-      const assetBts = asset.bts;
+      if (!c || !asset) return false;
+      if (asset.listingActive === 'sold') return false;
 
-      let statusMatch = false;
-      if (c.status === 'เช่า/ขาย' || !c.status) {
-        statusMatch = true;
-      } else {
-        statusMatch = c.status === assetStatus;
+      // 1. สถานะที่ต้องการ (Status Match: ขาย / เช่า / เช่า/ขาย)
+      const assetStatus = (asset.status || '').trim();
+      const custStatus = (c.status || '').trim();
+      if (custStatus && custStatus !== 'เช่า/ขาย') {
+        if (custStatus !== assetStatus) return false;
       }
-      if (!statusMatch) return false;
-      
-      let typeMatch = false;
-      if (!c.type) {
-        typeMatch = true;
-      } else {
-        typeMatch = (assetType || '').includes(c.type) || (c.type || '').includes(assetType);
+
+      // 2. ประเภททรัพย์สิน (Type Match: คอนโด, บ้านเดี่ยว, ฯลฯ)
+      const assetType = (asset.type || '').trim();
+      const custType = (c.type || '').trim();
+      if (custType) {
+        const typeMatch = assetType.includes(custType) || custType.includes(assetType);
+        if (!typeMatch) return false;
       }
-      if (!typeMatch) return false;
-      
-      if (assetPrice > 0) {
-        const custBudget = parsePriceValue(c.budget);
-        if (custBudget > 0 && assetPrice > custBudget) {
-          return false;
-        }
+
+      // 3. ราคา & งบประมาณสูงสุด (Price & Maximum Budget)
+      const custBudget = parsePriceValue(c.budget);
+      const assetPrice = parsePriceValue(asset.price);
+      if (custBudget > 0 && assetPrice > 0) {
+        if (assetPrice > custBudget) return false;
       }
-      
+
+      // 4. แนวรถไฟฟ้า & สถานี & ทำเลที่ตั้ง (Electric Train Line, Station & Location)
       if (c.line) {
         const stations = TRANSIT_LINES[c.line] || [];
+        const assetBts = (asset.bts || '').trim();
+        const assetLoc = (asset.location || '').trim();
+
+        const cleanStationName = (st) => (st || '').replace(/^(BTS|MRT|ARL|SRT)\s*/i, '').trim();
+
         if (c.stationStart && c.stationEnd) {
           const cIdx1 = stations.indexOf(c.stationStart);
           const cIdx2 = stations.indexOf(c.stationEnd);
@@ -158,14 +161,32 @@
             const minIdx = Math.min(cIdx1, cIdx2);
             const maxIdx = Math.max(cIdx1, cIdx2);
             const validStations = stations.slice(minIdx, maxIdx + 1);
-            if (!validStations.includes(assetBts)) {
-              return false;
-            }
+
+            const btsMatch = validStations.includes(assetBts);
+            const locMatch = validStations.some(st => {
+              const clean = cleanStationName(st);
+              return clean && assetLoc.includes(clean);
+            });
+
+            if (!btsMatch && !locMatch) return false;
           }
         } else if (c.stationStart) {
-          if (assetBts && assetBts !== c.stationStart) return false;
+          const cleanStart = cleanStationName(c.stationStart);
+          const btsMatch = assetBts === c.stationStart || (cleanStart && assetBts.includes(cleanStart));
+          const locMatch = cleanStart && assetLoc.includes(cleanStart);
+
+          if (!btsMatch && !locMatch) return false;
+        } else {
+          const btsMatch = stations.includes(assetBts);
+          const locMatch = stations.some(st => {
+            const clean = cleanStationName(st);
+            return clean && assetLoc.includes(clean);
+          });
+
+          if (!btsMatch && !locMatch) return false;
         }
       }
+
       return true;
     }
 
@@ -469,54 +490,7 @@
       const custStart = customer.stationStart;
       const custEnd = customer.stationEnd;
       
-      const matches = DB.assets.filter(a => {
-        if (a.listingActive === 'sold') return false;
-        
-        let statusMatch = false;
-        if (custStatus === 'เช่า/ขาย' || !custStatus) {
-          statusMatch = true;
-        } else {
-          statusMatch = a.status === custStatus;
-        }
-        if (!statusMatch) return false;
-        
-        let typeMatch = false;
-        if (!custType) {
-          typeMatch = true;
-        } else {
-          typeMatch = (a.type || '').includes(custType) || (custType || '').includes(a.type);
-        }
-        if (!typeMatch) return false;
-        
-        if (custBudget > 0) {
-          const assetPrice = parsePriceValue(a.price);
-          if (assetPrice > 0 && assetPrice > custBudget) {
-            return false;
-          }
-        }
-        
-        if (custLine) {
-          const stations = TRANSIT_LINES[custLine] || [];
-          if (custStart && custEnd) {
-            const cIdx1 = stations.indexOf(custStart);
-            const cIdx2 = stations.indexOf(custEnd);
-            if (cIdx1 !== -1 && cIdx2 !== -1) {
-              const minIdx = Math.min(cIdx1, cIdx2);
-              const maxIdx = Math.max(cIdx1, cIdx2);
-              const validStations = stations.slice(minIdx, maxIdx + 1);
-              if (!validStations.includes(a.bts)) {
-                return false;
-              }
-            }
-          } else {
-            if (!stations.includes(a.bts)) {
-              return false;
-            }
-          }
-        }
-        
-        return true;
-      });
+      const matches = DB.assets.filter(a => checkCustomerMatchAsset(customer, a));
       
       const summaryText = document.getElementById('matchingSummaryText');
       summaryText.innerHTML = `
@@ -585,52 +559,7 @@
       const assetType = asset.type; 
       const assetBts = asset.bts;
       
-      const matches = DB.customers.filter(c => {
-        let statusMatch = false;
-        if (c.status === 'เช่า/ขาย' || !c.status) {
-          statusMatch = true;
-        } else {
-          statusMatch = c.status === assetStatus;
-        }
-        if (!statusMatch) return false;
-        
-        let typeMatch = false;
-        if (!c.type) {
-          typeMatch = true;
-        } else {
-          typeMatch = (assetType || '').includes(c.type) || (c.type || '').includes(assetType);
-        }
-        if (!typeMatch) return false;
-        
-        if (assetPrice > 0) {
-          const custBudget = parsePriceValue(c.budget);
-          if (custBudget > 0 && assetPrice > custBudget) {
-            return false;
-          }
-        }
-        
-        if (c.line) {
-          const stations = TRANSIT_LINES[c.line] || [];
-          if (c.stationStart && c.stationEnd) {
-            const cIdx1 = stations.indexOf(c.stationStart);
-            const cIdx2 = stations.indexOf(c.stationEnd);
-            if (cIdx1 !== -1 && cIdx2 !== -1) {
-              const minIdx = Math.min(cIdx1, cIdx2);
-              const maxIdx = Math.max(cIdx1, cIdx2);
-              const validStations = stations.slice(minIdx, maxIdx + 1);
-              if (!validStations.includes(assetBts)) {
-                return false;
-              }
-            }
-          } else {
-            if (assetBts && !stations.includes(assetBts)) {
-              return false;
-            }
-          }
-        }
-        
-        return true;
-      });
+      const matches = DB.customers.filter(c => checkCustomerMatchAsset(c, asset));
       
       const summaryText = document.getElementById('matchingSummaryText');
       summaryText.innerHTML = `
