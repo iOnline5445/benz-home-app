@@ -653,7 +653,7 @@
         <a href="request.html" class="guest-request-link" style="flex: 1;">
           🏡 ฝากหาทรัพย์
         </a>
-        <a href="consign.html" class="guest-request-link" style="flex: 1;" onclick="return handleConsignLinkClick(event)">
+        <a id="btnConsignGuest" href="consign.html" class="guest-request-link" style="flex: 1;" onclick="return handleConsignLinkClick(event)">
           📝 ฝากขาย/จำนอง
         </a>
       </div>
@@ -891,6 +891,7 @@
     } catch(e) {
       console.warn('Failed to check consignment status:', e);
     }
+    applyConsignmentButtonVisibility();
   }
 
   function checkConsignmentSystemStatusLocal() {
@@ -904,6 +905,14 @@
         }
       }
     } catch(e) {}
+    applyConsignmentButtonVisibility();
+  }
+
+  function applyConsignmentButtonVisibility() {
+    const btn = document.getElementById('btnConsignGuest');
+    if (btn) {
+      btn.style.display = _isConsignDisabled ? 'none' : '';
+    }
   }
 
   function handleConsignLinkClick(e) {
