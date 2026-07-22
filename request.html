@@ -387,6 +387,10 @@
           if (!localDb.customers) localDb.customers = [];
           localDb.customers.push(data);
           localStorage.setItem('yb_db', JSON.stringify(localDb));
+          
+          if (typeof window.addToSyncQueue === 'function') {
+            window.addToSyncQueue('save', 'customers', docId, data);
+          }
         }
         
         // Show Success popup with storage mode status

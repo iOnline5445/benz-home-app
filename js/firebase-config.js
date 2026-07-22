@@ -281,5 +281,146 @@
       }
     }
 
-    window.clearLocalFbConfig = clearLocalFbConfig;
+    // ============================
+    // OFFLINE SYNC QUEUE
+    // ============================
+    const SYNC_QUEUE_KEY = 'yb_sync_queue';
+
+    function getSyncQueue() {
+      try {
+        const q = localStorage.getItem(SYNC_QUEUE_KEY);
+        return q ? JSON.parse(q) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveSyncQueue(queue) {
+      try {
+        localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(queue));
+      } catch (e) {
+        console.warn('Failed to save sync queue:', e);
+      }
+    }
+
+    function addToSyncQueue(action, colName, itemId, data) {
+      const queue = getSyncQueue();
+      if (action === 'save') {
+        const idx = queue.findIndex(q => q.action === 'save' && q.colName === colName && q.itemId === itemId);
+        if (idx !== -1) {
+          queue[idx].data = data;
+          queue[idx].timestamp = Date.now();
+          saveSyncQueue(queue);
+          updateSyncBadge();
+          return;
+        }
+      }
+      queue.push({ action, colName, itemId, data, timestamp: Date.now() });
+      saveSyncQueue(queue);
+      updateSyncBadge();
+    }
+
+    let _isSyncingQueue = false;
+
+    async function syncPendingQueue() {
+      const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
+      if (storageMode === 'local' || !_fbReady || !_db || !window._firestoreLib) return;
+      if (_isSyncingQueue) return;
+
+      const queue = getSyncQueue();
+      if (queue.length === 0) return;
+
+      _isSyncingQueue = true;
+      console.log(`🔄 Processing ${queue.length} offline operations...`);
+
+      const { collection, doc, setDoc, deleteDoc } = window._firestoreLib;
+      let successCount = 0;
+      let failedCount = 0;
+
+      const currentQueue = [...queue];
+
+      for (const op of currentQueue) {
+        try {
+          if (op.action === 'save') {
+            const ref = doc(collection(_db, op.colName), op.itemId);
+            await setDoc(ref, op.data);
+          } else if (op.action === 'delete') {
+            const ref = doc(collection(_db, op.colName), op.itemId);
+            await deleteDoc(ref);
+          }
+          successCount++;
+          
+          const freshQueue = getSyncQueue();
+          const freshIdx = freshQueue.findIndex(q => q.action === op.action && q.colName === op.colName && q.itemId === op.itemId);
+          if (freshIdx !== -1) {
+            freshQueue.splice(freshIdx, 1);
+            saveSyncQueue(freshQueue);
+          }
+        } catch (err) {
+          console.warn(`Sync failed for ${op.colName}/${op.itemId}:`, err);
+          failedCount++;
+          break;
+        }
+      }
+
+      _isSyncingQueue = false;
+      updateSyncBadge();
+
+      if (successCount > 0) {
+        console.log(`✅ Synced ${successCount} offline items to Firebase Cloud!`);
+        if (typeof showToast === 'function') {
+          showToast(`🔄 อัปเดตข้อมูลย้อนหลังสำเร็จ ${successCount} รายการ!`, '#50c878');
+        }
+        if (window.loadDB) {
+          window.loadDB();
+        }
+      }
+    }
+
+    function updateSyncBadge() {
+      const el = document.getElementById('realtimeSyncBadge');
+      if (!el) return;
+      const queue = getSyncQueue();
+      if (queue.length > 0) {
+        el.style.background = '#e8a020'; 
+        el.style.color = '#fff';
+        el.textContent = `🔄 รอการซิงก์ออฟไลน์ ${queue.length} รายการ`;
+      } else {
+        const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
+        if (storageMode === 'local') {
+          el.style.background = '#555';
+          el.style.color = '#ccc';
+          el.textContent = '⚫ Local Only';
+        } else if (_realtimeSyncActive) {
+          el.style.background = '#50c878';
+          el.style.color = '#fff';
+          el.textContent = '🟢 Real-time Sync เปิด';
+        } else {
+          el.style.background = '#555';
+          el.style.color = '#ccc';
+          el.textContent = '⚫ Real-time Sync ปิด';
+        }
+      }
+    }
+
+    // Auto sync check on online and interval
+    window.addEventListener('online', () => {
+      console.log('🌐 Connection restored. Syncing queue...');
+      const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
+      const isFirebaseConfigured = FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY" && FIREBASE_CONFIG.apiKey !== "";
+      if (storageMode === 'firebase' && isFirebaseConfigured) {
+        initFirebase().then((ok) => {
+          if (ok) {
+            updateFirebaseStatus();
+            syncPendingQueue();
+          }
+        });
+      }
+    });
+
+    setInterval(syncPendingQueue, 15000);
+
+    window.addToSyncQueue = addToSyncQueue;
+    window.syncPendingQueue = syncPendingQueue;
+    window.updateSyncBadge = updateSyncBadge;
 

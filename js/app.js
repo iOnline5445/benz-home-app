@@ -64,6 +64,13 @@
           _suppressSnapshot = false;
           console.warn('saveItem Firebase fail:', e);
           showToast('⚠️ Firebase บันทึกไม่ได้ — บันทึก offline', '#e05050');
+          if (typeof window.addToSyncQueue === 'function') {
+            window.addToSyncQueue('save', colName, item.id, item);
+          }
+        }
+      } else {
+        if (typeof window.addToSyncQueue === 'function') {
+          window.addToSyncQueue('save', colName, item.id, item);
         }
       }
       saveTolocalStorage();
@@ -75,7 +82,16 @@
         try {
           const { collection, doc, deleteDoc } = window._firestoreLib;
           await deleteDoc(doc(collection(_db, colName), id));
-        } catch (e) { console.warn('deleteItem Firebase fail:', e); }
+        } catch (e) {
+          console.warn('deleteItem Firebase fail:', e);
+          if (typeof window.addToSyncQueue === 'function') {
+            window.addToSyncQueue('delete', colName, id, null);
+          }
+        }
+      } else if (id) {
+        if (typeof window.addToSyncQueue === 'function') {
+          window.addToSyncQueue('delete', colName, id, null);
+        }
       }
       saveTolocalStorage();
     }

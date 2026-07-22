@@ -486,6 +486,10 @@
           if (!localDb.consignments) localDb.consignments = [];
           localDb.consignments.push(data);
           localStorage.setItem('yb_db', JSON.stringify(localDb));
+          
+          if (typeof window.addToSyncQueue === 'function') {
+            window.addToSyncQueue('save', 'consignments', docId, data);
+          }
         }
         
         // Show success notification
