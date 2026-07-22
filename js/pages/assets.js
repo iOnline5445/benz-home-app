@@ -23,7 +23,7 @@
 
       document.getElementById('assetStats').innerHTML = `
     <div class="stat-box" onclick="clearAssetFilters()" title="แสดงทรัพย์สินทั้งหมด"><div class="num">${s.length}</div><div class="lbl">ทรัพย์สินทั้งหมด</div></div>
-    <div class="stat-box" onclick="filterAssetsByStat('status', 'ขาย')" title="กรองเฉพาะ ขาย"><div class="num">${s.filter(a => a.status && a.status.includes('ขาย')).length}</div><div class="lbl">ขาย</div></div>
+    <div class="stat-box" onclick="filterAssetsByStat('status', 'ขายทรัพย์')" title="กรองเฉพาะ ขาย"><div class="num">${s.filter(a => a.status && (a.status.includes('ขาย') || a.status.includes('ซื้อ'))).length}</div><div class="lbl">ขาย</div></div>
     <div class="stat-box" onclick="filterAssetsByStat('status', 'เช่า')" title="กรองเฉพาะ เช่า"><div class="num">${s.filter(a => a.status && a.status.includes('เช่า')).length}</div><div class="lbl">เช่า</div></div>
     <div class="stat-box" onclick="filterAssetsByStat('type', 'คอนโด')" title="กรองเฉพาะ คอนโด"><div class="num">${s.filter(a => a.type === 'คอนโด').length}</div><div class="lbl">คอนโด</div></div>
     <div class="stat-box" style="${reservedAssets.length > 0 ? 'background:rgba(201,168,76,0.1);border-color:var(--gold);' : ''}" onclick="filterAssetsByStat('listingActive', 'reserved')" title="กรองเฉพาะ จอง"><div class="num" style="color:var(--gold);">${reservedAssets.length}</div><div class="lbl">📌 จอง</div></div>
