@@ -659,12 +659,7 @@
     }
 
     .search-box::before {
-      content: '🔍';
-      position: absolute;
-      left: 11px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 13px;
+      display: none;
     }
 
     .filter-select {
