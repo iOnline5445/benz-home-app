@@ -130,33 +130,23 @@
       const txt = document.getElementById('fbStatusText');
       if (!el) return;
       
-      const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
-      if (storageMode === 'local') {
-        el.style.background = '#0077CC'; // blue dot for local
-        txt.textContent = 'Offline 📴';
-      } else if (_fbReady) {
-        el.style.background = '#50c878'; // green
-        txt.textContent = 'Firebase ✅';
-      } else if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
-        el.style.background = '#e8a020'; // orange
-        txt.textContent = 'Firebase ⚠️ ยังไม่ได้ตั้งค่า';
+      if (_fbReady) {
+        el.style.background = '#0077CC'; // blue dot for online
+        txt.textContent = 'Firebase Online 🌐';
       } else {
-        el.style.background = '#e05050'; // red
-        txt.textContent = 'Firebase ❌ เชื่อมไม่ได้';
+        el.style.background = '#e05050'; // red dot for offline
+        txt.textContent = 'Offline 📴';
       }
       
       // Update config status in settings panel
       const cfgStatus = document.getElementById('fbConfigStatus');
       if (cfgStatus) {
-        if (storageMode === 'local') {
-          cfgStatus.textContent = '📴 ปิดการใช้งานคลาวด์ (ใช้งาน Offline)';
-          cfgStatus.style.color = 'var(--text3)';
-        } else if (_fbReady) {
-          cfgStatus.textContent = '🟢 เชื่อมต่อแล้ว' + (_realtimeSyncActive ? ' + Real-time Sync' : '');
-          cfgStatus.style.color = 'var(--green)';
-        } else if (localStorage.getItem('yb_fb_config')) {
-          cfgStatus.textContent = '⚠️ มี config แต่เชื่อมไม่ได้';
-          cfgStatus.style.color = 'var(--red)';
+        if (_fbReady) {
+          cfgStatus.textContent = '🔵 เชื่อมต่อคลาวด์สำเร็จ' + (_realtimeSyncActive ? ' + Real-time Sync' : '');
+          cfgStatus.style.color = '#0077CC';
+        } else {
+          cfgStatus.textContent = '🔴 ออฟไลน์ (ข้อมูลจัดเก็บในเครื่องชั่วคราว)';
+          cfgStatus.style.color = '#e05050';
         }
       }
       updateSyncBadge();
