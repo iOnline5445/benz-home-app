@@ -950,7 +950,6 @@
           <div class="settings-nav">
             <button class="snav-item active" onclick="switchSettingsTab('profile', this)">👤 บัญชีของฉัน</button>
             <button class="snav-item admin-only" id="snav-users" onclick="switchSettingsTab('users', this)">👥 จัดการผู้ใช้</button>
-            <button class="snav-item admin-only" id="snav-firebase" onclick="switchSettingsTab('firebase', this)">🔥 เชื่อมต่อ Firebase</button>
             <button class="snav-item admin-only" id="snav-backup" onclick="switchSettingsTab('backup', this)">💾 สำรองข้อมูล</button>
             <button class="snav-item admin-only" id="snav-csv" onclick="switchSettingsTab('csv', this)">📥 นำเข้า/ส่งออก (CSV)</button>
             <button class="snav-item admin-only" id="snav-reset" onclick="switchSettingsTab('reset', this)">🗑️ ล้างข้อมูลระบบ</button>
@@ -1011,30 +1010,14 @@
               <div class="m-list" id="userMList"></div>
             </div>
 
-            <!-- เชื่อมต่อ Firebase -->
-            <div id="ssec-firebase" class="settings-section">
-              <h3 class="settings-title">🔥 เชื่อมต่อ Firebase</h3>
-              <div class="settings-panel">
-                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-                  <div style="font-size:15px;font-weight:700;color:var(--gold);">ข้อมูลการเชื่อมต่อ Firebase Cloud</div>
-                  <span id="realtimeSyncBadge" style="font-size:12px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--dark4);">⚫ Real-time Sync ปิด</span>
-                </div>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:12px;margin-bottom:16px;">
-                  <div class="form-group"><label style="font-size:12px;">API Key</label><input id="fb_apiKey" placeholder="AIzaSy..." style="font-size:12px;font-family:monospace;"></div>
-                  <div class="form-group"><label style="font-size:12px;">Auth Domain</label><input id="fb_authDomain" placeholder="project.firebaseapp.com" style="font-size:12px;font-family:monospace;"></div>
-                  <div class="form-group"><label style="font-size:12px;">Project ID</label><input id="fb_projectId" placeholder="your-project-id" style="font-size:12px;font-family:monospace;"></div>
-                  <div class="form-group"><label style="font-size:12px;">Storage Bucket</label><input id="fb_storageBucket" placeholder="project.appspot.com" style="font-size:12px;font-family:monospace;"></div>
-                  <div class="form-group"><label style="font-size:12px;">Messaging Sender ID</label><input id="fb_messagingSenderId" placeholder="123456789" style="font-size:12px;font-family:monospace;"></div>
-                  <div class="form-group"><label style="font-size:12px;">App ID</label><input id="fb_appId" placeholder="1:123:web:abc" style="font-size:12px;font-family:monospace;"></div>
-                </div>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-                  <button class="btn btn-primary" onclick="saveFbConfig()">💾 บันทึกและเชื่อมต่อ Firebase</button>
-                  <button class="btn btn-outline" onclick="testFirebaseConnection()" style="border-color:var(--gold);color:var(--gold);">🛠️ ทดสอบการเชื่อมต่อ</button>
-                  <button class="btn btn-outline" onclick="uploadBackupToFirebase()" style="border-color:#50c878;color:#50c878;">⬆️ อัปโหลดข้อมูลในเครื่องขึ้นคลาวด์</button>
-                  <button class="btn btn-outline" onclick="clearLocalFbConfig()" style="border-color:var(--red);color:var(--red);">🗑️ ล้างค่ากำหนดเครื่องนี้ (ใช้ค่าเริ่มต้น)</button>
-                  <div id="fbConfigStatus" style="display:flex;align-items:center;font-size:13px;color:var(--green);font-weight:600;"></div>
-                </div>
-              </div>
+            <!-- Hidden inputs to avoid JS errors -->
+            <div style="display:none;">
+              <input id="fb_apiKey" value="AIzaSyBLQmKVknLcmQgIRm-WsNOkHvW44nDz9Lg">
+              <input id="fb_authDomain" value="benz-home-db.firebaseapp.com">
+              <input id="fb_projectId" value="benz-home-db">
+              <input id="fb_storageBucket" value="benz-home-db.firebasestorage.app">
+              <input id="fb_messagingSenderId" value="4014891413">
+              <input id="fb_appId" value="1:4014891413:web:9d0a4435a45f3a4f1bd69c">
             </div>
 
             <!-- สำรองข้อมูล -->
@@ -1054,11 +1037,18 @@
                   </label>
                 </div>
                 <div style="border-top:1px solid var(--border2);padding-top:14px;">
-                  <h4 style="font-size:14px;color:var(--gold);margin-bottom:8px;">🔄 ซิงก์ข้อมูล Firebase แมนนวล</h4>
-                  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap;">
+                    <h4 style="font-size:14px;color:var(--gold);margin:0;">🔄 จัดการคลาวด์ Firebase Cloud</h4>
+                    <span id="realtimeSyncBadge" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--dark4);">⚫ Real-time Sync ปิด</span>
+                  </div>
+                  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
                     <button class="btn btn-outline btn-sm" onclick="forceSyncToFirebase()">⬆️ Push ข้อมูล local → Firebase</button>
                     <button class="btn btn-outline btn-sm" onclick="forceSyncFromFirebase()">⬇️ Pull ข้อมูล Firebase → local</button>
+                    <button class="btn btn-outline btn-sm" onclick="testFirebaseConnection()" style="border-color:var(--gold);color:var(--gold);font-size:11px;">🛠️ ทดสอบการเชื่อมต่อ</button>
+                    <button class="btn btn-outline btn-sm" onclick="uploadBackupToFirebase()" style="border-color:#50c878;color:#50c878;font-size:11px;">⬆️ อัปโหลดข้อมูลเครื่องขึ้นคลาวด์</button>
+                    <button class="btn btn-outline btn-sm" onclick="clearLocalFbConfig()" style="border-color:var(--red);color:var(--red);font-size:11px;">🗑️ ล้างค่ากำหนดเครื่องนี้ (ใช้ค่าเริ่มต้น)</button>
                   </div>
+                  <div id="fbConfigStatus" style="display:flex;align-items:center;font-size:12px;color:var(--green);font-weight:600;"></div>
                 </div>
               </div>
 
