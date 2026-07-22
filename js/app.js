@@ -23,7 +23,6 @@
       } else {
         // Fallback: โหลดจาก localStorage
         loadFromlocalStorage();
-        showToast('📦 ใช้ข้อมูล offline (localStorage)', '#5090e0');
       }
       updateFirebaseStatus();
       renderAssets(); renderAgents(); renderCustomers(); renderStats();
@@ -574,6 +573,7 @@
             // Failed to connect to Firebase (network down)
             _fbReady = false;
             initScheduledBackup();
+            showToast('📦 ใช้ข้อมูล offline (localStorage)', '#5090e0');
           }
           updateFirebaseStatus();
           if (!AUTH.current) {
@@ -588,6 +588,7 @@
         _fbReady = false;
         updateFirebaseStatus();
         initScheduledBackup();
+        showToast('📦 ใช้ข้อมูล offline (localStorage)', '#5090e0');
         if (!AUTH.current) {
           await tryRestoreSession(false);
         }
