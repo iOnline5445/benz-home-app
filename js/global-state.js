@@ -16,13 +16,7 @@
     // โหลด Firebase config ที่บันทึกไว้จาก localStorage (กรอกผ่านหน้า User Management)
     (function applySavedFbConfig() {
       try {
-        const s = localStorage.getItem('yb_fb_config');
-        if (s) {
-          const cfg = JSON.parse(s);
-          if (cfg.apiKey && cfg.apiKey !== 'YOUR_API_KEY') {
-            Object.assign(FIREBASE_CONFIG, cfg);
-          }
-        }
+        localStorage.removeItem('yb_fb_config');
       } catch (e) { }
     })();
 
