@@ -128,21 +128,18 @@
       const assetStatus = (asset.status || '').trim();
       const custStatus = (c.status || '').trim();
       let statusMatch = false;
-      if (!custStatus || custStatus === 'เช่าหรือซื้อ ก็ได้' || custStatus === 'เช่า/ขาย') {
+      const isBoth = (s) => !s || s === 'เช่าหรือซื้อ' || s === 'เช่าหรือซื้อ ก็ได้' || s === 'เช่า/ขาย';
+      const isRent = (s) => s === 'เช่า';
+      const isBuyOrSale = (s) => s === 'ซื้อทรัพย์' || s === 'ขายทรัพย์' || s === 'ขาย' || s === 'ซื้อ';
+
+      if (isBoth(custStatus) || isBoth(assetStatus)) {
         statusMatch = true;
-      } else if (custStatus === 'เช่า') {
-        statusMatch = (assetStatus === 'เช่า');
-      } else if (custStatus === 'ซื้อทรัพย์') {
-        statusMatch = (assetStatus === 'ขาย');
-      } else if (custStatus === 'ขายทรัพย์') {
-        statusMatch = (assetStatus === 'ขาย');
+      } else if (isRent(custStatus)) {
+        statusMatch = isRent(assetStatus);
+      } else if (isBuyOrSale(custStatus)) {
+        statusMatch = isBuyOrSale(assetStatus);
       } else {
-        // Fallback for older values
-        if (custStatus === 'ขาย') {
-          statusMatch = (assetStatus === 'ขาย');
-        } else {
-          statusMatch = (custStatus === assetStatus);
-        }
+        statusMatch = (custStatus === assetStatus);
       }
       if (!statusMatch) return false;
 

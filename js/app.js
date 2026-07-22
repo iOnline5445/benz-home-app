@@ -30,6 +30,64 @@
       if (!_reminderInterval) {
         _reminderInterval = setInterval(checkScheduledQueueReminders, 30000);
       }
+      setTimeout(migrateDatabaseStatuses, 2000);
+    }
+
+    async function migrateDatabaseStatuses() {
+      const mapStatus = (status) => {
+        if (!status) return status;
+        const s = status.trim();
+        if (s === 'ขาย') return 'ขายทรัพย์';
+        if (s === 'ซื้อ') return 'ซื้อทรัพย์';
+        if (s === 'เช่า/ซื้อ' || s === 'เช่า/ขาย' || s === 'เช่าหรือซื้อ ก็ได้' || s === 'เช่าหรือซื้อก็ได้') return 'เช่าหรือซื้อ';
+        return s;
+      };
+
+      let changed = false;
+
+      // Migrate assets
+      for (const a of DB.assets) {
+        const newStatus = mapStatus(a.status);
+        if (newStatus !== a.status) {
+          a.status = newStatus;
+          changed = true;
+          if (_fbReady && _db && window._firestoreLib) {
+            try {
+              const { collection, doc, updateDoc } = window._firestoreLib;
+              const ref = doc(collection(_db, 'assets'), a.id);
+              await updateDoc(ref, { status: newStatus });
+            } catch (e) {
+              console.warn('Failed to migrate asset in Firebase:', a.id, e);
+            }
+          }
+        }
+      }
+
+      // Migrate customers
+      for (const c of DB.customers) {
+        const newStatus = mapStatus(c.status);
+        if (newStatus !== c.status) {
+          c.status = newStatus;
+          changed = true;
+          if (_fbReady && _db && window._firestoreLib) {
+            try {
+              const { collection, doc, updateDoc } = window._firestoreLib;
+              const ref = doc(collection(_db, 'customers'), c.id);
+              await updateDoc(ref, { status: newStatus });
+            } catch (e) {
+              console.warn('Failed to migrate customer in Firebase:', c.id, e);
+            }
+          }
+        }
+      }
+
+      if (changed) {
+        saveTolocalStorage();
+        if (typeof renderAssets === 'function') renderAssets();
+        if (typeof renderCustomers === 'function') renderCustomers();
+        if (typeof renderStats === 'function') renderStats();
+        console.log('Database statuses migrated successfully!');
+      }
     }
 
     let _suppressSnapshot = false; // guard: suppress onSnapshot during our own write
