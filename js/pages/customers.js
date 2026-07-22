@@ -453,7 +453,7 @@
       url = url + '?v=' + Date.now();
       navigator.clipboard.writeText(url).then(() => {
         if (typeof showToast === 'function') {
-          showToast('📋 คัดลอกลิงก์ฝากหาทรัพย์สำหรับส่งให้ลูกค้าแล้ว!', '#50c878');
+          showToast('📋 คัดลอกลิงก์ฝากทรัพย์/หาทรัพย์สำหรับส่งให้ลูกค้าแล้ว!', '#50c878');
         } else {
           alert('📋 คัดลอกลิงก์สำเร็จ:\n' + url);
         }

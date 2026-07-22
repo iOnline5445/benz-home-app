@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ฝากหาทรัพย์สิน - BenzHome Agency</title>
-  <meta name="description" content="ฝากความต้องการหาเช่า/ซื้อทรัพย์สิน คอนโด บ้าน ทาวน์โฮม อาคารพาณิชย์ หรือที่ดิน กับ BenzHome Agency">
+  <title>ฝากทรัพย์/หาทรัพย์สิน - BenzHome Agency</title>
+  <meta name="description" content="ฝากความต้องการฝากทรัพย์/หาทรัพย์สิน คอนโด บ้าน ทาวน์โฮม อาคารพาณิชย์ หรือที่ดิน กับ BenzHome Agency">
   <link rel="stylesheet" href="css/styles.css">
   <style>
     body {
@@ -146,8 +146,8 @@
   <div class="request-container">
     <div class="request-header">
       <img class="request-logo" src="icon.png" alt="BenzHome Agency Logo">
-      <h1 class="request-title">🏡 ฝากหาทรัพย์สิน</h1>
-      <p class="request-subtitle">กรอกความต้องการหาเช่า/ซื้อทรัพย์สินของคุณ เจ้าหน้าที่จะติดต่อกลับโดยเร็วที่สุด</p>
+      <h1 class="request-title">🏡 ฝากทรัพย์/หาทรัพย์สิน</h1>
+      <p class="request-subtitle">กรอกความต้องการฝากทรัพย์หรือหาเช่า/ซื้อทรัพย์สินของคุณ เจ้าหน้าที่จะติดต่อกลับโดยเร็วที่สุด</p>
     </div>
 
     <form id="requestForm">
@@ -155,7 +155,7 @@
         
         <!-- ชื่อลูกค้า/ชื่อโครงการ -->
         <div class="form-group full mandatory">
-          <label for="cu_name">ชื่อผู้ฝากหา / ชื่อโครงการที่สนใจ</label>
+          <label for="cu_name">ชื่อผู้ฝาก / ชื่อโครงการที่สนใจ</label>
           <input type="text" id="cu_name" placeholder="ชื่อ-นามสกุล หรือชื่อโครงการที่สนใจ" required autocomplete="name">
         </div>
 
@@ -248,7 +248,7 @@
       </div>
 
       <div style="margin-top:25px; display:flex; gap:10px;">
-        <button type="submit" id="submitBtn" class="btn btn-primary" style="flex:1; justify-content:center; padding:12px; font-size:16px;">💾 ส่งข้อมูลการฝากหาทรัพย์</button>
+        <button type="submit" id="submitBtn" class="btn btn-primary" style="flex:1; justify-content:center; padding:12px; font-size:16px;">💾 ส่งข้อมูลการฝากทรัพย์/หาทรัพย์</button>
       </div>
       <div style="margin-top: 20px; text-align: center; border-top: 1px solid var(--border2); padding-top: 15px;">
         <a href="login.html" style="color: var(--text2); text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; transition: color 0.2s;" onmouseover="this.style.color='var(--gold)';" onmouseout="this.style.color='var(--text2)';">
@@ -263,7 +263,7 @@
     <div class="success-card">
       <div class="success-icon">✅</div>
       <h2 class="success-title">ส่งข้อมูลสำเร็จ!</h2>
-      <p class="success-text" id="successText">เราได้รับข้อมูลความต้องการฝากหาทรัพย์สินของคุณแล้ว เจ้าหน้าที่ของ BenzHome Agency จะรีบดำเนินการหาทรัพย์และติดต่อกลับโดยเร็วที่สุดครับ</p>
+      <p class="success-text" id="successText">เราได้รับข้อมูลความต้องการฝากทรัพย์/หาทรัพย์สินของคุณแล้ว เจ้าหน้าที่ของ BenzHome Agency จะรีบดำเนินการและติดต่อกลับโดยเร็วที่สุดครับ</p>
       <button class="btn btn-primary" onclick="closeSuccessOverlay()" style="width:100%; justify-content:center;">ตกลง</button>
     </div>
   </div>
@@ -393,7 +393,7 @@
         const textEl = document.getElementById('successText');
         if (textEl) {
           if (isCloud) {
-            textEl.innerHTML = `เราได้รับข้อมูลความต้องการฝากหาทรัพย์สินของคุณแล้ว (บันทึกข้อมูลเข้าระบบ Cloud เรียบร้อย)<br><br>เจ้าหน้าที่ของ BenzHome Agency จะรีบดำเนินการหาทรัพย์และติดต่อกลับโดยเร็วที่สุดครับ`;
+            textEl.innerHTML = `เราได้รับข้อมูลความต้องการฝากทรัพย์/หาทรัพย์สินของคุณแล้ว (บันทึกข้อมูลเข้าระบบ Cloud เรียบร้อย)<br><br>เจ้าหน้าที่ของ BenzHome Agency จะรีบดำเนินการและติดต่อกลับโดยเร็วที่สุดครับ`;
           } else {
             textEl.innerHTML = `<span style="color:var(--red); font-weight:bold;">⚠️ ระบบบันทึกแบบ Offline ในเครื่องเนื่องจากไม่ได้ต่อ Firebase</span><br>ข้อมูลได้รับการบันทึกบนเครื่องนี้แล้ว เจ้าหน้าที่จะซิงค์ข้อมูลภายหลังเมื่อทำการเชื่อมต่อครับ`;
           }
@@ -405,7 +405,7 @@
         alert('❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + err.message);
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = '💾 ส่งข้อมูลการฝากหาทรัพย์';
+        submitBtn.textContent = '💾 ส่งข้อมูลการฝากทรัพย์/หาทรัพย์';
       }
     }
 
