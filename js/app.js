@@ -550,6 +550,9 @@
             }
             // เริ่ม real-time sync อัตโนมัติ
             startRealtimeSync();
+            if (AUTH.current) {
+              await loadDB();
+            }
             // เริ่มระบบ scheduled backup
             initScheduledBackup();
           }

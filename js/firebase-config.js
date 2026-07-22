@@ -273,3 +273,13 @@
       } catch (e) { if (!silent) alert('โหลด config ไม่ได้: ' + e.message); }
     }
 
+    function clearLocalFbConfig() {
+      if (confirm('คุณต้องการล้างการตั้งค่า Firebase ที่เคยเซฟในเครื่องนี้ และกลับไปใช้ค่าเริ่มต้นระบบใช่หรือไม่?')) {
+        localStorage.removeItem(FB_CONFIG_KEY);
+        alert('ล้างการตั้งค่าเรียบร้อยแล้ว ระบบจะโหลดหน้าจอใหม่ครับ');
+        location.reload();
+      }
+    }
+
+    window.clearLocalFbConfig = clearLocalFbConfig;
+
