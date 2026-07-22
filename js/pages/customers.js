@@ -124,12 +124,27 @@
       if (!c || !asset) return false;
       if (asset.listingActive === 'sold') return false;
 
-      // 1. สถานะที่ต้องการ (Status Match: ขาย / เช่า / เช่า/ขาย)
+      // 1. สถานะที่ต้องการ (Status Match)
       const assetStatus = (asset.status || '').trim();
       const custStatus = (c.status || '').trim();
-      if (custStatus && custStatus !== 'เช่า/ขาย') {
-        if (custStatus !== assetStatus) return false;
+      let statusMatch = false;
+      if (!custStatus || custStatus === 'เช่าหรือซื้อ ก็ได้' || custStatus === 'เช่า/ขาย') {
+        statusMatch = true;
+      } else if (custStatus === 'เช่า') {
+        statusMatch = (assetStatus === 'เช่า');
+      } else if (custStatus === 'ซื้อทรัพย์') {
+        statusMatch = (assetStatus === 'ขาย');
+      } else if (custStatus === 'ขายทรัพย์') {
+        statusMatch = (assetStatus === 'ขาย');
+      } else {
+        // Fallback for older values
+        if (custStatus === 'ขาย') {
+          statusMatch = (assetStatus === 'ขาย');
+        } else {
+          statusMatch = (custStatus === assetStatus);
+        }
       }
+      if (!statusMatch) return false;
 
       // 2. ประเภททรัพย์สิน (Type Match: คอนโด, บ้านเดี่ยว, ฯลฯ)
       const assetType = (asset.type || '').trim();
