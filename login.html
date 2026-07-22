@@ -862,14 +862,15 @@
     updateConnectionModeUI();
 
     // 6. Connect to Firebase in the background
-    const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
     const isFirebaseConfigured = FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY" && FIREBASE_CONFIG.apiKey !== "";
     
-    if (storageMode === 'firebase' && isFirebaseConfigured) {
+    if (isFirebaseConfigured) {
       initFirebase().then(async (ok) => {
         if (ok) {
           await syncAuthFromFirebase();
           await checkConsignmentSystemStatus();
+        } else {
+          checkConsignmentSystemStatusLocal();
         }
         updateConnectionModeUI();
       });
@@ -1062,13 +1063,10 @@
   function updateConnectionModeUI() {
     const badge = document.getElementById('modeBadge');
     const txt = document.getElementById('modeText');
-    const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
 
-    if (storageMode === 'local') {
-      badge.className = 'mode-badge mode-local';
-      txt.textContent = 'Offline (Local Mode)';
-    } else if (_fbReady) {
+    if (_fbReady) {
       badge.className = 'mode-badge mode-cloud';
+      txt.style.color = '';
       txt.textContent = 'Online Cloud';
     } else {
       badge.className = 'mode-badge mode-local';

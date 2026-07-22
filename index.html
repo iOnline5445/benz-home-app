@@ -977,30 +977,6 @@
                   <button class="btn btn-danger btn-sm" onclick="doLogout()">ออกระบบ</button>
                 </div>
               </div>
-
-              <!-- โหมดจัดเก็บข้อมูล -->
-              <div class="settings-panel">
-                <h4>💾 โหมดจัดเก็บข้อมูล (Storage Mode)</h4>
-                <p style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.6;">
-                  เลือกว่าจะจัดเก็บข้อมูลในเครื่องนี้เท่านั้น (Offline) หรือเชื่อมโยงซิงก์ข้อมูลกับ Cloud Firestore เพื่อใช้งานร่วมกันหลายเครื่อง
-                </p>
-                <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
-                  <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;background:var(--dark4);padding:14px;border-radius:12px;border:1px solid var(--border2);transition:border-color 0.2s;">
-                    <input type="radio" name="yb_storage_mode" value="local" style="margin-top:4px;accent-color:var(--gold);" onchange="toggleStorageMode(this.value)">
-                    <div>
-                      <span style="font-weight:700;font-size:13px;color:var(--text);">📴 Offline Local Mode (เก็บข้อมูลในเครื่องนี้เท่านั้น)</span>
-                      <span style="display:block;font-size:11px;color:var(--text3);margin-top:4px;line-height:1.5;">เก็บข้อมูลในเบราว์เซอร์ของเครื่องนี้โดยตรง โหลดเร็วที่สุด ทำงานได้ทันทีหลังล็อกอินโดยไม่ต้องต่ออินเทอร์เน็ต</span>
-                    </div>
-                  </label>
-                  <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;background:var(--dark4);padding:14px;border-radius:12px;border:1px solid var(--border2);transition:border-color 0.2s;">
-                    <input type="radio" name="yb_storage_mode" value="firebase" checked style="margin-top:4px;accent-color:var(--gold);" onchange="toggleStorageMode(this.value)">
-                    <div>
-                      <span style="font-weight:700;font-size:13px;color:var(--text);">🌐 Firebase Cloud Mode (ซิงก์ข้อมูลผ่านคลาวด์)</span>
-                      <span style="display:block;font-size:11px;color:var(--text3);margin-top:4px;line-height:1.5;">เชื่อมต่อกับ Firebase Firestore อัปเดตและเข้าถึงข้อมูลชุดเดียวกันแบบเรียลไทม์ผ่านคอมพิวเตอร์และมือถือหลายเครื่อง (ต้องกรอก Firebase Config)</span>
-                    </div>
-                  </label>
-                </div>
-              </div>
             </div>
 
             <!-- จัดการผู้ใช้ -->

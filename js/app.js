@@ -541,10 +541,9 @@
       // ถ้า Firebase active จะเรียก tryRestoreSession อีกครั้งหลัง sync
       await tryRestoreSession();
 
-      const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
       const isFirebaseConfigured = FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY" && FIREBASE_CONFIG.apiKey !== "";
 
-      if (storageMode === 'firebase' && isFirebaseConfigured) {
+      if (isFirebaseConfigured) {
         initFirebase().then(async (ok) => {
           if (ok) {
             const synced = await loadAuthFromFirebase();
@@ -571,6 +570,10 @@
             }
             // เริ่มระบบ scheduled backup
             initScheduledBackup();
+          } else {
+            // Failed to connect to Firebase (network down)
+            _fbReady = false;
+            initScheduledBackup();
           }
           updateFirebaseStatus();
           if (!AUTH.current) {
@@ -581,7 +584,7 @@
           }
         });
       } else {
-        console.log('📴 Running in Offline Local Mode');
+        console.log('📴 Running in Offline Local Mode (Not configured)');
         _fbReady = false;
         updateFirebaseStatus();
         initScheduledBackup();
@@ -920,29 +923,6 @@
       if (dAvatarEl) {
         const initial = (cur.displayname || cur.email || '?').charAt(0).toUpperCase();
         dAvatarEl.textContent = initial;
-      }
-      
-      // Update storage mode radio checked status
-      const storageMode = localStorage.getItem('yb_storage_mode') || 'firebase';
-      const rad = document.querySelector(`input[name="yb_storage_mode"][value="${storageMode}"]`);
-      if (rad) rad.checked = true;
-    }
-
-    function toggleStorageMode(mode) {
-      if (mode === 'firebase') {
-        const isFirebaseConfigured = FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY" && FIREBASE_CONFIG.apiKey !== "";
-        if (!isFirebaseConfigured) {
-          alert('⚠️ กรุณากรอก Firebase Configuration และเชื่อมต่อก่อนเปิดใช้งานโหมดคลาวด์');
-          const localRad = document.querySelector('input[name="yb_storage_mode"][value="local"]');
-          if (localRad) localRad.checked = true;
-          return;
-        }
-      }
-      localStorage.setItem('yb_storage_mode', mode);
-      showToast('💾 เปลี่ยนโหมดจัดเก็บข้อมูลเป็น: ' + (mode === 'local' ? 'Offline Local' : 'Firebase Cloud'), '#50c878');
-      
-      if (confirm('🔄 ระบบจำเป็นต้องโหลดหน้าเว็บใหม่เพื่อใช้โหมดจัดเก็บข้อมูลใหม่ ต้องการโหลดทันทีหรือไม่?')) {
-        location.reload();
       }
     }
 
