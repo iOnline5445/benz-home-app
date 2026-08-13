@@ -546,7 +546,7 @@
               <td>
                 <div style="display:flex; gap:4px;">
                   ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm" style="padding:4px 8px;">🔗</a>` : ''}
-                  <button class="btn btn-blue btn-sm" onclick="closeModal('matching'); switchTab('marketing', null); updateBnav('marketing'); selectMktAsset(${ri}, '${(a.name || '').replace(/'/g, "\\'")} (${a.status || ''})');" style="padding:4px 8px; font-size:11px;">🚀 ดึงเขียนโพสต์</button>
+                  <button class="btn btn-blue btn-sm" onclick="closeModal('matching'); switchTab('clipboard', null); updateBnav('clipboard'); selectCbAsset(${ri}, '${(a.name || '').replace(/'/g, "\\'")} (${a.status || ''})');" style="padding:4px 8px; font-size:11px;">📋 ทำ ClipB</button>
                 </div>
               </td>
             </tr>
