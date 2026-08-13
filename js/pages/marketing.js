@@ -76,8 +76,8 @@
       } else {
         dd.innerHTML = items.map(({ a, i }) => {
           const la = a.listingActive || 'available';
-          const laTag = la === 'reserved' ? ` <span style="font-size:10px;background:rgba(201,168,76,0.2);color:var(--gold);border-radius:3px;padding:1px 5px;">จอง</span>` :
-                        la === 'sold' ? (a.closedDealType === 'rented' ? ` <span style="font-size:10px;background:rgba(80,200,120,0.2);color:var(--green);border-radius:3px;padding:1px 5px;">เช่าแล้ว</span>` : ` <span style="font-size:10px;background:rgba(224,80,80,0.2);color:var(--red);border-radius:3px;padding:1px 5px;">ขายแล้ว</span>`) : '';
+          const laTag = la === 'reserved' ? ` <span style="font-size:10px;background:rgba(201,168,76,0.2);color:var(--gold);border-radius:3px;padding:1px 5px;">มีผู้เช่า</span>` :
+                        la === 'sold' ? (a.closedDealType === 'rented' ? ` <span style="font-size:10px;background:rgba(80,200,120,0.2);color:var(--green);border-radius:3px;padding:1px 5px;">หมดสัญญา</span>` : ` <span style="font-size:10px;background:rgba(224,80,80,0.2);color:var(--red);border-radius:3px;padding:1px 5px;">ขายจบ</span>`) : '';
           return `<div class="cb-asset-item" onclick="selectMktAsset(${i},'${(a.name || '').replace(/'/g, "\\'")} (${a.status || ''})')"
             style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border2);font-size:13px;display:flex;justify-content:space-between;align-items:center;">
             <span style="font-weight:600;color:var(--text)">${a.name || '(ไม่มีชื่อ)'}${laTag}</span>

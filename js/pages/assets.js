@@ -23,10 +23,10 @@
 
       document.getElementById('assetStats').innerHTML = `
     <div class="stat-box" onclick="clearAssetFilters()" title="แสดงทรัพย์สินทั้งหมด"><div class="num">${s.length}</div><div class="lbl">ทรัพย์สินทั้งหมด</div></div>
-    <div class="stat-box" onclick="filterAssetsByStat('status', 'ขายทรัพย์')" title="กรองเฉพาะ ขาย"><div class="num">${s.filter(a => a.status && (a.status.includes('ขาย') || a.status.includes('ซื้อ'))).length}</div><div class="lbl">ขาย</div></div>
-    <div class="stat-box" onclick="filterAssetsByStat('status', 'เช่า')" title="กรองเฉพาะ เช่า"><div class="num">${s.filter(a => a.status && a.status.includes('เช่า')).length}</div><div class="lbl">เช่า</div></div>
+    <div class="stat-box" onclick="filterAssetsByStat('status', 'ฝากขาย')" title="กรองเฉพาะ ฝากขาย"><div class="num">${s.filter(a => a.status && (a.status === 'ฝากขาย' || a.status.includes('ขาย'))).length}</div><div class="lbl">ฝากขาย</div></div>
+    <div class="stat-box" onclick="filterAssetsByStat('status', 'ปล่อยเช่า')" title="กรองเฉพาะ ปล่อยเช่า"><div class="num">${s.filter(a => a.status && (a.status === 'ปล่อยเช่า' || a.status === 'เช่า' || a.status === 'ปล่อยเช่าหรือขาย')).length}</div><div class="lbl">ปล่อยเช่า</div></div>
     <div class="stat-box" onclick="filterAssetsByStat('type', 'คอนโด')" title="กรองเฉพาะ คอนโด"><div class="num">${s.filter(a => a.type === 'คอนโด').length}</div><div class="lbl">คอนโด</div></div>
-    <div class="stat-box" style="${reservedAssets.length > 0 ? 'background:rgba(201,168,76,0.1);border-color:var(--gold);' : ''}" onclick="filterAssetsByStat('listingActive', 'reserved')" title="กรองเฉพาะ จอง"><div class="num" style="color:var(--gold);">${reservedAssets.length}</div><div class="lbl">📌 จอง</div></div>
+    <div class="stat-box" style="${reservedAssets.length > 0 ? 'background:rgba(201,168,76,0.1);border-color:var(--gold);' : ''}" onclick="filterAssetsByStat('listingActive', 'reserved')" title="กรองเฉพาะ จอง"><div class="num" style="color:var(--gold);">${reservedAssets.length}</div><div class="lbl">📋 มีผู้เช่า</div></div>
     ${upcomingExpiry.length > 0 ? `<div class="stat-box" style="background:rgba(201,168,76,0.15);border-color:var(--gold);cursor:pointer;" onclick="showReservationAlerts()"><div class="num" style="color:var(--gold);">${upcomingExpiry.length}</div><div class="lbl">⚠️ ใกล้ครบรอบ</div></div>` : ''}
     ${expiredReservations.length > 0 ? `<div class="stat-box" style="background:rgba(224,80,80,0.15);border-color:var(--red);cursor:pointer;" onclick="showReservationAlerts()"><div class="num" style="color:var(--red);">${expiredReservations.length}</div><div class="lbl">🚨 ครบรอบแล้ว</div></div>` : ''}
   `;
@@ -440,12 +440,12 @@
           let laBadge = '';
           if (la === 'sold') {
             if (a.closedDealType === 'rented') {
-              laBadge = '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(80,200,120,0.15);color:var(--green);margin-left:4px;">🔑 เช่าแล้ว</span>';
+              laBadge = '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(80,200,120,0.15);color:var(--green);margin-left:4px;">🔑 หมดสัญญา</span>';
             } else {
-              laBadge = '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(224,80,80,0.15);color:var(--red);margin-left:4px;">🔴 ขายแล้ว</span>';
+              laBadge = '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(224,80,80,0.15);color:var(--red);margin-left:4px;">🔒 ขายจบ</span>';
             }
           } else if (la === 'reserved') {
-            laBadge = '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(201,168,76,0.15);color:var(--gold);margin-left:4px;">⏳ จอง</span>';
+            laBadge = '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(201,168,76,0.15);color:var(--gold);margin-left:4px;">📋 มีผู้เช่า</span>';
           }
 
           let reservationAlert = '';

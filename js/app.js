@@ -34,12 +34,19 @@
     }
 
     async function migrateDatabaseStatuses() {
-      const mapStatus = (status) => {
+      const mapStatus = (status, collection) => {
         if (!status) return status;
         const s = status.trim();
-        if (s === 'ขาย') return 'ขายทรัพย์';
-        if (s === 'ซื้อ') return 'ซื้อทรัพย์';
-        if (s === 'เช่า/ซื้อ' || s === 'เช่า/ขาย' || s === 'เช่าหรือซื้อ ก็ได้' || s === 'เช่าหรือซื้อก็ได้') return 'เช่าหรือซื้อ';
+        if (collection === 'assets') {
+          if (s === 'ขาย' || s === 'ขายทรัพย์') return 'ฝากขาย';
+          if (s === 'ซื้อ' || s === 'ซื้อทรัพย์') return 'ฝากขาย';
+          if (s === 'เช่า') return 'ปล่อยเช่า';
+          if (s === 'เช่า/ซื้อ' || s === 'เช่า/ขาย' || s === 'เช่าหรือซื้อ ก็ได้' || s === 'เช่าหรือซื้อก็ได้' || s === 'เช่าหรือซื้อ') return 'ปล่อยเช่าหรือขาย';
+        } else if (collection === 'customers') {
+          if (s === 'เช่า') return 'ต้องการเช่า';
+          if (s === 'ขาย' || s === 'ขายทรัพย์' || s === 'ซื้อ' || s === 'ซื้อทรัพย์') return 'ต้องการซื้อ';
+          if (s === 'เช่า/ซื้อ' || s === 'เช่า/ขาย' || s === 'เช่าหรือซื้อ ก็ได้' || s === 'เช่าหรือซื้อก็ได้' || s === 'เช่าหรือซื้อ') return 'เช่าหรือซื้อก็ได้';
+        }
         return s;
       };
 
@@ -47,7 +54,7 @@
 
       // Migrate assets
       for (const a of DB.assets) {
-        const newStatus = mapStatus(a.status);
+        const newStatus = mapStatus(a.status, 'assets');
         if (newStatus !== a.status) {
           a.status = newStatus;
           changed = true;
@@ -65,7 +72,7 @@
 
       // Migrate customers
       for (const c of DB.customers) {
-        const newStatus = mapStatus(c.status);
+        const newStatus = mapStatus(c.status, 'customers');
         if (newStatus !== c.status) {
           c.status = newStatus;
           changed = true;
@@ -3154,7 +3161,7 @@
         document.getElementById('modalAssetTitle').textContent = '🏠 เพิ่มทรัพย์สิน';
         // Clear all fields
         ['a_name', 'a_location', 'a_price', 'a_roomtype', 'a_area', 'a_floor', 'a_link', 'a_map', 'a_linkpic', 'a_postdate', 'a_updatedate', 'a_contact', 'a_note', 'a_reservationDate', 'a_reservationEndDate', 'a_bts', 'a_rentStartDate', 'a_rentPeriod', 'a_rentPeriodCustom', 'a_rentEndDate'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-        document.getElementById('a_status').value = 'เช่า';
+        document.getElementById('a_status').value = 'ปล่อยเช่า';
         document.getElementById('a_type').value = 'คอนโด';
         document.getElementById('a_careContract').value = 'ยังไม่ทำ';
         document.getElementById('a_careRepair').value = 'ไม่มี';
@@ -3198,7 +3205,7 @@
       if (t === 'customer') {
         document.getElementById('modalCustomerTitle').textContent = '🤝 เพิ่มลูกค้า';
         ['cu_name', 'cu_budget', 'cu_area', 'cu_floor', 'cu_contact', 'cu_linkpost', 'cu_note', 'cu_line', 'cu_stationStart', 'cu_stationEnd', 'cu_targetDate'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-        document.getElementById('cu_status').value = 'เช่า';
+        document.getElementById('cu_status').value = 'ต้องการเช่า';
         onCustModalTrainLineChange();
       }
       if (t === 'user') {

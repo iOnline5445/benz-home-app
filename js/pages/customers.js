@@ -128,9 +128,9 @@
       const assetStatus = (asset.status || '').trim();
       const custStatus = (c.status || '').trim();
       let statusMatch = false;
-      const isBoth = (s) => !s || s === 'เช่าหรือซื้อ' || s === 'เช่าหรือซื้อ ก็ได้' || s === 'เช่า/ขาย';
-      const isRent = (s) => s === 'เช่า';
-      const isBuyOrSale = (s) => s === 'ซื้อทรัพย์' || s === 'ขายทรัพย์' || s === 'ขาย' || s === 'ซื้อ';
+      const isBoth = (s) => !s || s === 'ปล่อยเช่าหรือขาย' || s === 'เช่าหรือซื้อก็ได้' || s === 'เช่าหรือซื้อ' || s === 'เช่าหรือซื้อ ก็ได้' || s === 'เช่า/ขาย';
+      const isRent = (s) => s === 'ปล่อยเช่า' || s === 'ต้องการเช่า' || s === 'เช่า';
+      const isBuyOrSale = (s) => s === 'ฝากขาย' || s === 'ต้องการซื้อ' || s === 'ซื้อทรัพย์' || s === 'ขายทรัพย์' || s === 'ขาย' || s === 'ซื้อ';
 
       if (isBoth(custStatus) || isBoth(assetStatus)) {
         statusMatch = true;
