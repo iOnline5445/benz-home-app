@@ -3770,14 +3770,20 @@
           } else if (type === 'customers') {
             const hi = n => headers.findIndex(h => h === n);
             const iNm = hi('ชื่อลูกค้า/โครงการ'), iSt = hi('สถานะ'), iTy = hi('ประเภท'), iBd = hi('งบประมาณ'),
-              iAr = hi('ขนาดห้อง'), iFl = hi('ชั้น'), iCt = hi('Contact'), iNt = hi('Note'), iLk = hi('Link Post');
+              iAr = hi('ขนาดห้อง'), iFl = hi('ชั้น'), iCt = hi('Contact'), iNt = hi('Note'), iLk = hi('Link Post'),
+              iLn = hi('แนวรถไฟฟ้า') >= 0 ? hi('แนวรถไฟฟ้า') : hi('สายรถไฟฟ้า'),
+              iSs = hi('ตั้งแต่สถานี') >= 0 ? hi('ตั้งแต่สถานี') : hi('สถานีเริ่มต้น'),
+              iSe = hi('ถึงสถานี') >= 0 ? hi('ถึงสถานี') : hi('สถานีสิ้นสุด'),
+              iTd = hi('วันที่ต้องการทรัพย์') >= 0 ? hi('วันที่ต้องการทรัพย์') : hi('วันที่ต้องการเข้าอยู่');
             rows.forEach(r => {
               if (r.length < 2) return;
               const a = {
-                id: genId(), // BUG FIX: assign id ทันที
-                name: iNm >= 0 ? r[iNm] : '', status: iSt >= 0 ? r[iSt] : '', type: iTy >= 0 ? r[iTy] : '',
+                id: genId(),
+                name: iNm >= 0 ? r[iNm] : '', status: iSt >= 0 ? r[iSt] : 'ต้องการเช่า', type: iTy >= 0 ? r[iTy] : 'คอนโด',
                 budget: iBd >= 0 ? r[iBd] : '', area: iAr >= 0 ? r[iAr] : '', floor: iFl >= 0 ? r[iFl] : '',
-                contact: iCt >= 0 ? r[iCt] : '', note: iNt >= 0 ? r[iNt] : '', linkpost: iLk >= 0 ? r[iLk] : ''
+                contact: iCt >= 0 ? r[iCt] : '', note: iNt >= 0 ? r[iNt] : '', linkpost: iLk >= 0 ? r[iLk] : '',
+                line: iLn >= 0 ? r[iLn] : '', stationStart: iSs >= 0 ? r[iSs] : '', stationEnd: iSe >= 0 ? r[iSe] : '',
+                targetDate: iTd >= 0 ? r[iTd] : ''
               };
               if (a.name) { DB.customers.push(a); imported++; }
             });
