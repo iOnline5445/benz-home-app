@@ -699,6 +699,37 @@
       input.click();
     }
 
+    function getLoggedInAgentContact() {
+      const curUser = (typeof AUTH !== 'undefined' && AUTH && AUTH.current) ? AUTH.current : null;
+      if (!curUser) return 'BENZ HOME Agency';
+
+      const userEmail = (curUser.email || '').toLowerCase().trim();
+      const userName = (curUser.displayname || curUser.email || '').trim();
+
+      let agentMatch = null;
+      if (typeof DB !== 'undefined' && Array.isArray(DB.agents) && DB.agents.length > 0) {
+        agentMatch = DB.agents.find(ag => {
+          const agEmail = (ag.email || '').toLowerCase().trim();
+          const agName = (ag.name || '').toLowerCase().trim();
+          return (agEmail && agEmail === userEmail) || (agName && userName.toLowerCase().includes(agName));
+        });
+      }
+
+      if (agentMatch) {
+        const name = agentMatch.name || userName;
+        let parts = [name];
+        if (agentMatch.tel) parts.push(`โทร: ${agentMatch.tel}`);
+        if (agentMatch.line) parts.push(`Line: ${agentMatch.line}`);
+        else if (agentMatch.linelink) parts.push(`Line: ${agentMatch.linelink}`);
+        return parts.join(' | ');
+      } else {
+        let parts = [userName];
+        if (curUser.tel || curUser.phone || curUser.contact) parts.push(`โทร: ${curUser.tel || curUser.phone || curUser.contact}`);
+        if (curUser.line || curUser.lineId) parts.push(`Line: ${curUser.line || curUser.lineId}`);
+        return parts.join(' | ');
+      }
+    }
+
     function generatePostCaption(assetIdx) {
       const a = DB.assets[assetIdx];
       if (!a) return;
@@ -718,9 +749,11 @@
       text += `\n✨ จุดเด่น / รายละเอียดเพิ่มเติม:\n`;
       text += `${a.note || 'ห้องสวย สภาพดี แต่งครบ พร้อมเข้าอยู่ทันที เดินทางสะดวกสบาย'}\n\n`;
 
+      // ดึงข้อมูลติดต่อเฉพาะของ Agent ที่ Login อยู่เท่านั้น (ห้ามใช้เบอร์เจ้าของทรัพย์)
+      const agentContactInfo = getLoggedInAgentContact();
+
       text += `📞 สอบถามข้อมูลเพิ่มเติม / นัดชมห้อง:\n`;
-      text += `ติดต่อ: ${a.contact || 'แอดมินดูแลทรัพย์'}\n`;
-      if (a.poster) text += `ผู้ดูแล: ${a.poster}\n`;
+      text += `ติดต่อ: ${agentContactInfo}\n`;
       if (a.link) text += `🔗 ลิงก์รายละเอียด: ${a.link}\n`;
       if (a.map) text += `📍 พิกัดแผนที่: ${a.map}\n`;
 
