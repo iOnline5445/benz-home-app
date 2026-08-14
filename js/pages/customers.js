@@ -584,13 +584,12 @@
       
       const header = document.getElementById('matchingTableHeader');
       header.innerHTML = `
-        <th style="width:30px">#</th>
-        <th>ชื่อลูกค้า/โครงการที่สนใจ</th>
-        <th>สถานะที่ต้องการ</th>
-        <th>งบประมาณสูงสุด</th>
-        <th>แนวรถไฟฟ้า</th>
-        <th>ช่องทางติดต่อ</th>
-        <th>การจัดการ</th>
+        <th style="width:30px; text-align:center;">#</th>
+        <th style="min-width:180px;">ชื่อลูกค้า / รายละเอียด</th>
+        <th style="width:110px;">สถานะ</th>
+        <th style="width:130px;">งบประมาณ</th>
+        <th style="width:140px;">แนวรถไฟฟ้า</th>
+        <th style="width:140px; text-align:right;">การจัดการ</th>
       `;
       
       const tbody = document.getElementById('matchingTableBody');
@@ -605,18 +604,23 @@
         tbody.innerHTML = matches.map((c, i) => {
           const badge = c.status === 'ต้องการซื้อ' || c.status === 'ขาย' || c.status === 'ซื้อทรัพย์' ? 'badge-sale' : (c.status === 'ต้องการเช่า' || c.status === 'เช่า' ? 'badge-rent' : 'badge-both');
           const linkUrl = c.linkpost || c.link || '';
+          let contactInfo = (window._canSeeContacts && c.contact && c.contact !== c.name) ? c.contact : '';
+
           return `
             <tr>
-              <td style="color:var(--text3);">${i + 1}</td>
-              <td style="font-weight:600; color:var(--text);">${c.name || '-'}${c.note ? `<br><small style="color:var(--text2); font-weight:normal;">📝 ${c.note}</small>` : ''}</td>
+              <td style="color:var(--text3); text-align:center;">${i + 1}</td>
+              <td style="font-weight:600; color:var(--text);">
+                ${c.name || '-'}
+                ${contactInfo ? `<br><small style="color:var(--blue); font-weight:normal;">📞 ${contactInfo}</small>` : ''}
+                ${c.note ? `<br><small style="color:var(--text2); font-weight:normal;">📝 ${c.note}</small>` : ''}
+              </td>
               <td><span class="badge ${badge}">${c.status || '-'}</span></td>
               <td style="color:var(--gold); font-weight:700;">${c.budget || '-'}</td>
-              <td>${c.line || 'ไม่ระบุ'}${c.stationStart || c.stationEnd ? `<br><small style="color:var(--text3);">📍 ${c.stationStart || 'ไม่ระบุ'} - ${c.stationEnd || 'ไม่ระบุ'}</small>` : ''}</td>
-              <td style="font-size:12px;">${window._canSeeContacts ? (c.contact || '-') : '🔒 เฉพาะ Agent ที่อนุมัติแล้ว'}</td>
-              <td>
-                <div style="display:flex; gap:4px; align-items:center;">
+              <td style="font-size:12px;">${c.line || '-'}${c.stationStart || c.stationEnd ? `<br><small style="color:var(--text3);">📍 ${c.stationStart || ''}-${c.stationEnd || ''}</small>` : ''}</td>
+              <td style="text-align:right; white-space:nowrap;">
+                <div style="display:inline-flex; gap:6px; align-items:center; justify-content:flex-end;">
                   ${linkUrl ? `<a href="${linkUrl}" target="_blank" class="btn btn-outline btn-sm" style="padding:4px 8px;" title="เปิดลิงก์โพสต์/โปรไฟล์ลูกค้า">🔗</a>` : ''}
-                  <button class="btn btn-blue btn-sm" onclick="closeModal('matching'); switchTab('clipboard', null); updateBnav('clipboard'); selectCbAsset(${assetIdx}, '${assetLabel}');" style="padding:4px 8px; font-size:11px;">📋 ทำ ClipB</button>
+                  <button class="btn btn-blue btn-sm" onclick="closeModal('matching'); switchTab('clipboard', null); updateBnav('clipboard'); selectCbAsset(${assetIdx}, '${assetLabel}');" style="padding:4px 10px; font-size:12px; white-space:nowrap;">📋 ทำ ClipB</button>
                 </div>
               </td>
             </tr>
