@@ -3348,11 +3348,15 @@
       a.rentPeriodCustom = '';
       a.rentEndDate = '';
 
-      // เพิ่มข้อมูลการจอง (ถ้าเลือกสถานะ "จอง")
+      // เพิ่มข้อมูลการจองและสัญญาเช่า (ถ้าเลือกสถานะ "มีผู้เช่าแล้ว/จอง")
       if (a.listingActive === 'reserved') {
         a.reservationDate = v('a_reservationDate');
         a.reservationPeriod = v('a_reservationPeriod');
         a.reservationEndDate = v('a_reservationEndDate');
+        a.rentStartDate = v('a_rentStartDate');
+        a.rentPeriod = v('a_rentPeriod');
+        a.rentPeriodCustom = v('a_rentPeriodCustom');
+        a.rentEndDate = v('a_rentEndDate');
       } else if (a.listingActive === 'sold') {
         // เพิ่มข้อมูลการปิดดีลขาย/เช่า (ถ้าเลือกสถานะ "ขาย/เช่าไปแล้ว")
         const closedTypeEl = document.querySelector('input[name="a_closedDealType"]:checked');

@@ -112,6 +112,7 @@
 
       if (reservedRadio && reservedRadio.checked) {
         if (reservationFields) reservationFields.style.display = 'block';
+        if (rentContractFields) rentContractFields.style.display = 'block';
       } else if (soldRadio && soldRadio.checked) {
         if (closedDealTypeFields) closedDealTypeFields.style.display = 'block';
         if (dealRentedRadio && dealRentedRadio.checked) {
@@ -417,6 +418,7 @@
               ${hasEditPermission ? `<button class="btn btn-outline btn-sm" onclick="triggerCardUpload(${ri})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;border-color:var(--gold);color:var(--gold);" title="อัปโหลด/เปลี่ยนรูปภาพ">📤</button>` : ''}
               ${a.link ? `<a href="${a.link}" target="_blank" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="ลิงก์รายละเอียด">🔗</a>` : ''}
               <button class="btn btn-outline btn-sm" style="border-color:var(--gold);color:var(--gold);font-size:12px;padding:6px 10px;border-radius:8px;font-weight:600;" onclick="showCustomerMatchesForAsset(${ri})" title="จับคู่ลูกค้า">🤝 จับคู่</button>
+              <button class="btn btn-outline btn-sm" style="border-color:var(--purple);color:var(--purple);font-size:12px;padding:6px 10px;border-radius:8px;font-weight:600;" onclick="generatePostCaption(${ri})" title="สร้างสคริปต์แคปชันโพสต์">✨ แคปชัน</button>
               <button class="btn btn-outline btn-sm" onclick="editAsset(${ri})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="แก้ไข">✏️</button>
               ${(isOwner || canDelete) ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="ลบ">🗑️</button>` : ''}
             </div></td>
@@ -583,6 +585,7 @@
                 ${a.map ? `<a href="${a.map}" target="_blank" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="พิกัดแผนที่">📍</a>` : ''}
                 <button class="btn btn-blue btn-sm" onclick="quickClip(${ri})" style="font-size:12px;padding:6px 10px;border-radius:8px;font-weight:600;">📋 คัดลอก</button>
                 <button class="btn btn-outline btn-sm" style="border-color:var(--gold);color:var(--gold);font-size:12px;padding:6px 10px;border-radius:8px;font-weight:600;" onclick="showCustomerMatchesForAsset(${ri})">🤝 จับคู่</button>
+                <button class="btn btn-outline btn-sm" style="border-color:var(--purple);color:var(--purple);font-size:12px;padding:6px 10px;border-radius:8px;font-weight:600;" onclick="generatePostCaption(${ri})" title="สร้างสคริปต์แคปชันโพสต์">✨ แคปชัน</button>
                 <button class="btn btn-outline btn-sm" onclick="editAsset(${ri})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="แก้ไข">✏️</button>
                 ${(isOwner || canDelete) ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('assets',${ri})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;" title="ลบ">🗑️</button>` : ''}
               </div>
@@ -695,4 +698,53 @@
       };
       input.click();
     }
+
+    function generatePostCaption(assetIdx) {
+      const a = DB.assets[assetIdx];
+      if (!a) return;
+
+      const isRent = a.status === 'ปล่อยเช่า' || a.status === 'เช่า';
+      const isSale = a.status === 'ฝากขาย' || a.status === 'ขาย';
+      const statusTitle = isRent ? '🔥 ปล่อยเช่าด่วน!' : isSale ? '🔥 ประกาศขายด่วน!' : '🔥 ปล่อยเช่า / ประกาศขาย!';
+
+      let text = `${statusTitle} ${a.name || ''}\n`;
+      text += `📍 ทำเล: ${a.location || 'ไม่ระบุ'} ${a.bts ? `(ใกล้ ${a.bts})` : ''}\n\n`;
+      text += `💰 ราคา: ${a.price || 'โปรดสอบถาม'}\n`;
+      text += `🏢 ประเภท: ${a.type || 'คอนโด'}\n`;
+      if (a.roomtype) text += `🚪 รูปแบบห้อง: ${a.roomtype}\n`;
+      if (a.area) text += `📐 ขนาดพื้นที่: ${a.area}\n`;
+      if (a.floor) text += `🏢 ชั้น: ${a.floor}\n`;
+      
+      text += `\n✨ จุดเด่น / รายละเอียดเพิ่มเติม:\n`;
+      text += `${a.note || 'ห้องสวย สภาพดี แต่งครบ พร้อมเข้าอยู่ทันที เดินทางสะดวกสบาย'}\n\n`;
+
+      text += `📞 สอบถามข้อมูลเพิ่มเติม / นัดชมห้อง:\n`;
+      text += `ติดต่อ: ${a.contact || 'แอดมินดูแลทรัพย์'}\n`;
+      if (a.poster) text += `ผู้ดูแล: ${a.poster}\n`;
+      if (a.link) text += `🔗 ลิงก์รายละเอียด: ${a.link}\n`;
+      if (a.map) text += `📍 พิกัดแผนที่: ${a.map}\n`;
+
+      const captionEl = document.getElementById('captionPreviewText');
+      if (captionEl) captionEl.value = text;
+
+      openModal('captionPreview');
+    }
+
+    function copyCaptionText() {
+      const captionEl = document.getElementById('captionPreviewText');
+      if (!captionEl || !captionEl.value) return;
+      
+      navigator.clipboard.writeText(captionEl.value).then(() => {
+        showToast('✅ คัดลอกสคริปต์แคปชันเรียบร้อยแล้ว!', '#50c878');
+        closeModal('captionPreview');
+      }).catch(err => {
+        captionEl.select();
+        document.execCommand('copy');
+        showToast('✅ คัดลอกเรียบร้อย!', '#50c878');
+        closeModal('captionPreview');
+      });
+    }
+
     window.triggerCardUpload = triggerCardUpload;
+    window.generatePostCaption = generatePostCaption;
+    window.copyCaptionText = copyCaptionText;
