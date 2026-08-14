@@ -264,4 +264,31 @@ IDEO พระราม 9,พระราม 9,ปล่อยเช่า,ค�
       document.body.removeChild(link);
     }
     window.downloadSampleCSV = downloadSampleCSV;
+
+    function toggleCustContractFields() {
+      const ps = document.getElementById('cu_pipelineStatus')?.value;
+      const container = document.getElementById('custContractFields');
+      if (container) {
+        container.style.display = (ps === 'rented') ? 'block' : 'none';
+      }
+    }
+
+    function calculateCustRentEnd() {
+      const startDateEl = document.getElementById('cu_rentStartDate');
+      const periodEl = document.getElementById('cu_rentPeriod');
+      const endDateEl = document.getElementById('cu_rentEndDate');
+      if (!startDateEl || !periodEl || !endDateEl) return;
+      const startVal = startDateEl.value;
+      const months = parseInt(periodEl.value);
+      if (startVal && months) {
+        const parts = startVal.split('-');
+        const end = new Date(Date.UTC(parts[0], parts[1] - 1 + months, parts[2]));
+        endDateEl.value = end.toISOString().slice(0, 10);
+      } else {
+        endDateEl.value = '';
+      }
+    }
+
+    window.toggleCustContractFields = toggleCustContractFields;
+    window.calculateCustRentEnd = calculateCustRentEnd;
   
