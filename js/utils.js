@@ -238,5 +238,30 @@
       return text;
     }
     
-    // End of main init
+    function downloadSampleCSV(type) {
+      let filename = 'sample_customers.csv';
+      let content = `ชื่อลูกค้า/โครงการ,สถานะ,ประเภท,งบประมาณ,ขนาดห้อง,ชั้น,Contact,Link Post,Note,แนวรถไฟฟ้า,ตั้งแต่สถานี,ถึงสถานี,วันที่ต้องการทรัพย์
+IDEO Sukhumvit 93 (คุณสมชาย),ต้องการเช่า,คอนโด,15000/เดือน,30-35 ตร.ม.,10 ขึ้นไป,คุณสมชาย 081-234-5678 (Line: somchai93),https://facebook.com/groups/condosukhumvit/posts/101,ต้องการห้องพร้อมเข้าอยู่ เลี้ยงแมวได้ 1 ตัว,Sukhumvit Line (สายสุขุมวิท),BTS อ่อนนุช,BTS บางจาก,2026-09-01
+Whizdom Essence (คุณเมย์),ต้องการเช่า,คอนโด,22000/เดือน,45-50 ตร.ม.,ชั้นกลาง-สูง,คุณเมย์ 089-876-5432 (Line: may_property),https://facebook.com/groups/condoonnut/posts/202,ขอห้องมุม วิวไม่บัง แต่งครบมีเครื่องซักผ้า,Sukhumvit Line (สายสุขุมวิท),BTS อุดมสุข,BTS ปุณณวิถี,2026-09-15
+บ้านเดี่ยวแถวบางนา (คุณอนันต์),ต้องการซื้อ,บ้านเดี่ยว,7.5 ล้าน,50-80 ตร.ว.,2 ชั้น,คุณอนันต์ 086-555-4321,https://facebook.com/groups/housebangna/posts/303,จอดรถได้ 2 คัน ใกล้ทางด่วน,,,,,2026-10-01
+Rhythm Asoke (คุณนภัส),เช่าหรือซื้อก็ได้,คอนโด,18000/เดือน,32 ตร.ม.,15 ขึ้นไป,คุณนภัส 092-111-2233 (Line: naphat_bkk),https://facebook.com/groups/mrtasoke/posts/404,เน้นใกล้ MRT อโศก เดินทางสะดวก,MRT Blue Line (สายสีน้ำเงิน),MRT เพชรบุรี,MRT พระราม 9,2026-09-05
+Life Ladprao (คุณธีรเดช),ต้องการเช่า,คอนโด,16000/เดือน,35 ตร.ม.,ชั้น 12+,คุณธีรเดช 084-333-8899,https://facebook.com/groups/condoladprao/posts/505,สัญญา 1 ปี พร้อมเข้าอยู่ทันที,Sukhumvit Line (สายสุขุมวิท),BTS ห้าแยกลาดพร้าว,BTS หมอชิต,2026-08-20`;
+
+      if (type === 'assets') {
+        filename = 'sample_assets.csv';
+        content = `ชื่อโครงการ,ทำเล,สถานะ,ประเภท,ราคา,ประเภทห้อง,ขนาด,ชั้นตึก,Contact,Link,Map,วันที่โพสต์,วันที่อัปเดต,หมายเหตุ,Link Pic,ผู้โพสต์
+IDEO พระราม 9,พระราม 9,ปล่อยเช่า,คอนโด,15000/เดือน,1 Bedroom,35 ตร.ม.,ชั้น 15,คุณเบนซ์ 098-256-5995,https://...,https://maps...,2026-08-01,2026-08-01,แต่งครบ พร้อมเข้าอยู่,https://...,คุณเบนซ์`;
+      }
+
+      const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+    window.downloadSampleCSV = downloadSampleCSV;
   

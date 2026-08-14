@@ -4129,4 +4129,5 @@ IDEO พระราม 9,พระราม 9,ปล่อยเช่า,ค�
 
     window.loadSystemSettingsUI = loadSystemSettingsUI;
     window.saveSystemSettings = saveSystemSettings;
+    window.downloadSampleCSV = downloadSampleCSV;
     
