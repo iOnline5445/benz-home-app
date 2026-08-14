@@ -3424,6 +3424,7 @@
     async function saveCustomer() {
       const a = { name: v('cu_name'), status: v('cu_status'), type: v('cu_type'), budget: v('cu_budget'), area: v('cu_area'), floor: v('cu_floor'), contact: v('cu_contact'), linkpost: v('cu_linkpost'), note: v('cu_note'), line: v('cu_line'), stationStart: v('cu_stationStart'), stationEnd: v('cu_stationEnd'), targetDate: v('cu_targetDate') };
       if (!a.name) { alert('กรุณากรอกชื่อโครงการหรือชื่อลูกค้า'); return; }
+      if (!a.contact) { alert('กรุณากรอกข้อมูลการติดต่อ (Contact)'); return; }
       if (editMode.idx >= 0) {
         const existing = DB.customers[editMode.idx];
         a.id = existing.id || genId();
