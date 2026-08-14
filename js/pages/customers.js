@@ -590,7 +590,7 @@
         <th>งบประมาณสูงสุด</th>
         <th>แนวรถไฟฟ้า</th>
         <th>ช่องทางติดต่อ</th>
-        <th>หมายเหตุ</th>
+        <th>การจัดการ</th>
       `;
       
       const tbody = document.getElementById('matchingTableBody');
@@ -601,17 +601,24 @@
         tableWrap.style.display = 'block';
         emptyMsg.style.display = 'none';
         
+        const assetLabel = (asset.name || '').replace(/'/g, "\\'") + ' (' + (asset.status || '') + ')';
         tbody.innerHTML = matches.map((c, i) => {
-          const badge = c.status === 'ขาย' ? 'badge-sale' : c.status === 'เช่า' ? 'badge-rent' : 'badge-both';
+          const badge = c.status === 'ต้องการซื้อ' || c.status === 'ขาย' || c.status === 'ซื้อทรัพย์' ? 'badge-sale' : (c.status === 'ต้องการเช่า' || c.status === 'เช่า' ? 'badge-rent' : 'badge-both');
+          const linkUrl = c.linkpost || c.link || '';
           return `
             <tr>
               <td style="color:var(--text3);">${i + 1}</td>
-              <td style="font-weight:600; color:var(--text);">${c.name || '-'}</td>
+              <td style="font-weight:600; color:var(--text);">${c.name || '-'}${c.note ? `<br><small style="color:var(--text2); font-weight:normal;">📝 ${c.note}</small>` : ''}</td>
               <td><span class="badge ${badge}">${c.status || '-'}</span></td>
               <td style="color:var(--gold); font-weight:700;">${c.budget || '-'}</td>
               <td>${c.line || 'ไม่ระบุ'}${c.stationStart || c.stationEnd ? `<br><small style="color:var(--text3);">📍 ${c.stationStart || 'ไม่ระบุ'} - ${c.stationEnd || 'ไม่ระบุ'}</small>` : ''}</td>
               <td style="font-size:12px;">${window._canSeeContacts ? (c.contact || '-') : '🔒 เฉพาะ Agent ที่อนุมัติแล้ว'}</td>
-              <td style="font-size:12px; color:var(--text2); max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${c.note || ''}">${c.note || '-'}</td>
+              <td>
+                <div style="display:flex; gap:4px; align-items:center;">
+                  ${linkUrl ? `<a href="${linkUrl}" target="_blank" class="btn btn-outline btn-sm" style="padding:4px 8px;" title="เปิดลิงก์โพสต์/โปรไฟล์ลูกค้า">🔗</a>` : ''}
+                  <button class="btn btn-blue btn-sm" onclick="closeModal('matching'); switchTab('clipboard', null); updateBnav('clipboard'); selectCbAsset(${assetIdx}, '${assetLabel}');" style="padding:4px 8px; font-size:11px;">📋 ทำ ClipB</button>
+                </div>
+              </td>
             </tr>
           `;
         }).join('');
