@@ -3204,9 +3204,12 @@
       }
       if (t === 'customer') {
         document.getElementById('modalCustomerTitle').textContent = '🤝 เพิ่มลูกค้า';
-        ['cu_name', 'cu_budget', 'cu_area', 'cu_floor', 'cu_contact', 'cu_linkpost', 'cu_note', 'cu_line', 'cu_stationStart', 'cu_stationEnd', 'cu_targetDate'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        ['cu_name', 'cu_budget', 'cu_area', 'cu_floor', 'cu_contact', 'cu_linkpost', 'cu_note', 'cu_line', 'cu_stationStart', 'cu_stationEnd', 'cu_targetDate', 'cu_rentStartDate', 'cu_rentPeriod', 'cu_rentEndDate'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
         document.getElementById('cu_status').value = 'ต้องการเช่า';
+        const psEl = document.getElementById('cu_pipelineStatus');
+        if (psEl) psEl.value = 'active';
         onCustModalTrainLineChange();
+        if (typeof toggleCustContractFields === 'function') toggleCustContractFields();
       }
       if (t === 'user') {
         document.getElementById('modalUserTitle').textContent = '👤 เพิ่มผู้ใช้งาน';
@@ -3426,7 +3429,25 @@
     // SAVE CUSTOMER
     // ============================
     async function saveCustomer() {
-      const a = { name: v('cu_name'), status: v('cu_status'), type: v('cu_type'), budget: v('cu_budget'), area: v('cu_area'), floor: v('cu_floor'), contact: v('cu_contact'), linkpost: v('cu_linkpost'), note: v('cu_note'), line: v('cu_line'), stationStart: v('cu_stationStart'), stationEnd: v('cu_stationEnd'), targetDate: v('cu_targetDate') };
+      const a = {
+        name: v('cu_name'),
+        status: v('cu_status'),
+        pipelineStatus: v('cu_pipelineStatus') || 'active',
+        rentStartDate: v('cu_rentStartDate'),
+        rentPeriod: v('cu_rentPeriod'),
+        rentEndDate: v('cu_rentEndDate'),
+        type: v('cu_type'),
+        budget: v('cu_budget'),
+        area: v('cu_area'),
+        floor: v('cu_floor'),
+        contact: v('cu_contact'),
+        linkpost: v('cu_linkpost'),
+        note: v('cu_note'),
+        line: v('cu_line'),
+        stationStart: v('cu_stationStart'),
+        stationEnd: v('cu_stationEnd'),
+        targetDate: v('cu_targetDate')
+      };
       if (!a.name) { alert('กรุณากรอกชื่อโครงการหรือชื่อลูกค้า'); return; }
       if (!a.contact) { alert('กรุณากรอกข้อมูลการติดต่อ (Contact)'); return; }
       if (editMode.idx >= 0) {

@@ -210,11 +210,18 @@
       const lineFilter = document.getElementById('filterCustTrainLine')?.value || '';
       const startFilter = document.getElementById('filterCustStartStation')?.value || '';
       const endFilter = document.getElementById('filterCustEndStation')?.value || '';
+      const psFilter = document.getElementById('filterCustPipelineStatus')?.value ?? 'active';
 
       const cur = (typeof migrateUserFields === 'function') ? migrateUserFields(AUTH.current) : (AUTH.current || {});
       const isOwner = cur.businessRole === 'owner' && cur.accessLevel === 'member';
 
       let list = DB.customers.filter(a => {
+        // Pipeline status filter
+        const ps = a.pipelineStatus || 'active';
+        if (psFilter && psFilter !== '') {
+          if (ps !== psFilter) return false;
+        }
+
         // If owner, check if the customer matches at least one of their properties
         if (isOwner) {
           const ownerEmail = (cur.email || '').toLowerCase().trim();
@@ -436,10 +443,41 @@
     }
 
 
+    function toggleCustContractFields() {
+      const ps = document.getElementById('cu_pipelineStatus')?.value;
+      const container = document.getElementById('custContractFields');
+      if (container) {
+        container.style.display = (ps === 'rented') ? 'block' : 'none';
+      }
+    }
+
+    function calculateCustRentEnd() {
+      const startDateEl = document.getElementById('cu_rentStartDate');
+      const periodEl = document.getElementById('cu_rentPeriod');
+      const endDateEl = document.getElementById('cu_rentEndDate');
+      if (!startDateEl || !periodEl || !endDateEl) return;
+      const startVal = startDateEl.value;
+      const months = parseInt(periodEl.value);
+      if (startVal && months) {
+        const parts = startVal.split('-');
+        const end = new Date(Date.UTC(parts[0], parts[1] - 1 + months, parts[2]));
+        endDateEl.value = end.toISOString().slice(0, 10);
+      } else {
+        endDateEl.value = '';
+      }
+    }
+
+    window.toggleCustContractFields = toggleCustContractFields;
+    window.calculateCustRentEnd = calculateCustRentEnd;
+
     function editCustomer(i) {
       const a = DB.customers[i];
       document.getElementById('modalCustomerTitle').textContent = '✏️ แก้ไขลูกค้า';
       setV('cu_name', a.name); setV('cu_status', a.status); setV('cu_type', a.type);
+      setV('cu_pipelineStatus', a.pipelineStatus || 'active');
+      setV('cu_rentStartDate', a.rentStartDate || '');
+      setV('cu_rentPeriod', a.rentPeriod || '12');
+      setV('cu_rentEndDate', a.rentEndDate || '');
       setV('cu_budget', a.budget); setV('cu_area', a.area); setV('cu_floor', a.floor);
       setV('cu_contact', a.contact); setV('cu_linkpost', a.linkpost); setV('cu_note', a.note);
       setV('cu_line', a.line);
@@ -447,6 +485,7 @@
       setV('cu_stationStart', a.stationStart);
       setV('cu_stationEnd', a.stationEnd);
       setV('cu_targetDate', a.targetDate || '');
+      toggleCustContractFields();
       editMode = { type: 'customer', idx: i };
       document.getElementById('modalCustomer').classList.add('open');
     }
@@ -571,7 +610,11 @@
       const assetType = asset.type; 
       const assetBts = asset.bts;
       
-      const matches = DB.customers.filter(c => checkCustomerMatchAsset(c, asset));
+      const matches = DB.customers.filter(c => {
+        const ps = c.pipelineStatus || 'active';
+        if (ps !== 'active') return false;
+        return checkCustomerMatchAsset(c, asset);
+      });
       
       const summaryText = document.getElementById('matchingSummaryText');
       summaryText.innerHTML = `
